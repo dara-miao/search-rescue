@@ -69,6 +69,8 @@ Photoreal tiles stream from Google. Street View, Places, and Directions hydrate 
 
 Building outlines come from [OpenStreetMap](https://www.openstreetmap.org/copyright). Aerial fallback is [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 
+When Street View metadata is not OK (outdoor source dies inside Doheny), the optical inset shows a Times-Mirror still of Doheny Memorial Library by [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons, recompressed for the inset.
+
 Google requires on-screen attribution when tiles are visible.
 
 ## Stack
