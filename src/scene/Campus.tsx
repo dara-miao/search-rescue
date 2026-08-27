@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { CanvasTexture, ExtrudeGeometry, Path, RepeatWrapping, Shape, TextureLoader } from 'three'
 import { useLoader } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
-import { useGame } from '../game/store'
 import { BUILDINGS, DOHENY_DOOR, LANDMARKS, TREES, satPlane, type CampusBuilding } from '../game/world'
 import { C } from './colors'
 
@@ -343,10 +342,8 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
   const facadeBrick = useMemo(() => makeFacade(true, true), [])
   const facadeStone = useMemo(() => makeFacade(false, false), [])
 
-  const googlePlaces = useGame((s) => s.places.length)
-
   if (photoreal) {
-    return googlePlaces > 0 ? null : <LandmarkLabels thermal={thermal} />
+    return <LandmarkLabels thermal={thermal} />
   }
 
   return (
