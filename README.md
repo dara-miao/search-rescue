@@ -31,7 +31,7 @@ Then open the printed local URL (this project binds to port `43147`).
 
 | Input | Action |
 | --- | --- |
-| Drive stick | Push up to walk, left/right to turn |
+| Drive stick | Point the stick to walk that way |
 | W S / A D | Drive / turn |
 | Shift | Sprint |
 | F / Space | Mark a survivor in range |

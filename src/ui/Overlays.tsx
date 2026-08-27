@@ -39,7 +39,7 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <button type="button" className="deploy" autoFocus onClick={onDeploy}>
           Deploy
         </button>
-        <p className="fineprint">One stick: up walks, left/right turns. Enter deploys.</p>
+        <p className="fineprint">Point the stick to walk that way. Enter deploys.</p>
       </div>
     </div>
   )
