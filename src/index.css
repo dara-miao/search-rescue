@@ -113,6 +113,23 @@ button {
   filter: sepia(0.3) hue-rotate(-18deg) saturate(1.25);
 }
 
+.optical.no-pano {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  aspect-ratio: auto;
+  padding: 4px 8px;
+  background: rgba(6, 6, 8, 0.55);
+}
+
+.optical.no-pano span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgba(232, 220, 196, 0.7);
+}
+
 .overlay {
   position: absolute;
   inset: 0;
