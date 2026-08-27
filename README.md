@@ -31,14 +31,13 @@ Then open the printed local URL (this project binds to port `43147`).
 
 | Input | Action |
 | --- | --- |
-| Left knob | Drive and turn |
-| Right knob | Look |
+| Drive stick | Push up to walk, left/right to turn |
 | W S / A D | Drive / turn |
 | Shift | Sprint |
 | F / Space | Mark a survivor in range |
 | T | Toggle thermal on the mast cam |
 | Q / E | Orbit the world camera |
-| Touch | On-screen stick, look pad, Mark, Thermal |
+| Touch | On-screen drive stick, Mark, Thermal |
 
 ## Mission
 

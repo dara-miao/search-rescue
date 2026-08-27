@@ -71,12 +71,6 @@ export default function App() {
             className={`knob-move ${showNudge ? 'nudge' : ''}`}
             onVector={(x, y, active) => input.current?.setStick(x, y, active)}
           />
-          <AnalogKnob
-            label="LOOK"
-            hint="aims the mast only"
-            className="knob-look"
-            onVector={(x, y, active) => input.current?.setLookStick(x, y, active)}
-          />
         </div>
       )}
     </div>
