@@ -1,6 +1,14 @@
-import { useMemo } from 'react'
-import { CanvasTexture, ExtrudeGeometry, Path, RepeatWrapping, Shape, TextureLoader } from 'three'
-import { useLoader } from '@react-three/fiber'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  CanvasTexture,
+  ExtrudeGeometry,
+  Path,
+  RepeatWrapping,
+  SRGBColorSpace,
+  Shape,
+  Texture,
+  TextureLoader,
+} from 'three'
 import { Billboard, Text } from '@react-three/drei'
 import { BUILDINGS, DOHENY_DOOR, LANDMARKS, TREES, satPlane, type CampusBuilding } from '../game/world'
 import { C } from './colors'
@@ -333,12 +341,48 @@ function LandmarkLabels({ thermal }: { thermal: boolean }) {
   )
 }
 
+function useOptionalTexture(url: string | null) {
+  const [tex, setTex] = useState<Texture | null>(null)
+
+  useEffect(() => {
+    if (!url) {
+      setTex(null)
+      return
+    }
+    let cancelled = false
+    let loaded: Texture | null = null
+    const loader = new TextureLoader()
+    loader.load(
+      url,
+      (t) => {
+        if (cancelled) {
+          t.dispose()
+          return
+        }
+        t.wrapS = RepeatWrapping
+        t.wrapT = RepeatWrapping
+        t.anisotropy = 8
+        t.colorSpace = SRGBColorSpace
+        loaded = t
+        setTex(t)
+      },
+      undefined,
+      () => {
+        if (!cancelled) setTex(null)
+      },
+    )
+    return () => {
+      cancelled = true
+      loaded?.dispose()
+    }
+  }, [url])
+
+  return tex
+}
+
 export function Campus({ thermal, photoreal = false }: { thermal: boolean; photoreal?: boolean }) {
   const sat = satPlane()
-  const dusk = useLoader(TextureLoader, '/textures/usc-sat-dusk.jpg')
-  dusk.wrapS = RepeatWrapping
-  dusk.wrapT = RepeatWrapping
-  dusk.anisotropy = 8
+  const dusk = useOptionalTexture(photoreal ? null : sat.url)
   const facadeBrick = useMemo(() => makeFacade(true, true), [])
   const facadeStone = useMemo(() => makeFacade(false, false), [])
 
@@ -351,12 +395,12 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, 0, sat.cz]} receiveShadow>
         <planeGeometry args={[sat.width, sat.depth]} />
         <meshStandardMaterial
-          map={dusk}
-          color={thermal ? '#143044' : '#c4ccd4'}
+          map={dusk ?? undefined}
+          color={dusk ? (thermal ? '#8aa4b4' : '#ffffff') : thermal ? '#143044' : '#5a646c'}
           roughness={1}
           metalness={0}
           emissive={thermal ? '#041018' : '#1a120c'}
-          emissiveIntensity={thermal ? 0.15 : 0.08}
+          emissiveIntensity={thermal ? 0.15 : dusk ? 0.04 : 0.08}
         />
       </mesh>
       {BUILDINGS.map((b) =>
