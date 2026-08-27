@@ -5,7 +5,7 @@ import { CAMPUS, resolveCollision } from './world'
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
-  if (!api.current || typeof api.current.setLookStick !== 'function') {
+  if (!api.current || typeof api.current.setYaw !== 'function') {
     api.current = createInput()
   }
 
@@ -23,6 +23,7 @@ export function useSimLoop(active: boolean) {
 
     let last = performance.now()
     let raf = 0
+    let stickYaw0: number | null = null
 
     const frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000)
@@ -34,28 +35,36 @@ export function useSimLoop(active: boolean) {
         const right = input.pressed('KeyD') || input.pressed('ArrowRight')
         if (left || right) input.turn(((right ? 1 : 0) - (left ? 1 : 0)) * dt * 2.35)
 
-        const axes = input.consume()
-        if (axes.stickActive && Math.abs(axes.stickX) > 0.08) {
-          input.turn(-axes.stickX * dt * 3.2)
-        }
-        if (axes.lookActive) {
-          input.addLook(axes.lookX * 920 * dt, -axes.lookY * 680 * dt)
+        const pad = input.consume()
+        const mag = Math.hypot(pad.stickX, pad.stickY)
+        let forward = pad.forward
+
+        if (pad.stickActive && mag > 0.12) {
+          if (stickYaw0 === null) stickYaw0 = pad.yaw
+          input.setYaw(stickYaw0 + Math.atan2(pad.stickX, pad.stickY))
+          forward = mag
+        } else if (!pad.stickActive) {
+          stickYaw0 = null
         }
 
-        const pad = input.consume()
-        const walk = pad.sprint ? 11.2 : 6.6
-        const sin = Math.sin(pad.yaw)
-        const cos = Math.cos(pad.yaw)
-        const vx = (sin * pad.forward + cos * pad.strafe) * walk
-        const vz = (-cos * pad.forward + sin * pad.strafe) * walk
+        if (pad.lookActive) {
+          input.addLook(pad.lookX * 920 * dt, -pad.lookY * 680 * dt)
+        }
+
+        const aimed = input.consume()
+        const walk = aimed.sprint ? 11.2 : 6.6
+        const sin = Math.sin(aimed.yaw)
+        const cos = Math.cos(aimed.yaw)
+        const vx = (sin * forward + cos * aimed.strafe) * walk
+        const vz = (-cos * forward + sin * aimed.strafe) * walk
         const next = resolveCollision(store.robot.x + vx * dt, store.robot.z + vz * dt)
         const moving = Math.hypot(vx, vz) > 0.15
 
         store.applyRobot({
           x: next.x,
           z: next.z,
-          yaw: pad.yaw,
-          pitch: pad.pitch,
+          yaw: aimed.yaw,
+          pitch: aimed.pitch,
           speed: Math.hypot(vx, vz),
           moving,
         })

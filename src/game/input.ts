@@ -6,6 +6,7 @@ export type InputState = {
   sprint: boolean
   stickActive: boolean
   stickX: number
+  stickY: number
   lookX: number
   lookY: number
   lookActive: boolean
@@ -47,7 +48,7 @@ export function createInput() {
     const up = keys.has('KeyW') || keys.has('ArrowUp')
     const down = keys.has('KeyS') || keys.has('ArrowDown')
 
-    const forward = Math.max(-1, Math.min(1, (up ? 1 : 0) - (down ? 1 : 0) + stick.y))
+    const forward = Math.max(-1, Math.min(1, (up ? 1 : 0) - (down ? 1 : 0)))
 
     return {
       forward,
@@ -57,6 +58,7 @@ export function createInput() {
       sprint: keys.has('ShiftLeft') || keys.has('ShiftRight'),
       stickActive: stick.active,
       stickX: stick.x,
+      stickY: stick.y,
       lookX: lookStick.x,
       lookY: lookStick.y,
       lookActive: lookStick.active,
@@ -85,6 +87,10 @@ export function createInput() {
     look.yaw += yawDelta
   }
 
+  const setYaw = (yaw: number) => {
+    look.yaw = yaw
+  }
+
   const resetLook = (yaw = 0, pitch = -0.08) => {
     look.yaw = yaw
     look.pitch = pitch
@@ -98,7 +104,7 @@ export function createInput() {
     return true
   }
 
-  return { attach, detach, consume, setStick, setLookStick, addLook, turn, resetLook, pressed, consumeEdge }
+  return { attach, detach, consume, setStick, setLookStick, addLook, turn, setYaw, resetLook, pressed, consumeEdge }
 }
 
 export type InputApi = ReturnType<typeof createInput>

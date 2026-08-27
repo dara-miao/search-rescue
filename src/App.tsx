@@ -67,7 +67,7 @@ export default function App() {
         <div className="knobs">
           <AnalogKnob
             label="DRIVE"
-            hint="up walks · left/right turns"
+            hint="point to walk"
             className={`knob-move ${showNudge ? 'nudge' : ''}`}
             onVector={(x, y, active) => input.current?.setStick(x, y, active)}
           />
