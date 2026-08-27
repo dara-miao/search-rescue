@@ -34,45 +34,47 @@ function Person({
   const heat = found ? '#2ee59a' : thermal ? C.thermalHot : '#ffb078'
   const body = found ? '#1a3d32' : thermal ? '#ff5a00' : '#c98a6a'
 
+  const stand = Math.max(y, 0.08)
+
   return (
-    <group ref={g} position={[x, y, z]}>
-      <mesh position={[0, 0.55, 0]}>
-        <capsuleGeometry args={[0.18, 0.55, 6, 10]} />
+    <group ref={g} position={[x, stand, z]}>
+      <mesh position={[0, 1.15, 0]} castShadow>
+        <capsuleGeometry args={[0.42, 1.15, 6, 12]} />
         <meshStandardMaterial
           color={body}
           emissive={heat}
-          emissiveIntensity={thermal ? 3.2 : found ? 0.8 : 0.35}
+          emissiveIntensity={thermal ? 3.2 : found ? 0.8 : 0.55}
           roughness={0.6}
         />
       </mesh>
-      <mesh position={[0, 1.05, 0]}>
-        <sphereGeometry args={[0.16, 10, 10]} />
-        <meshStandardMaterial color={body} emissive={heat} emissiveIntensity={thermal ? 2.4 : 0.25} />
+      <mesh position={[0, 2.05, 0]}>
+        <sphereGeometry args={[0.36, 12, 12]} />
+        <meshStandardMaterial color={body} emissive={heat} emissiveIntensity={thermal ? 2.4 : 0.4} />
       </mesh>
-      <mesh position={[0, 1.55, 0]}>
-        <sphereGeometry args={[found ? 0.12 : 0.18, 10, 10]} />
+      <mesh position={[0, 2.85, 0]}>
+        <sphereGeometry args={[found ? 0.22 : 0.32, 12, 12]} />
         <meshStandardMaterial
           color={heat}
           emissive={heat}
-          emissiveIntensity={thermal ? 5 : 2}
+          emissiveIntensity={thermal ? 5 : 2.4}
           toneMapped={false}
         />
       </mesh>
-      <Billboard position={[0, 2.05, 0]}>
+      <Billboard position={[0, 3.55, 0]}>
         <Text
-          fontSize={next ? 0.34 : 0.28}
+          fontSize={next ? 0.72 : 0.58}
           color={found ? '#9dffd0' : next ? '#ffcc00' : '#ffe7c2'}
           anchorX="center"
           anchorY="middle"
-          outlineWidth={0.02}
+          outlineWidth={0.04}
           outlineColor="#000"
         >
           {name}
         </Text>
       </Billboard>
       {next && !found && (
-        <mesh position={[0, 3.4, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 2.4, 8]} />
+        <mesh position={[0, 5.2, 0]}>
+          <cylinderGeometry args={[0.07, 0.07, 3.2, 8]} />
           <meshStandardMaterial
             color="#ffcc00"
             emissive="#ffcc00"
@@ -81,18 +83,15 @@ function Person({
           />
         </mesh>
       )}
-      {found && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
-          <ringGeometry args={[0.7, 0.85, 28]} />
-          <meshStandardMaterial
-            color="#2ee59a"
-            emissive="#2ee59a"
-            emissiveIntensity={1.4}
-            transparent
-            opacity={0.85}
-          />
-        </mesh>
-      )}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]}>
+        <ringGeometry args={[0.85, 1.15, 28]} />
+        <meshBasicMaterial
+          color={found ? '#2ee59a' : next ? '#ffcc00' : '#ffb078'}
+          toneMapped={false}
+          transparent
+          opacity={found ? 0.9 : 0.7}
+        />
+      </mesh>
     </group>
   )
 }

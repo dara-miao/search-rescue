@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   CanvasTexture,
+  ClampToEdgeWrapping,
   ExtrudeGeometry,
   Path,
   RepeatWrapping,
   SRGBColorSpace,
   Shape,
   Texture,
-  TextureLoader,
 } from 'three'
 import { Billboard, Text } from '@react-three/drei'
 import { BUILDINGS, DOHENY_DOOR, LANDMARKS, TREES, satPlane, type CampusBuilding } from '../game/world'
@@ -341,48 +341,61 @@ function LandmarkLabels({ thermal }: { thermal: boolean }) {
   )
 }
 
-function useOptionalTexture(url: string | null) {
+const SAT_MAP = '/textures/usc-sat-dusk.jpg'
+
+function useSameOriginSatMap(enabled: boolean) {
   const [tex, setTex] = useState<Texture | null>(null)
 
   useEffect(() => {
-    if (!url) {
-      setTex(null)
-      return
-    }
+    if (!enabled) return
+
     let cancelled = false
-    let loaded: Texture | null = null
-    const loader = new TextureLoader()
-    loader.load(
-      url,
-      (t) => {
-        if (cancelled) {
-          t.dispose()
-          return
-        }
-        t.wrapS = RepeatWrapping
-        t.wrapT = RepeatWrapping
-        t.anisotropy = 8
-        t.colorSpace = SRGBColorSpace
-        loaded = t
-        setTex(t)
-      },
-      undefined,
-      () => {
-        if (!cancelled) setTex(null)
-      },
-    )
+    let owned: Texture | null = null
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.decoding = 'async'
+
+    const apply = () => {
+      if (cancelled || !img.naturalWidth || owned) return
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      const map = ctx
+        ? (() => {
+            ctx.drawImage(img, 0, 0)
+            return new CanvasTexture(canvas)
+          })()
+        : new Texture(img)
+      map.wrapS = ClampToEdgeWrapping
+      map.wrapT = ClampToEdgeWrapping
+      map.anisotropy = 8
+      map.colorSpace = SRGBColorSpace
+      map.needsUpdate = true
+      owned = map
+      setTex(map)
+    }
+
+    img.onload = apply
+    img.onerror = () => {
+      if (!cancelled) setTex(null)
+    }
+    img.src = SAT_MAP
+    if (img.complete && img.naturalWidth) apply()
+
     return () => {
       cancelled = true
-      loaded?.dispose()
+      setTex((cur) => (cur === owned ? null : cur))
+      owned?.dispose()
     }
-  }, [url])
+  }, [enabled])
 
   return tex
 }
 
 export function Campus({ thermal, photoreal = false }: { thermal: boolean; photoreal?: boolean }) {
   const sat = satPlane()
-  const dusk = useOptionalTexture(photoreal ? null : sat.url)
+  const dusk = useSameOriginSatMap(!photoreal)
   const facadeBrick = useMemo(() => makeFacade(true, true), [])
   const facadeStone = useMemo(() => makeFacade(false, false), [])
 
@@ -392,15 +405,13 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, 0, sat.cz]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, -0.02, sat.cz]} receiveShadow>
         <planeGeometry args={[sat.width, sat.depth]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
+          key={dusk ? 'sat' : 'flat'}
           map={dusk ?? undefined}
           color={dusk ? (thermal ? '#8aa4b4' : '#ffffff') : thermal ? '#143044' : '#5a646c'}
-          roughness={1}
-          metalness={0}
-          emissive={thermal ? '#041018' : '#1a120c'}
-          emissiveIntensity={thermal ? 0.15 : dusk ? 0.04 : 0.08}
+          toneMapped={false}
         />
       </mesh>
       {BUILDINGS.map((b) =>
