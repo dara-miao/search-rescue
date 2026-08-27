@@ -43,7 +43,7 @@ Then open the printed local URL (this project binds to port `43147`).
 
 A structure fire is moving through Doheny. Four people are unaccounted for:
 
-- Victim 1 — Doheny reading room
+- Victim 1 — Doheny west door
 - Victim 2 — Doheny west steps
 - Victim 3 — behind Tommy Trojan
 - Victim 4 — lawn west of Bovard

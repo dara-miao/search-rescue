@@ -24,7 +24,7 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         </p>
         <ul className="mission-list">
           <li>
-            <b>1</b> Doheny reading room
+            <b>1</b> Doheny west door
           </li>
           <li>
             <b>2</b> West steps

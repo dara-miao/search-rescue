@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { hasGoogleKey, headingDelta } from '../game/maps'
 import { mastStreetViewArgs, streetViewImageUrl, streetViewMeta } from '../game/google'
 import { useGame } from '../game/store'
@@ -6,60 +6,57 @@ import { useGame } from '../game/store'
 export function OpticalFeed() {
   const thermal = useGame((s) => s.thermal)
   const [src, setSrc] = useState<string | null>(null)
-  const last = useRef({
-    heading: 1e9,
-    pitch: 1e9,
-    pano: '',
-    panoX: 1e9,
-    panoZ: 1e9,
-  })
+  const [noPano, setNoPano] = useState(false)
 
   useEffect(() => {
     if (!hasGoogleKey()) return
 
     let cancelled = false
     let inflight = false
+    const last = {
+      heading: 1e9,
+      pitch: 1e9,
+      pano: '',
+      panoX: 1e9,
+      panoZ: 1e9,
+      status: 'unknown' as 'ok' | 'none' | 'unknown',
+    }
 
     const paint = (heading: number, pitch: number) => {
-      last.current.heading = heading
-      last.current.pitch = pitch
+      last.heading = heading
+      last.pitch = pitch
+      setNoPano(false)
       setSrc(
         streetViewImageUrl({
-          pano: last.current.pano,
+          pano: last.pano,
           heading,
           pitch,
         }),
       )
     }
 
-    const tick = async () => {
-      if (cancelled) return
-      const { robot } = useGame.getState()
-      const next = mastStreetViewArgs(robot)
-      const fromPano = Math.hypot(robot.x - last.current.panoX, robot.z - last.current.panoZ)
-      const turn = headingDelta(next.heading, last.current.heading)
-      const nod = Math.abs(next.pitch - last.current.pitch)
-
-      if (last.current.pano && (turn >= 6 || nod >= 3)) {
-        paint(next.heading, next.pitch)
-      }
-
+    const pullMeta = async (lat: number, lon: number, x: number, z: number, heading: number, pitch: number) => {
       if (inflight) return
-      if (last.current.pano && fromPano < 10) return
-
       inflight = true
       try {
-        const meta = await streetViewMeta(next.lat, next.lon)
+        const meta = await streetViewMeta(lat, lon)
         if (cancelled) return
         if (meta.status !== 'OK' || !meta.pano_id) {
-          last.current.pano = ''
+          last.pano = ''
+          last.status = 'none'
+          last.panoX = x
+          last.panoZ = z
+          last.heading = heading
+          last.pitch = pitch
           setSrc(null)
+          setNoPano(true)
           return
         }
-        last.current.pano = meta.pano_id
-        last.current.panoX = robot.x
-        last.current.panoZ = robot.z
-        paint(next.heading, next.pitch)
+        last.pano = meta.pano_id
+        last.status = 'ok'
+        last.panoX = x
+        last.panoZ = z
+        paint(heading, pitch)
       } catch {
         // keep last frame
       } finally {
@@ -67,19 +64,46 @@ export function OpticalFeed() {
       }
     }
 
-    void tick()
-    const id = window.setInterval(() => void tick(), 200)
+    const consider = () => {
+      if (cancelled || document.hidden) return
+      const { robot, phase } = useGame.getState()
+      if (phase !== 'playing') return
+
+      const next = mastStreetViewArgs(robot)
+      const fromPano = Math.hypot(robot.x - last.panoX, robot.z - last.panoZ)
+      const turn = headingDelta(next.heading, last.heading)
+      const nod = Math.abs(next.pitch - last.pitch)
+      const walked = fromPano >= 10
+      const aimed = turn >= 8 || nod >= 4
+      const still = !robot.moving && !aimed && !walked
+
+      if (still && last.status !== 'unknown') return
+
+      if (last.pano && aimed) paint(next.heading, next.pitch)
+
+      if (inflight) return
+      if (last.status === 'unknown' || walked) {
+        void pullMeta(next.lat, next.lon, robot.x, robot.z, next.heading, next.pitch)
+      }
+    }
+
+    const unsub = useGame.subscribe(consider)
+    document.addEventListener('visibilitychange', consider)
+    consider()
     return () => {
       cancelled = true
-      window.clearInterval(id)
+      unsub()
+      document.removeEventListener('visibilitychange', consider)
     }
   }, [])
 
-  if (!src) return null
+  if (!hasGoogleKey()) return null
+  if (!src && !noPano) return null
 
   return (
-    <aside className={`optical ${thermal ? 'is-thermal' : ''}`}>
-      <img src={src} alt="" draggable={false} />
+    <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
+      {src && !noPano ? <img src={src} alt="" draggable={false} /> : null}
+      {noPano ? <span>NO PANO</span> : null}
     </aside>
   )
 }
