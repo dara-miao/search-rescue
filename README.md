@@ -2,7 +2,7 @@
 
 Search and rescue on the real University Park campus. Dual feed through a fire at Edward L. Doheny Jr. Memorial Library.
 
-The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a GitHub key is present:
+The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a Google key is present:
 
 - **Google Photorealistic 3D Tiles** (Map Tiles API) for the live University Park mesh
 - **Street View Static** on the robot as the optical feed (nearest pano, heading from the mast)
