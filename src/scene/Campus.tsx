@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   CanvasTexture,
+  ClampToEdgeWrapping,
   ExtrudeGeometry,
   Path,
   RepeatWrapping,
   SRGBColorSpace,
   Shape,
   Texture,
-  TextureLoader,
 } from 'three'
 import { Billboard, Text } from '@react-three/drei'
 import { BUILDINGS, DOHENY_DOOR, LANDMARKS, TREES, satPlane, type CampusBuilding } from '../game/world'
@@ -138,10 +138,13 @@ function RoofCap({ building, thermal }: { building: CampusBuilding; thermal: boo
 }
 
 function HollowLibrary({ building, thermal }: { building: CampusBuilding; thermal: boolean }) {
-  const walls = useMemo(() => {
-    const list: Array<{ x: number; z: number; w: number; rot: number }> = []
+  const { walls, portal } = useMemo(() => {
+    const list: Array<{ x: number; z: number; y: number; w: number; h: number; rot: number }> = []
+    let portal: { x: number; z: number; w: number; h: number; rot: number } | null = null
     const ring = building.outer
     const door = DOHENY_DOOR
+    const gap = 6
+    const openingHeight = 9.2
     for (let i = 0; i < ring.length - 1; i++) {
       const ax = ring[i][0]
       const az = ring[i][1]
@@ -156,29 +159,55 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
         ((Math.abs(ax - door.ax) < 0.2 && Math.abs(az - door.az) < 0.2 && Math.abs(bx - door.bx) < 0.2 && Math.abs(bz - door.bz) < 0.2) ||
           (Math.abs(ax - door.bx) < 0.2 && Math.abs(az - door.bz) < 0.2 && Math.abs(bx - door.ax) < 0.2 && Math.abs(bz - door.az) < 0.2))
       if (isDoor) {
-        const gap = 4.6
         const dirx = (bx - ax) / len
         const dirz = (bz - az) / len
         const half = (len - gap) / 2
-        if (half > 1.2) {
+        if (half > 0.8) {
           list.push({
             x: ax + dirx * (half / 2),
             z: az + dirz * (half / 2),
+            y: building.height / 2,
             w: half,
+            h: building.height,
             rot,
           })
           list.push({
             x: bx - dirx * (half / 2),
             z: bz - dirz * (half / 2),
+            y: building.height / 2,
             w: half,
+            h: building.height,
             rot,
           })
         }
+        const lintel = building.height - openingHeight
+        if (lintel > 1) {
+          list.push({
+            x: mx,
+            z: mz,
+            y: openingHeight + lintel / 2,
+            w: gap,
+            h: lintel,
+            rot,
+          })
+        }
+        const inwardX = Math.cos(rot)
+        const inwardZ = -Math.sin(rot)
+        const toCenterX = building.cx - mx
+        const toCenterZ = building.cz - mz
+        const sign = inwardX * toCenterX + inwardZ * toCenterZ >= 0 ? 1 : -1
+        portal = {
+          x: mx + inwardX * sign * 0.85,
+          z: mz + inwardZ * sign * 0.85,
+          w: gap - 0.2,
+          h: openingHeight,
+          rot,
+        }
         continue
       }
-      list.push({ x: mx, z: mz, w: len, rot })
+      list.push({ x: mx, z: mz, y: building.height / 2, w: len, h: building.height, rot })
     }
-    return list
+    return { walls: list, portal }
   }, [building])
 
   const wall = thermal ? C.thermalCold : '#6d2d2e'
@@ -197,8 +226,8 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
         <meshStandardMaterial color={thermal ? '#111' : '#1c1614'} roughness={1} />
       </mesh>
       {walls.map((w, i) => (
-        <mesh key={i} position={[w.x, building.height / 2, w.z]} rotation={[0, w.rot, 0]} castShadow>
-          <boxGeometry args={[0.7, building.height, w.w]} />
+        <mesh key={i} position={[w.x, w.y, w.z]} rotation={[0, w.rot, 0]} castShadow>
+          <boxGeometry args={[0.7, w.h, w.w]} />
           <meshStandardMaterial
             color={wall}
             roughness={0.9}
@@ -207,7 +236,21 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
           />
         </mesh>
       ))}
-      <RoofCap building={building} thermal={thermal} />
+      {portal && (
+        <>
+          <mesh position={[portal.x, portal.h / 2, portal.z]} rotation={[0, portal.rot, 0]}>
+            <boxGeometry args={[1.1, portal.h, portal.w]} />
+            <meshBasicMaterial color={thermal ? '#02080c' : '#050403'} toneMapped={false} />
+          </mesh>
+          <mesh
+            position={[portal.x, 0.06, portal.z]}
+            rotation={[-Math.PI / 2, 0, portal.rot]}
+          >
+            <planeGeometry args={[portal.w + 1.2, 8]} />
+            <meshBasicMaterial color={thermal ? '#02080c' : '#0a0908'} toneMapped={false} />
+          </mesh>
+        </>
+      )}
       <Billboard position={[building.cx, building.height + 3.2, building.cz]}>
         <Text fontSize={2.4} color={thermal ? '#ff7a22' : '#ffd56a'} anchorX="center" outlineWidth={0.1} outlineColor="#000">
           Doheny Memorial Library
@@ -341,48 +384,72 @@ function LandmarkLabels({ thermal }: { thermal: boolean }) {
   )
 }
 
-function useOptionalTexture(url: string | null) {
+const SAT_MAP = '/textures/usc-sat-dusk.jpg'
+
+function useSameOriginSatMap(enabled: boolean) {
   const [tex, setTex] = useState<Texture | null>(null)
 
   useEffect(() => {
-    if (!url) {
-      setTex(null)
-      return
-    }
+    if (!enabled) return
+
     let cancelled = false
-    let loaded: Texture | null = null
-    const loader = new TextureLoader()
-    loader.load(
-      url,
-      (t) => {
-        if (cancelled) {
-          t.dispose()
-          return
-        }
-        t.wrapS = RepeatWrapping
-        t.wrapT = RepeatWrapping
-        t.anisotropy = 8
-        t.colorSpace = SRGBColorSpace
-        loaded = t
-        setTex(t)
-      },
-      undefined,
-      () => {
-        if (!cancelled) setTex(null)
-      },
-    )
+    let owned: Texture | null = null
+    let objectUrl: string | null = null
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.decoding = 'async'
+
+    const apply = () => {
+      if (cancelled || !img.naturalWidth || owned) return
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      if (ctx) ctx.drawImage(img, 0, 0)
+      const map = ctx ? new CanvasTexture(canvas) : new Texture(img)
+      map.wrapS = ClampToEdgeWrapping
+      map.wrapT = ClampToEdgeWrapping
+      map.anisotropy = 8
+      map.colorSpace = SRGBColorSpace
+      map.needsUpdate = true
+      owned = map
+      setTex(map)
+    }
+
+    img.onload = apply
+    img.onerror = () => {
+      if (!cancelled) setTex(null)
+    }
+
+    void fetch(SAT_MAP)
+      .then((res) => {
+        if (!res.ok) throw new Error(`sat ${res.status}`)
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        objectUrl = URL.createObjectURL(blob)
+        img.src = objectUrl
+      })
+      .catch(() => {
+        if (cancelled) return
+        img.src = SAT_MAP
+      })
+
     return () => {
       cancelled = true
-      loaded?.dispose()
+      setTex((cur) => (cur === owned ? null : cur))
+      owned?.dispose()
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [url])
+  }, [enabled])
 
   return tex
 }
 
 export function Campus({ thermal, photoreal = false }: { thermal: boolean; photoreal?: boolean }) {
   const sat = satPlane()
-  const dusk = useOptionalTexture(photoreal ? null : sat.url)
+  const dusk = useSameOriginSatMap(!photoreal)
   const facadeBrick = useMemo(() => makeFacade(true, true), [])
   const facadeStone = useMemo(() => makeFacade(false, false), [])
 
@@ -392,15 +459,14 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, 0, sat.cz]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, -0.02, sat.cz]} receiveShadow>
         <planeGeometry args={[sat.width, sat.depth]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
+          key={dusk ? 'sat' : 'flat'}
           map={dusk ?? undefined}
           color={dusk ? (thermal ? '#8aa4b4' : '#ffffff') : thermal ? '#143044' : '#5a646c'}
-          roughness={1}
-          metalness={0}
-          emissive={thermal ? '#041018' : '#1a120c'}
-          emissiveIntensity={thermal ? 0.15 : dusk ? 0.04 : 0.08}
+          toneMapped={false}
+          fog={false}
         />
       </mesh>
       {BUILDINGS.map((b) =>

@@ -4,11 +4,13 @@ import { mastStreetViewArgs, streetViewImageUrl, streetViewMeta } from '../game/
 import { useGame } from '../game/store'
 
 const TIMES_MIRROR = '/doheny-times-mirror.jpg'
+const TIMES_MIRROR_WIKI =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
 
 export function OpticalFeed() {
   const thermal = useGame((s) => s.thermal)
-  const [src, setSrc] = useState<string | null>(null)
-  const [noPano, setNoPano] = useState(false)
+  const [src, setSrc] = useState(TIMES_MIRROR)
+  const [showingStill, setShowingStill] = useState(true)
 
   useEffect(() => {
     if (!hasGoogleKey()) return
@@ -27,7 +29,7 @@ export function OpticalFeed() {
     const paint = (heading: number, pitch: number) => {
       last.heading = heading
       last.pitch = pitch
-      setNoPano(false)
+      setShowingStill(false)
       setSrc(
         streetViewImageUrl({
           pano: last.pano,
@@ -37,6 +39,17 @@ export function OpticalFeed() {
       )
     }
 
+    const showStill = (x: number, z: number, heading: number, pitch: number) => {
+      last.pano = ''
+      last.status = 'none'
+      last.panoX = x
+      last.panoZ = z
+      last.heading = heading
+      last.pitch = pitch
+      setSrc(TIMES_MIRROR)
+      setShowingStill(true)
+    }
+
     const pullMeta = async (lat: number, lon: number, x: number, z: number, heading: number, pitch: number) => {
       if (inflight) return
       inflight = true
@@ -44,14 +57,7 @@ export function OpticalFeed() {
         const meta = await streetViewMeta(lat, lon)
         if (cancelled) return
         if (meta.status !== 'OK' || !meta.pano_id) {
-          last.pano = ''
-          last.status = 'none'
-          last.panoX = x
-          last.panoZ = z
-          last.heading = heading
-          last.pitch = pitch
-          setSrc(TIMES_MIRROR)
-          setNoPano(true)
+          showStill(x, z, heading, pitch)
           return
         }
         last.pano = meta.pano_id
@@ -60,7 +66,7 @@ export function OpticalFeed() {
         last.panoZ = z
         paint(heading, pitch)
       } catch {
-        // keep last frame
+        if (!cancelled) showStill(x, z, heading, pitch)
       } finally {
         inflight = false
       }
@@ -99,23 +105,31 @@ export function OpticalFeed() {
     }
   }, [])
 
-  if (!hasGoogleKey()) return null
-  if (!src) return null
-
   return (
-    <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
+    <aside className={`optical ${thermal ? 'is-thermal' : ''} ${showingStill ? 'no-pano' : ''}`}>
       <img
         src={src}
-        alt={noPano ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
+        alt={showingStill ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
         draggable={false}
         onError={(e) => {
-          if (!noPano || e.currentTarget.dataset.fallback) return
-          e.currentTarget.dataset.fallback = '1'
-          e.currentTarget.src =
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
+          const el = e.currentTarget
+          const step = el.dataset.fallback
+          if (!step) {
+            el.dataset.fallback = 'local'
+            el.src = TIMES_MIRROR
+            setSrc(TIMES_MIRROR)
+            setShowingStill(true)
+            return
+          }
+          if (step === 'local') {
+            el.dataset.fallback = 'wiki'
+            el.src = TIMES_MIRROR_WIKI
+            setSrc(TIMES_MIRROR_WIKI)
+            setShowingStill(true)
+          }
         }}
       />
-      {noPano ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : null}
+      {showingStill ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : null}
     </aside>
   )
 }
