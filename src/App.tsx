@@ -19,6 +19,7 @@ export default function App() {
   const moving = useGame((s) => s.robot.moving)
   const elapsed = useGame((s) => s.elapsed)
   const playing = phase === 'playing'
+  const picking = phase === 'briefing' || phase === 'reconstructing'
   const input = useSimLoop(playing)
   const showNudge = playing && !moving && elapsed < 8
 
@@ -27,20 +28,26 @@ export default function App() {
   }, [hydrateGoogle])
 
   useEffect(() => {
+    if (phase !== 'reconstructing') return
+    const t = window.setTimeout(() => start(), 2200)
+    return () => window.clearTimeout(t)
+  }, [phase, start])
+
+  useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
   }, [playing])
 
   return (
     <div className="app">
       <main className={`split ${thermal ? 'thermal' : ''}`}>
-        <section className="pane">
+        <section className={`pane ${phase === 'briefing' ? 'can-pick' : ''}`}>
           <Canvas
             camera={{ position: [80, 42, 90], fov: 40, near: 0.2, far: 900 }}
             shadows
             dpr={[1, 1.7]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
           >
-            <MissionScene variant="world" cinematic={!playing} />
+            <MissionScene variant="world" cinematic={picking} />
           </Canvas>
           <div className="pane-label">WORLD</div>
         </section>
@@ -60,7 +67,7 @@ export default function App() {
         </section>
       </main>
 
-      {phase === 'briefing' && <Briefing onDeploy={start} />}
+      <Briefing />
       <EndCard />
       {playing && <Hud onMark={tryMark} onThermal={toggleThermal} />}
       {playing && (

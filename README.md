@@ -2,21 +2,21 @@
 
 Search and rescue on the real University Park campus. Dual feed through a fire at Edward L. Doheny Jr. Memorial Library.
 
-The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a Google key is present:
+Pick a building on University Park, reconstruct the room, then drive the incident inside it. The campus is playable geometry from public geospatial data — OSM footprints become buildings, Esri aerials become the ground, and Doheny becomes a walkable Times-Mirror interior. Google hydrates that reconstruction (Street View, Places, Directions). It is not the world mesh.
 
-- **Google Photorealistic 3D Tiles** (Map Tiles API) for the live University Park mesh
-- **Street View Static** on the robot as the optical feed (nearest pano, heading from the mast)
+- **OpenStreetMap** footprints extruded into campus buildings and collision
+- **Times-Mirror reading room** inside Doheny — columns, tables, licensed interior still, room fire
+- **Street View Static** on the robot as the outdoor optical feed (nearest pano, heading from the mast)
 - **Places Nearby** for real University Park names in the world
 - **Directions** walking polyline from spawn to Doheny west door
-- **OpenStreetMap** footprints for collision, survivor placement, and the no-key fallback
-- **Esri World Imagery** as the fallback ground texture
+- **Esri World Imagery** as the ground texture
 
 The screen is split on purpose:
 
-- **World** — tactical overview over the real quad
-- **Robot** — live mast camera, Street View optical inset, thermal pass for heat signatures
+- **World** — reconstructed University Park, then a cutaway into the labeled room
+- **Robot** — mast camera in the same volume, Street View outdoors, Times-Mirror still indoors, thermal pass for heat
 
-Find and mark four missing people before the clock runs out.
+Responder labels (HOT, NO GO, EVAC) write onto the reconstructed room. Find and mark four missing people before the clock runs out.
 
 ## Run it
 
@@ -41,9 +41,9 @@ Then open the printed local URL (this project binds to port `43147`).
 
 ## Mission
 
-A structure fire is moving through Doheny. Four people are unaccounted for:
+Click Doheny, run a structure fire, reconstruct the Times-Mirror room. Four people are unaccounted for:
 
-- Victim 1 — Doheny west door
+- Victim 1 — Times-Mirror reading room, inside Doheny
 - Victim 2 — Doheny west steps
 - Victim 3 — behind Tommy Trojan
 - Victim 4 — lawn west of Bovard
@@ -60,18 +60,17 @@ VITE_GOOGLE_MAPS_KEY=AIza...
 
 Enable these APIs on that key:
 
-- Map Tiles API
 - Street View Static API
 - Places API (legacy Nearby Search)
 - Directions API
 
-Photoreal tiles stream from Google. Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Without a key, the sim falls back to OSM extrusions and Esri aerials. Restrict the key to those APIs if you can — it is a client-side Vite env var.
+Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Without a key, the optical inset stays dark and the reconstructed OSM campus still plays. Restrict the key to those APIs if you can — it is a client-side Vite env var.
 
 Building outlines come from [OpenStreetMap](https://www.openstreetmap.org/copyright). Aerial fallback is [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 
 When Street View metadata is not OK (outdoor source dies inside Doheny), the optical inset shows a Times-Mirror still of Doheny Memorial Library by [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons, recompressed for the inset.
 
-Google requires on-screen attribution when tiles are visible.
+The Times-Mirror still is also mapped onto the far wall of the reconstructed reading room.
 
 ## Stack
 

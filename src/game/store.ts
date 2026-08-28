@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { fetchCampusGoogle, type IngressMeta, type PlaceLabel } from './google'
 import { hasGoogleKey } from './maps'
+import { DEFAULT_SCENARIO, DOOR_SPAWN, SITES } from './sites'
 import { CAMPUS, SURVIVORS, dist2 } from './world'
 
-export type Phase = 'briefing' | 'playing' | 'complete' | 'failed'
+export type Phase = 'briefing' | 'reconstructing' | 'playing' | 'complete' | 'failed'
 
 export type SurvivorState = {
   id: string
@@ -42,8 +43,14 @@ type GameStore = {
   evacPath: Array<[number, number]>
   evacMeta: IngressMeta | null
   googleFeeds: 'idle' | 'loading' | 'live' | 'error'
+  selectedId: string | null
+  scenario: string
+  reconstructed: boolean
   start: () => void
   reset: () => void
+  selectBuilding: (id: string) => void
+  setScenario: (scenario: string) => void
+  beginReconstruct: () => boolean
   hydrateGoogle: () => Promise<void>
   setTilesReady: (ready: boolean) => void
   toggleThermal: () => void
@@ -69,6 +76,18 @@ function freshRobot(): RobotState {
   }
 }
 
+function doorRobot(): RobotState {
+  return {
+    x: DOOR_SPAWN.x,
+    y: 0.52,
+    z: DOOR_SPAWN.z,
+    yaw: DOOR_SPAWN.yaw,
+    pitch: -0.04,
+    speed: 0,
+    moving: false,
+  }
+}
+
 export const useGame = create<GameStore>((set, get) => ({
   phase: 'briefing',
   thermal: false,
@@ -85,6 +104,25 @@ export const useGame = create<GameStore>((set, get) => ({
   evacPath: [],
   evacMeta: null,
   googleFeeds: 'idle',
+  selectedId: null,
+  scenario: DEFAULT_SCENARIO,
+  reconstructed: false,
+
+  selectBuilding: (id) => {
+    if (get().phase !== 'briefing') return
+    set({ selectedId: id })
+  },
+
+  setScenario: (scenario) => set({ scenario }),
+
+  beginReconstruct: () => {
+    const s = get()
+    if (s.phase !== 'briefing') return false
+    const site = SITES.find((item) => item.id === s.selectedId)
+    if (!site?.ready) return false
+    set({ phase: 'reconstructing', reconstructed: true })
+    return true
+  },
 
   hydrateGoogle: async () => {
     if (!hasGoogleKey()) {
@@ -111,7 +149,7 @@ export const useGame = create<GameStore>((set, get) => ({
       phase: 'playing',
       thermal: false,
       elapsed: 0,
-      robot: freshRobot(),
+      robot: get().reconstructed ? doorRobot() : freshRobot(),
       survivors: freshSurvivors(),
       nearestId: null,
       nearestDist: 999,
@@ -130,6 +168,9 @@ export const useGame = create<GameStore>((set, get) => ({
       nearestDist: 999,
       markFlash: 0,
       lastMarked: null,
+      selectedId: null,
+      scenario: DEFAULT_SCENARIO,
+      reconstructed: false,
     }),
 
   toggleThermal: () => set((s) => ({ thermal: !s.thermal })),
