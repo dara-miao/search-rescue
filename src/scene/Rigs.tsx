@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { useGame } from '../game/store'
 import { DOHENY } from '../game/world'
+import { insideDoheny } from './TimesMirror'
 
 const _target = new Vector3()
 const _desired = new Vector3()
@@ -24,13 +25,18 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
       return
     }
 
+    const inside = insideDoheny(robot.x, robot.z)
     const fx = Math.sin(robot.yaw)
     const fz = -Math.cos(robot.yaw)
-    const ox = Math.sin(worldOrbit) * 8
-    const oz = Math.cos(worldOrbit) * 8
-    _desired.set(robot.x - fx * 18 + ox, 16, robot.z - fz * 18 + oz)
+    const ox = Math.sin(worldOrbit) * (inside ? 3 : 8)
+    const oz = Math.cos(worldOrbit) * (inside ? 3 : 8)
+    _desired.set(
+      robot.x - fx * (inside ? 8 : 18) + ox,
+      inside ? 7.5 : 16,
+      robot.z - fz * (inside ? 8 : 18) + oz,
+    )
     state.camera.position.lerp(_desired, 0.06)
-    _target.set(robot.x, 2.2, robot.z)
+    _target.set(robot.x, inside ? 3.2 : 2.2, robot.z)
     state.camera.lookAt(_target)
   })
 

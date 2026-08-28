@@ -3,11 +3,13 @@ import { Campus } from './Campus'
 import { Fire } from './Fire'
 import { GoogleTiles } from './GoogleTiles'
 import { Ingress } from './Ingress'
+import { Labels } from './Labels'
 import { Lights } from './Lights'
 import { People } from './People'
 import { Places } from './Places'
 import { Robot } from './Robot'
 import { MastRig, WorldRig } from './Rigs'
+import { TimesMirror } from './TimesMirror'
 import { hasGoogleTiles } from '../game/maps'
 import { useGame } from '../game/store'
 
@@ -27,6 +29,8 @@ export function MissionScene({
       <Lights thermal={thermal} photoreal={photoreal} />
       {variant === 'world' && hasGoogleTiles() && <GoogleTiles variant={variant} />}
       <Campus thermal={thermal} photoreal={photoreal} />
+      <TimesMirror thermal={thermal} />
+      <Labels thermal={thermal} />
       <Places thermal={thermal} />
       <Ingress />
       <Fire thermal={thermal} />

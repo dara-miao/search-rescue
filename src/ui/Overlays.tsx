@@ -19,8 +19,8 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <p className="eyebrow">Search rescue</p>
         <h1>Doheny is on fire.</h1>
         <p className="lede">
-          Four victims are still on University Park. Drive the robot, get close, mark them before
-          the clock runs out.
+          West door opens into the Times-Mirror reading room. WORLD shows the real interior still.
+          Drive in, read the labels, mark the four victims.
         </p>
         <ul className="mission-list">
           <li>

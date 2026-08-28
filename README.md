@@ -13,8 +13,10 @@ The campus is reconstructed from public geospatial data, then streamed as photog
 
 The screen is split on purpose:
 
-- **World** — tactical overview over the real quad
+- **World** — tactical overview over the real quad, then the Times-Mirror reading room once you enter Doheny
 - **Robot** — live mast camera, Street View optical inset, thermal pass for heat signatures
+
+The interior is not a World Labs splat. Doheny is already walkable from the OSM footprint. Times-Mirror is the licensed EEJCC still mapped onto the far wall of that room, with HOT / NO GO / EVAC labels in the stacks.
 
 Find and mark four missing people before the clock runs out.
 
@@ -41,7 +43,7 @@ Then open the printed local URL (this project binds to port `43147`).
 
 ## Mission
 
-A structure fire is moving through Doheny. Four people are unaccounted for:
+A structure fire is moving through Doheny. Enter at the west door. Four people are unaccounted for:
 
 - Victim 1 — Doheny west door
 - Victim 2 — Doheny west steps
