@@ -14,6 +14,7 @@ function Person({
   found,
   next,
   thermal,
+  facade,
 }: {
   x: number
   z: number
@@ -22,19 +23,22 @@ function Person({
   found: boolean
   next: boolean
   thermal: boolean
+  facade: boolean
 }) {
   const g = useRef<Group>(null)
 
   useFrame(({ clock }) => {
     if (!g.current) return
     const pulse = 0.85 + Math.sin(clock.elapsedTime * 3 + x) * 0.15
-    g.current.scale.setScalar(found ? 1 : pulse)
+    g.current.scale.setScalar(found || facade ? 1 : pulse)
   })
 
-  const heat = found ? '#2ee59a' : thermal ? C.thermalHot : '#ffb078'
+  const heat = found ? '#2ee59a' : thermal ? C.thermalHot : facade ? '#ffcc66' : '#ffb078'
   const body = found ? '#1a3d32' : thermal ? '#ff5a00' : '#c98a6a'
-
   const stand = Math.max(y, 0.08)
+  const label = facade ? 2.15 : next ? 0.95 : 0.78
+  const poleH = facade ? 14 : 4.2
+  const poleY = facade ? 10.2 : 6.4
 
   return (
     <group ref={g} position={[x, stand, z]}>
@@ -55,31 +59,31 @@ function Person({
         <sphereGeometry args={[found ? 0.28 : 0.4, 12, 12]} />
         <meshBasicMaterial color={heat} toneMapped={false} />
       </mesh>
-      <Billboard position={[0, 4.35, 0]}>
+      <Billboard position={[0, facade ? 18.4 : 4.35, 0]}>
         <Text
-          fontSize={next ? 0.95 : 0.78}
-          color={found ? '#9dffd0' : next ? '#ffcc00' : '#ffe7c2'}
+          fontSize={label}
+          color={found ? '#9dffd0' : next || facade ? '#ffcc00' : '#ffe7c2'}
           anchorX="center"
           anchorY="middle"
-          outlineWidth={0.05}
+          outlineWidth={facade ? 0.12 : 0.05}
           outlineColor="#000"
         >
           {name}
         </Text>
       </Billboard>
       {!found && (
-        <mesh position={[0, 6.4, 0]}>
-          <cylinderGeometry args={[0.09, 0.09, 4.2, 8]} />
-          <meshBasicMaterial color={next ? '#ffcc00' : '#ff8a3a'} toneMapped={false} />
+        <mesh position={[0, poleY, 0]}>
+          <cylinderGeometry args={[facade ? 0.16 : 0.09, facade ? 0.16 : 0.09, poleH, 8]} />
+          <meshBasicMaterial color={next || facade ? '#ffcc00' : '#ff8a3a'} toneMapped={false} />
         </mesh>
       )}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.08, 0]}>
-        <ringGeometry args={[1.05, 1.45, 28]} />
+        <ringGeometry args={[facade ? 1.5 : 1.05, facade ? 2.05 : 1.45, 28]} />
         <meshBasicMaterial
-          color={found ? '#2ee59a' : next ? '#ffcc00' : '#ffb078'}
+          color={found ? '#2ee59a' : next || facade ? '#ffcc00' : '#ffb078'}
           toneMapped={false}
           transparent
-          opacity={found ? 0.95 : 0.8}
+          opacity={found ? 0.95 : 0.85}
         />
       </mesh>
     </group>
@@ -104,6 +108,7 @@ export function People({ thermal }: { thermal: boolean }) {
           found={p.found}
           next={p.id === nearestId}
           thermal={thermal}
+          facade={p.id === 'v1'}
         />
       ))}
       {nearestId && nearestDist < CAMPUS.markRange * 2.5 && (

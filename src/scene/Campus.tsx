@@ -138,10 +138,13 @@ function RoofCap({ building, thermal }: { building: CampusBuilding; thermal: boo
 }
 
 function HollowLibrary({ building, thermal }: { building: CampusBuilding; thermal: boolean }) {
-  const walls = useMemo(() => {
-    const list: Array<{ x: number; z: number; w: number; rot: number }> = []
+  const { walls, portal } = useMemo(() => {
+    const list: Array<{ x: number; z: number; y: number; w: number; h: number; rot: number }> = []
+    let portal: { x: number; z: number; w: number; h: number; rot: number } | null = null
     const ring = building.outer
     const door = DOHENY_DOOR
+    const gap = 6
+    const openingHeight = 9.2
     for (let i = 0; i < ring.length - 1; i++) {
       const ax = ring[i][0]
       const az = ring[i][1]
@@ -156,29 +159,55 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
         ((Math.abs(ax - door.ax) < 0.2 && Math.abs(az - door.az) < 0.2 && Math.abs(bx - door.bx) < 0.2 && Math.abs(bz - door.bz) < 0.2) ||
           (Math.abs(ax - door.bx) < 0.2 && Math.abs(az - door.bz) < 0.2 && Math.abs(bx - door.ax) < 0.2 && Math.abs(bz - door.az) < 0.2))
       if (isDoor) {
-        const gap = 4.6
         const dirx = (bx - ax) / len
         const dirz = (bz - az) / len
         const half = (len - gap) / 2
-        if (half > 1.2) {
+        if (half > 0.8) {
           list.push({
             x: ax + dirx * (half / 2),
             z: az + dirz * (half / 2),
+            y: building.height / 2,
             w: half,
+            h: building.height,
             rot,
           })
           list.push({
             x: bx - dirx * (half / 2),
             z: bz - dirz * (half / 2),
+            y: building.height / 2,
             w: half,
+            h: building.height,
             rot,
           })
         }
+        const lintel = building.height - openingHeight
+        if (lintel > 1) {
+          list.push({
+            x: mx,
+            z: mz,
+            y: openingHeight + lintel / 2,
+            w: gap,
+            h: lintel,
+            rot,
+          })
+        }
+        const inwardX = Math.cos(rot)
+        const inwardZ = -Math.sin(rot)
+        const toCenterX = building.cx - mx
+        const toCenterZ = building.cz - mz
+        const sign = inwardX * toCenterX + inwardZ * toCenterZ >= 0 ? 1 : -1
+        portal = {
+          x: mx + inwardX * sign * 0.85,
+          z: mz + inwardZ * sign * 0.85,
+          w: gap - 0.2,
+          h: openingHeight,
+          rot,
+        }
         continue
       }
-      list.push({ x: mx, z: mz, w: len, rot })
+      list.push({ x: mx, z: mz, y: building.height / 2, w: len, h: building.height, rot })
     }
-    return list
+    return { walls: list, portal }
   }, [building])
 
   const wall = thermal ? C.thermalCold : '#6d2d2e'
@@ -197,8 +226,8 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
         <meshStandardMaterial color={thermal ? '#111' : '#1c1614'} roughness={1} />
       </mesh>
       {walls.map((w, i) => (
-        <mesh key={i} position={[w.x, building.height / 2, w.z]} rotation={[0, w.rot, 0]} castShadow>
-          <boxGeometry args={[0.7, building.height, w.w]} />
+        <mesh key={i} position={[w.x, w.y, w.z]} rotation={[0, w.rot, 0]} castShadow>
+          <boxGeometry args={[0.7, w.h, w.w]} />
           <meshStandardMaterial
             color={wall}
             roughness={0.9}
@@ -207,6 +236,12 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
           />
         </mesh>
       ))}
+      {portal && (
+        <mesh position={[portal.x, portal.h / 2, portal.z]} rotation={[0, portal.rot, 0]}>
+          <boxGeometry args={[0.45, portal.h, portal.w]} />
+          <meshBasicMaterial color={thermal ? '#02080c' : '#070605'} toneMapped={false} />
+        </mesh>
+      )}
       <RoofCap building={building} thermal={thermal} />
       <Billboard position={[building.cx, building.height + 3.2, building.cz]}>
         <Text fontSize={2.4} color={thermal ? '#ff7a22' : '#ffd56a'} anchorX="center" outlineWidth={0.1} outlineColor="#000">
