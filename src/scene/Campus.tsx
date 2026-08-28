@@ -114,50 +114,15 @@ function Footprint({
   )
 }
 
-function RoofCap({
-  building,
-  thermal,
-  doorCut,
-}: {
-  building: CampusBuilding
-  thermal: boolean
-  doorCut?: { ax: number; az: number; bx: number; bz: number }
-}) {
+function RoofCap({ building, thermal }: { building: CampusBuilding; thermal: boolean }) {
   const shape = useMemo(() => {
     const s = new Shape()
     building.outer.forEach(([x, z], i) => {
       if (i === 0) s.moveTo(x, -z)
       else s.lineTo(x, -z)
     })
-    if (doorCut) {
-      const mx = (doorCut.ax + doorCut.bx) / 2
-      const mz = (doorCut.az + doorCut.bz) / 2
-      const dx = doorCut.bx - doorCut.ax
-      const dz = doorCut.bz - doorCut.az
-      const len = Math.hypot(dx, dz) || 1
-      const tx = dx / len
-      const tz = dz / len
-      let nx = tz
-      let nz = -tx
-      if ((building.cx - mx) * nx + (building.cz - mz) * nz < 0) {
-        nx = -nx
-        nz = -nz
-      }
-      const half = 3.15
-      const depth = 11
-      const corners: Array<[number, number]> = [
-        [mx - tx * half, mz - tz * half],
-        [mx + tx * half, mz + tz * half],
-        [mx + tx * half + nx * depth, mz + tz * half + nz * depth],
-        [mx - tx * half + nx * depth, mz - tz * half + nz * depth],
-      ]
-      const hole = new Path()
-      corners.forEach(([x, z], i) => (i === 0 ? hole.moveTo(x, -z) : hole.lineTo(x, -z)))
-      hole.closePath()
-      s.holes.push(hole)
-    }
     return s
-  }, [building, doorCut])
+  }, [building])
   const roof = thermal ? '#0a1820' : '#7a3426'
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, building.height + 0.12, 0]} castShadow>
@@ -286,7 +251,6 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
           </mesh>
         </>
       )}
-      <RoofCap building={building} thermal={thermal} doorCut={DOHENY_DOOR} />
       <Billboard position={[building.cx, building.height + 3.2, building.cz]}>
         <Text fontSize={2.4} color={thermal ? '#ff7a22' : '#ffd56a'} anchorX="center" outlineWidth={0.1} outlineColor="#000">
           Doheny Memorial Library
