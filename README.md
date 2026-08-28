@@ -2,7 +2,7 @@
 
 Search and rescue on the real University Park campus. Dual feed through a fire at Edward L. Doheny Jr. Memorial Library.
 
-The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a Google key is present:
+The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a GitHub key is present:
 
 - **Google Photorealistic 3D Tiles** (Map Tiles API) for the live University Park mesh
 - **Street View Static** on the robot as the optical feed (nearest pano, heading from the mast)
@@ -13,10 +13,10 @@ The campus is reconstructed from public geospatial data, then streamed as photog
 
 The screen is split on purpose:
 
-- **World** — tactical overview over the real quad, then the Times-Mirror reading room once you enter Doheny
+- **World** — tactical overview over the real quad, then walkable interiors once you enter
 - **Robot** — live mast camera, Street View optical inset, thermal pass for heat signatures
 
-The interior is not a World Labs splat. Doheny is already walkable from the OSM footprint. Times-Mirror is the licensed EEJCC still mapped onto the far wall of that room, with HOT / NO GO / EVAC labels in the stacks.
+Interiors are stills mapped onto walkable OSM rooms, not World Labs splats. Doheny is a closed volume: Times-Mirror uses the hall / stacks / aisle / study frames; the rotunda uses the nave, desk, and lobby stills; stair and dining halls use their own stills. Treasure Room mural is Seauton, CC BY 4.0. Bovard Auditorium is Justin Higuchi, CC BY 2.0.
 
 Find and mark four missing people before the clock runs out.
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { hasGoogleKey, headingDelta } from '../game/maps'
 import { mastStreetViewArgs, streetViewImageUrl, streetViewMeta } from '../game/google'
+import { interiorAt, stillAt } from '../game/interiors'
 import { useGame } from '../game/store'
-
-const TIMES_MIRROR = '/doheny-times-mirror.jpg'
 
 export function OpticalFeed() {
   const thermal = useGame((s) => s.thermal)
@@ -50,7 +49,8 @@ export function OpticalFeed() {
           last.panoZ = z
           last.heading = heading
           last.pitch = pitch
-          setSrc(TIMES_MIRROR)
+          const room = interiorAt(x, z)
+          setSrc(room ? stillAt(room, x, z) : '/doheny-times-mirror.jpg')
           setNoPano(true)
           return
         }
@@ -106,16 +106,25 @@ export function OpticalFeed() {
     <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
       <img
         src={src}
-        alt={noPano ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
+        alt={noPano ? 'Licensed interior still' : ''}
         draggable={false}
         onError={(e) => {
           if (!noPano || e.currentTarget.dataset.fallback) return
           e.currentTarget.dataset.fallback = '1'
+          const room = interiorAt(useGame.getState().robot.x, useGame.getState().robot.z)
           e.currentTarget.src =
+            room?.fallback ??
             'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
         }}
       />
-      {noPano ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : null}
+      {noPano ? <CreditChip /> : null}
     </aside>
   )
+}
+
+function CreditChip() {
+  const x = useGame((s) => s.robot.x)
+  const z = useGame((s) => s.robot.z)
+  const room = interiorAt(x, z)
+  return <span>{room?.credit ?? 'EEJCC / Wikimedia CC BY-SA 4.0'}</span>
 }

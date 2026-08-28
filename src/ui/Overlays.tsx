@@ -19,8 +19,9 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <p className="eyebrow">Search rescue</p>
         <h1>Doheny is on fire.</h1>
         <p className="lede">
-          West door opens into the Times-Mirror reading room. WORLD shows the real interior still.
-          Drive in, read the labels, mark the four victims.
+          You deploy on the west steps. Walk the reconstructed Times-Mirror hall, the rotunda,
+          the stair hall, dining, and the Treasure Room. Bovard is open across the quad. Mark
+          the four victims.
         </p>
         <ul className="mission-list">
           <li>
