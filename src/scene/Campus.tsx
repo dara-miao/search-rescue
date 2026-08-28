@@ -351,6 +351,7 @@ function useSameOriginSatMap(enabled: boolean) {
 
     let cancelled = false
     let owned: Texture | null = null
+    let objectUrl: string | null = null
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.decoding = 'async'
@@ -361,12 +362,8 @@ function useSameOriginSatMap(enabled: boolean) {
       canvas.width = img.naturalWidth
       canvas.height = img.naturalHeight
       const ctx = canvas.getContext('2d')
-      const map = ctx
-        ? (() => {
-            ctx.drawImage(img, 0, 0)
-            return new CanvasTexture(canvas)
-          })()
-        : new Texture(img)
+      if (ctx) ctx.drawImage(img, 0, 0)
+      const map = ctx ? new CanvasTexture(canvas) : new Texture(img)
       map.wrapS = ClampToEdgeWrapping
       map.wrapT = ClampToEdgeWrapping
       map.anisotropy = 8
@@ -380,13 +377,27 @@ function useSameOriginSatMap(enabled: boolean) {
     img.onerror = () => {
       if (!cancelled) setTex(null)
     }
-    img.src = SAT_MAP
-    if (img.complete && img.naturalWidth) apply()
+
+    void fetch(SAT_MAP)
+      .then((res) => {
+        if (!res.ok) throw new Error(`sat ${res.status}`)
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        objectUrl = URL.createObjectURL(blob)
+        img.src = objectUrl
+      })
+      .catch(() => {
+        if (cancelled) return
+        img.src = SAT_MAP
+      })
 
     return () => {
       cancelled = true
       setTex((cur) => (cur === owned ? null : cur))
       owned?.dispose()
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, [enabled])
 
@@ -412,6 +423,7 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
           map={dusk ?? undefined}
           color={dusk ? (thermal ? '#8aa4b4' : '#ffffff') : thermal ? '#143044' : '#5a646c'}
           toneMapped={false}
+          fog={false}
         />
       </mesh>
       {BUILDINGS.map((b) =>
