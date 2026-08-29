@@ -1,4 +1,3 @@
-import { insideInterior } from '../game/interiors'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 
@@ -51,7 +50,6 @@ export function Hud({
   const aimDist = aim
     ? Math.hypot(robot.x - aim.x, robot.z - aim.z)
     : nearestDist
-  const room = insideInterior(robot.x, robot.z)
 
   return (
     <div className="hud">
@@ -83,11 +81,9 @@ export function Hud({
           <span>
             {!started
               ? 'West door is ahead'
-              : room
-                ? `${room.title} · still`
-                : aim
-                  ? `${aim.name} · ${aim.note} · ${aimDist.toFixed(0)}m`
-                  : 'Sweep the quad'}
+              : aim
+                ? `${aim.name} \u00b7 ${aim.note} \u00b7 ${aimDist.toFixed(0)}m`
+                : 'Sweep the quad'}
           </span>
         </div>
       )}
@@ -95,7 +91,7 @@ export function Hud({
       {markFlash > 0 && marked && (
         <div className="toast">
           {marked.name} marked
-          {found < survivors.length ? ` · ${survivors.length - found} left` : ''}
+          {found < survivors.length ? ` \u00b7 ${survivors.length - found} left` : ''}
         </div>
       )}
 

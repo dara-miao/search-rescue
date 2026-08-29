@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react'
 import { hasGoogleKey, headingDelta } from '../game/maps'
 import { mastStreetViewArgs, streetViewImageUrl, streetViewMeta } from '../game/google'
-import { insideInterior } from '../game/interiors'
 import { useGame } from '../game/store'
+
+const TIMES_MIRROR = '/doheny-times-mirror.jpg'
 
 export function OpticalFeed() {
   const thermal = useGame((s) => s.thermal)
-  const x = useGame((s) => s.robot.x)
-  const z = useGame((s) => s.robot.z)
-  const room = insideInterior(x, z)
-  const [streetSrc, setStreetSrc] = useState<string | null>(null)
+  const [src, setSrc] = useState<string | null>(null)
+  const [noPano, setNoPano] = useState(false)
 
   useEffect(() => {
-    if (room?.id) return
     if (!hasGoogleKey()) return
 
     let cancelled = false
@@ -29,7 +27,8 @@ export function OpticalFeed() {
     const paint = (heading: number, pitch: number) => {
       last.heading = heading
       last.pitch = pitch
-      setStreetSrc(
+      setNoPano(false)
+      setSrc(
         streetViewImageUrl({
           pano: last.pano,
           heading,
@@ -38,7 +37,7 @@ export function OpticalFeed() {
       )
     }
 
-    const pullMeta = async (lat: number, lon: number, rx: number, rz: number, heading: number, pitch: number) => {
+    const pullMeta = async (lat: number, lon: number, x: number, z: number, heading: number, pitch: number) => {
       if (inflight) return
       inflight = true
       try {
@@ -47,16 +46,18 @@ export function OpticalFeed() {
         if (meta.status !== 'OK' || !meta.pano_id) {
           last.pano = ''
           last.status = 'none'
-          last.panoX = rx
-          last.panoZ = rz
+          last.panoX = x
+          last.panoZ = z
           last.heading = heading
           last.pitch = pitch
+          setSrc(TIMES_MIRROR)
+          setNoPano(true)
           return
         }
         last.pano = meta.pano_id
         last.status = 'ok'
-        last.panoX = rx
-        last.panoZ = rz
+        last.panoX = x
+        last.panoZ = z
         paint(heading, pitch)
       } catch {
         // keep last frame
@@ -69,7 +70,6 @@ export function OpticalFeed() {
       if (cancelled || document.hidden) return
       const { robot, phase } = useGame.getState()
       if (phase !== 'playing') return
-      if (insideInterior(robot.x, robot.z)) return
 
       const next = mastStreetViewArgs(robot)
       const fromPano = Math.hypot(robot.x - last.panoX, robot.z - last.panoZ)
@@ -95,39 +95,25 @@ export function OpticalFeed() {
       unsub()
       document.removeEventListener('visibilitychange', consider)
     }
-  }, [room?.id])
+  }, [])
 
-  if (room) {
-    return (
-      <aside className={`optical fill ${thermal ? 'is-thermal' : ''} no-pano`}>
-        <img
-          src={room.still}
-          alt={room.title}
-          draggable={false}
-          onError={(e) => {
-            if (e.currentTarget.dataset.fallback) return
-            e.currentTarget.dataset.fallback = '1'
-            e.currentTarget.src = room.fallback
-          }}
-        />
-        <div className="still-marks">
-          {room.mark ? <b className="evac">{room.mark}</b> : null}
-          {room.labels.map((label) => (
-            <b key={label.text} style={{ color: label.color }}>
-              {label.text}
-            </b>
-          ))}
-        </div>
-        <span>{room.credit}</span>
-      </aside>
-    )
-  }
-
-  if (!hasGoogleKey() || !streetSrc) return null
+  if (!hasGoogleKey()) return null
+  if (!src) return null
 
   return (
-    <aside className={`optical ${thermal ? 'is-thermal' : ''}`}>
-      <img src={streetSrc} alt="" draggable={false} />
+    <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
+      <img
+        src={src}
+        alt={noPano ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
+        draggable={false}
+        onError={(e) => {
+          if (!noPano || e.currentTarget.dataset.fallback) return
+          e.currentTarget.dataset.fallback = '1'
+          e.currentTarget.src =
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
+        }}
+      />
+      {noPano ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : null}
     </aside>
   )
 }
