@@ -19,9 +19,8 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <p className="eyebrow">Search rescue</p>
         <h1>Doheny is on fire.</h1>
         <p className="lede">
-          You deploy on the west steps. Street View stays on the quad. Walk through the west
-          door and the licensed still is the room — Times-Mirror, then rotunda, stairs, dining,
-          Treasure Room. Bovard is open across the quad. Mark the four victims.
+          You deploy on the west steps. WORLD is the live campus mesh. ROBOT pulls Street View
+          from the mast. Sweep the quad and mark the four victims.
         </p>
         <ul className="mission-list">
           <li>
@@ -41,51 +40,6 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
           Deploy
         </button>
         <p className="fineprint">Point the stick to walk that way. Enter deploys.</p>
-      </div>
-    </div>
-  )
-}
-
-export function EndCard() {
-  const phase = useGame((s) => s.phase)
-  const survivors = useGame((s) => s.survivors)
-  const elapsed = useGame((s) => s.elapsed)
-  const reset = useGame((s) => s.reset)
-  const start = useGame((s) => s.start)
-
-  useEffect(() => {
-    if (phase !== 'complete' && phase !== 'failed') return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Enter' || e.code === 'Space') {
-        e.preventDefault()
-        start()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [phase, start])
-
-  if (phase !== 'complete' && phase !== 'failed') return null
-
-  const found = survivors.filter((p) => p.found).length
-  const win = phase === 'complete'
-
-  return (
-    <div className="overlay dim">
-      <div className="overlay-card short">
-        <p className="eyebrow">{win ? 'Clear' : 'Failed'}</p>
-        <h1>{win ? 'All four marked.' : 'Time ran out.'}</h1>
-        <p className="lede">
-          {found} of {survivors.length} · {Math.floor(elapsed)}s
-        </p>
-        <div className="row">
-          <button type="button" className="deploy" autoFocus onClick={start}>
-            Go again
-          </button>
-          <button type="button" className="ghost" onClick={reset}>
-            Briefing
-          </button>
-        </div>
       </div>
     </div>
   )
