@@ -2,21 +2,20 @@
 
 Search and rescue on the real University Park campus. Dual feed through a fire at Edward L. Doheny Jr. Memorial Library.
 
-The campus is reconstructed from public geospatial data, then streamed as photogrammetry when a Google key is present:
+The campus is a Pebble Beach-style reconstruct: real University Park layout, video-game ground.
 
-- **Google Photorealistic 3D Tiles** (Map Tiles API) for the live University Park mesh
-- **Street View Static** on the robot as the optical feed (nearest pano, heading from the mast)
-- **Places Nearby** for real University Park names in the world
+- **OpenStreetMap** building rings for collision and extrusions
+- **Cover mesh** for lawn, walkway, street, steps, and plaza (first slice: Doheny west steps → Tommy → Bovard lawn)
+- **Street View Static** on the robot as the optical inset (heading from the mast)
+- **Places Nearby** for real University Park names
 - **Directions** walking polyline from spawn to Doheny west door
-- **OpenStreetMap** footprints for collision, survivor placement, and the no-key fallback
-- **Esri World Imagery** as the fallback ground texture
 
 The screen is split on purpose:
 
-- **World** — photoreal campus on the quad; tiles drop the moment you are through a door
-- **Robot** — mast camera. Street View optical inset outdoors; the licensed still takes the inset once you are inside
+- **World** — reconstructed quad you can read at a glance
+- **Robot** — mast camera on that same mesh, Street View inset for the real street
 
-Interiors are one licensed still in front of the mast, plus HOT / NO GO / EVAC marks. Not World Labs splats, not cubemaps, not closed beige rooms. Doheny rooms use the hall / stacks / rotunda / stair / dining stills, plus the Treasure Room mural (Seauton, CC BY 4.0). Bovard Auditorium is Justin Higuchi, CC BY 2.0. Alamy stock frames are not used.
+The mission stays outdoors. We do not reconstruct Doheny interiors.
 
 Find and mark four missing people before the clock runs out.
 
@@ -67,11 +66,13 @@ Enable these APIs on that key:
 - Places API (legacy Nearby Search)
 - Directions API
 
-Photoreal tiles stream from Google. Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Without a key, the sim falls back to OSM extrusions and Esri aerials. Restrict the key to those APIs if you can — it is a client-side Vite env var.
+Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Without a key, the reconstruct still plays. Restrict the key to Street View, Places, and Directions if you can — it is a client-side Vite env var.
+
+`scripts/extract-campus-ground.mjs` can refresh OSM paths and lawns into `src/data/ground.json`. `src/game/ground.ts` then repairs the west steps, Doheny apron, and the sweep to Bovard so the first slice is playable even when the extract is thin.
 
 Building outlines come from [OpenStreetMap](https://www.openstreetmap.org/copyright). Aerial fallback is [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 
-Through a door the optical inset swaps to that room's still even if the west-door Street View pano is still OK. Times-Mirror credit: [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons.
+When Street View metadata is not OK, the optical inset falls back to a Times-Mirror still of Doheny Memorial Library by [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons.
 
 Google requires on-screen attribution when tiles are visible.
 
