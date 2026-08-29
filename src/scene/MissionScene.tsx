@@ -9,7 +9,6 @@ import { People } from './People'
 import { Places } from './Places'
 import { Robot } from './Robot'
 import { MastRig, WorldRig } from './Rigs'
-import { Interiors } from './Interiors'
 import { insideInterior } from '../game/interiors'
 import { hasGoogleTiles } from '../game/maps'
 import { useGame } from '../game/store'
@@ -33,7 +32,6 @@ export function MissionScene({
       <Lights thermal={thermal} photoreal={photoreal} interior={interior} />
       {variant === 'world' && hasGoogleTiles() && !interior && <GoogleTiles variant={variant} />}
       <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world'} />
-      <Interiors thermal={thermal} />
       <Labels thermal={thermal} />
       <Places thermal={thermal} />
       <Ingress />
