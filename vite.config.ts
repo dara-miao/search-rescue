@@ -7,6 +7,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 43147,
     strictPort: true,
+    allowedHosts: true,
     proxy: {
       '/v1/3dtiles': {
         target: 'https://tile.googleapis.com',
@@ -24,6 +25,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 43147,
     strictPort: true,
+    allowedHosts: true,
     proxy: {
       '/v1/3dtiles': {
         target: 'https://tile.googleapis.com',
