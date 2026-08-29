@@ -19,9 +19,9 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <p className="eyebrow">Search rescue</p>
         <h1>Doheny is on fire.</h1>
         <p className="lede">
-          You deploy on the west steps. Walk the reconstructed Times-Mirror hall, the rotunda,
-          the stair hall, dining, and the Treasure Room. Bovard is open across the quad. Mark
-          the four victims.
+          You deploy on the west steps. Street View stays on the quad. Walk through the west
+          door and the licensed still is the room — Times-Mirror, then rotunda, stairs, dining,
+          Treasure Room. Bovard is open across the quad. Mark the four victims.
         </p>
         <ul className="mission-list">
           <li>

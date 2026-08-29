@@ -13,10 +13,10 @@ The campus is reconstructed from public geospatial data, then streamed as photog
 
 The screen is split on purpose:
 
-- **World** — tactical overview over the real quad, then walkable interiors once you enter
-- **Robot** — live mast camera, Street View optical inset, thermal pass for heat signatures
+- **World** — photoreal campus on the quad; tiles drop the moment you are through a door
+- **Robot** — mast camera. Street View optical inset outdoors; the licensed still takes the inset once you are inside
 
-Interiors are stills mapped onto walkable OSM rooms, not World Labs splats. Doheny is a closed volume: Times-Mirror uses the hall / stacks / aisle / study frames; the rotunda uses the nave, desk, and lobby stills; stair and dining halls use their own stills. Treasure Room mural is Seauton, CC BY 4.0. Bovard Auditorium is Justin Higuchi, CC BY 2.0.
+Interiors are one licensed still in front of the mast, plus HOT / NO GO / EVAC marks. Not World Labs splats, not cubemaps, not closed beige rooms. Doheny rooms use the hall / stacks / rotunda / stair / dining stills, plus the Treasure Room mural (Seauton, CC BY 4.0). Bovard Auditorium is Justin Higuchi, CC BY 2.0. Alamy stock frames are not used.
 
 Find and mark four missing people before the clock runs out.
 
@@ -71,7 +71,7 @@ Photoreal tiles stream from Google. Street View, Places, and Directions hydrate 
 
 Building outlines come from [OpenStreetMap](https://www.openstreetmap.org/copyright). Aerial fallback is [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 
-When Street View metadata is not OK (outdoor source dies inside Doheny), the optical inset shows a Times-Mirror still of Doheny Memorial Library by [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons, recompressed for the inset.
+Through a door the optical inset swaps to that room's still even if the west-door Street View pano is still OK. Times-Mirror credit: [EEJCC](https://commons.wikimedia.org/wiki/User:EEJCC), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Source: [File:Doheny Library interior.jpg](https://commons.wikimedia.org/wiki/File:Doheny_Library_interior.jpg) on Wikimedia Commons.
 
 Google requires on-screen attribution when tiles are visible.
 
