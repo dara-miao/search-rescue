@@ -44,3 +44,48 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
     </div>
   )
 }
+
+export function EndCard() {
+  const phase = useGame((s) => s.phase)
+  const survivors = useGame((s) => s.survivors)
+  const elapsed = useGame((s) => s.elapsed)
+  const reset = useGame((s) => s.reset)
+  const start = useGame((s) => s.start)
+
+  useEffect(() => {
+    if (phase !== 'complete' && phase !== 'failed') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault()
+        start()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, start])
+
+  if (phase !== 'complete' && phase !== 'failed') return null
+
+  const found = survivors.filter((p) => p.found).length
+  const win = phase === 'complete'
+
+  return (
+    <div className="overlay dim">
+      <div className="overlay-card short">
+        <p className="eyebrow">{win ? 'Clear' : 'Failed'}</p>
+        <h1>{win ? 'All four marked.' : 'Time ran out.'}</h1>
+        <p className="lede">
+          {found} of {survivors.length} · {Math.floor(elapsed)}s
+        </p>
+        <div className="row">
+          <button type="button" className="deploy" autoFocus onClick={start}>
+            Go again
+          </button>
+          <button type="button" className="ghost" onClick={reset}>
+            Briefing
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
