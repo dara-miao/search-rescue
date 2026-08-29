@@ -8,6 +8,17 @@ import { Briefing, EndCard } from './ui/Overlays'
 import { AnalogKnob } from './ui/AnalogKnob'
 import { Hud } from './ui/Hud'
 import { OpticalFeed } from './ui/OpticalFeed'
+import { hasGoogleTiles } from './game/maps'
+
+function WorldPaneLabel({ playing }: { playing: boolean }) {
+  const tilesReady = useGame((s) => s.tilesReady)
+  const waiting = playing && hasGoogleTiles() && !tilesReady
+  return (
+    <div className="pane-label">
+      {waiting ? 'WORLD · LOADING MAP' : hasGoogleTiles() ? 'WORLD · MAP' : 'WORLD'}
+    </div>
+  )
+}
 
 export default function App() {
   const phase = useGame((s) => s.phase)
@@ -35,14 +46,14 @@ export default function App() {
       <main className={`split ${thermal ? 'thermal' : ''}`}>
         <section className="pane">
           <Canvas
-            camera={{ position: [80, 42, 90], fov: 40, near: 0.2, far: 900 }}
+            camera={{ position: [40, 96, 70], fov: 46, near: 0.4, far: 1600 }}
             shadows
             dpr={[1, 1.7]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
           >
             <MissionScene variant="world" cinematic={!playing} />
           </Canvas>
-          <div className="pane-label">WORLD</div>
+          <WorldPaneLabel playing={playing} />
         </section>
 
         <div className="gutter" aria-hidden="true" />

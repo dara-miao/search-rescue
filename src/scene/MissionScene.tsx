@@ -1,12 +1,14 @@
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { Campus } from './Campus'
 import { Fire } from './Fire'
+import { GoogleTiles } from './GoogleTiles'
 import { Ingress } from './Ingress'
 import { Lights } from './Lights'
 import { People } from './People'
 import { Places } from './Places'
 import { Robot } from './Robot'
 import { MastRig, WorldRig } from './Rigs'
+import { hasGoogleTiles } from '../game/maps'
 import { useGame } from '../game/store'
 
 export function MissionScene({
@@ -17,11 +19,15 @@ export function MissionScene({
   cinematic?: boolean
 }) {
   const thermal = useGame((s) => s.thermal && variant === 'robot')
+  const tilesReady = useGame((s) => s.tilesReady)
+  const googleWorld = variant === 'world' && hasGoogleTiles()
+  const photoreal = googleWorld && tilesReady
 
   return (
     <>
-      <Lights thermal={thermal} />
-      <Campus thermal={thermal} cutaway={variant === 'world'} />
+      <Lights thermal={thermal} photoreal={photoreal} />
+      {googleWorld && <GoogleTiles variant="world" />}
+      <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world' && !photoreal} />
       <Places thermal={thermal} />
       <Ingress />
       <Fire thermal={thermal} />

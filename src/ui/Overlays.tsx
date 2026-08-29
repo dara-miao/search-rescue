@@ -19,9 +19,9 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <p className="eyebrow">Search rescue</p>
         <h1>Doheny is on fire.</h1>
         <p className="lede">
-          You deploy on the west steps. The quad is a Pebble-style reconstruct from the real
-          layout — lawn, walk, steps. ROBOT still pulls Street View from the mast. Mark the
-          four victims.
+          You deploy on the west steps. WORLD is a Google Maps birdseye of the real campus.
+          ROBOT walks the reconstruct and pulls Street View from the mast. Mark the four
+          victims.
         </p>
         <ul className="mission-list">
           <li>

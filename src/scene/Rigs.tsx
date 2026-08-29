@@ -12,25 +12,28 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
 
   useFrame((state, dt) => {
     const { robot, worldOrbit, phase } = useGame.getState()
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
+      state.camera.fov = 46
+      state.camera.updateProjectionMatrix()
+    }
+
     if (cinematic || phase === 'briefing') {
-      orbit.current += dt * 0.08
-      const r = 92
+      orbit.current += dt * 0.05
+      const r = 64
       state.camera.position.set(
         DOHENY.cx + Math.sin(orbit.current) * r,
-        48,
+        96,
         DOHENY.cz + Math.cos(orbit.current) * r,
       )
-      state.camera.lookAt(DOHENY.cx, 10, DOHENY.cz)
+      state.camera.lookAt(DOHENY.cx, 2, DOHENY.cz)
       return
     }
 
-    const fx = Math.sin(robot.yaw)
-    const fz = -Math.cos(robot.yaw)
-    const ox = Math.sin(worldOrbit) * 8
-    const oz = Math.cos(worldOrbit) * 8
-    _desired.set(robot.x - fx * 18 + ox, 16, robot.z - fz * 18 + oz)
-    state.camera.position.lerp(_desired, 0.06)
-    _target.set(robot.x, 2.2, robot.z)
+    const ox = Math.sin(worldOrbit) * 24
+    const oz = Math.cos(worldOrbit) * 24
+    _desired.set(robot.x + ox, 86, robot.z + oz)
+    state.camera.position.lerp(_desired, 0.08)
+    _target.set(robot.x, 1.4, robot.z)
     state.camera.lookAt(_target)
   })
 
