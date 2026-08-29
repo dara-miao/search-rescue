@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { useGame } from '../game/store'
 import { DOHENY } from '../game/world'
-import { insideInterior } from '../game/interiors'
 
 const _target = new Vector3()
 const _desired = new Vector3()
@@ -25,18 +24,13 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
       return
     }
 
-    const inside = Boolean(insideInterior(robot.x, robot.z))
     const fx = Math.sin(robot.yaw)
     const fz = -Math.cos(robot.yaw)
-    const ox = Math.sin(worldOrbit) * (inside ? 3 : 8)
-    const oz = Math.cos(worldOrbit) * (inside ? 3 : 8)
-    _desired.set(
-      robot.x - fx * (inside ? 8 : 18) + ox,
-      inside ? 7.5 : 16,
-      robot.z - fz * (inside ? 8 : 18) + oz,
-    )
+    const ox = Math.sin(worldOrbit) * 8
+    const oz = Math.cos(worldOrbit) * 8
+    _desired.set(robot.x - fx * 18 + ox, 16, robot.z - fz * 18 + oz)
     state.camera.position.lerp(_desired, 0.06)
-    _target.set(robot.x, inside ? 3.2 : 2.2, robot.z)
+    _target.set(robot.x, 2.2, robot.z)
     state.camera.lookAt(_target)
   })
 
@@ -48,20 +42,17 @@ export function MastRig() {
     const { robot } = useGame.getState()
     const fx = Math.sin(robot.yaw)
     const fz = -Math.cos(robot.yaw)
-    const interior = Boolean(insideInterior(robot.x, robot.z))
-    const pitch = interior ? Math.max(-0.04, Math.min(0.12, robot.pitch + 0.1)) : robot.pitch
-    const eyeY = robot.y + (interior ? 1.35 : 1.08)
+    const pitch = robot.pitch
+    const eyeY = robot.y + 1.08
     const eyeX = robot.x + fx * 0.48
     const eyeZ = robot.z + fz * 0.48
     state.camera.position.set(eyeX, eyeY, eyeZ)
-    const lookDist = Math.cos(pitch) * (interior ? 7 : 12)
-    const lookY = interior ? 2.7 + Math.sin(pitch) * 4 : eyeY + Math.sin(pitch) * 12
-    state.camera.lookAt(eyeX + fx * lookDist, lookY, eyeZ + fz * lookDist)
+    const lookDist = Math.cos(pitch) * 12
+    state.camera.lookAt(eyeX + fx * lookDist, eyeY + Math.sin(pitch) * 12, eyeZ + fz * lookDist)
     if (state.camera.type === 'PerspectiveCamera') {
       const cam = state.camera
-      const fov = interior ? 58 : 64
-      if ('fov' in cam && cam.fov !== fov) {
-        cam.fov = fov
+      if ('fov' in cam && cam.fov !== 64) {
+        cam.fov = 64
         cam.updateProjectionMatrix()
       }
     }

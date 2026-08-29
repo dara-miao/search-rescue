@@ -3,13 +3,11 @@ import { Campus } from './Campus'
 import { Fire } from './Fire'
 import { GoogleTiles } from './GoogleTiles'
 import { Ingress } from './Ingress'
-import { Labels } from './Labels'
 import { Lights } from './Lights'
 import { People } from './People'
 import { Places } from './Places'
 import { Robot } from './Robot'
 import { MastRig, WorldRig } from './Rigs'
-import { insideInterior } from '../game/interiors'
 import { hasGoogleTiles } from '../game/maps'
 import { useGame } from '../game/store'
 
@@ -22,17 +20,13 @@ export function MissionScene({
 }) {
   const thermal = useGame((s) => s.thermal && variant === 'robot')
   const tilesReady = useGame((s) => s.tilesReady)
-  const robotX = useGame((s) => s.robot.x)
-  const robotZ = useGame((s) => s.robot.z)
-  const interior = Boolean(insideInterior(robotX, robotZ))
-  const photoreal = variant === 'world' && hasGoogleTiles() && tilesReady && !interior
+  const photoreal = variant === 'world' && hasGoogleTiles() && tilesReady
 
   return (
     <>
-      <Lights thermal={thermal} photoreal={photoreal} interior={interior} />
-      {variant === 'world' && hasGoogleTiles() && !interior && <GoogleTiles variant={variant} />}
-      <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world'} />
-      <Labels thermal={thermal} />
+      <Lights thermal={thermal} photoreal={photoreal} />
+      {variant === 'world' && hasGoogleTiles() && <GoogleTiles variant={variant} />}
+      <Campus thermal={thermal} photoreal={photoreal} />
       <Places thermal={thermal} />
       <Ingress />
       <Fire thermal={thermal} />
