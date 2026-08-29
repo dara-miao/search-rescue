@@ -12,8 +12,8 @@ The campus is a Pebble Beach-style reconstruct: real University Park layout, vid
 
 The screen is split on purpose:
 
-- **World** — reconstructed quad you can read at a glance
-- **Robot** — mast camera on that same mesh, Street View inset for the real street
+- **World** — Google photoreal 3D tiles from a birdseye, the real University Park map
+- **Robot** — mast camera on the reconstructed quad, Street View inset for the street
 
 The mission stays outdoors. We do not reconstruct Doheny interiors.
 
@@ -66,7 +66,7 @@ Enable these APIs on that key:
 - Places API (legacy Nearby Search)
 - Directions API
 
-Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Without a key, the reconstruct still plays. Restrict the key to Street View, Places, and Directions if you can — it is a client-side Vite env var.
+Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Photoreal tiles load from the Map Tiles API for WORLD. Without a key, the reconstruct still plays. Restrict the key to Map Tiles, Street View, Places, and Directions if you can — it is a client-side Vite env var.
 
 `scripts/extract-campus-ground.mjs` can refresh OSM paths and lawns into `src/data/ground.json`. `src/game/ground.ts` then repairs the west steps, Doheny apron, and the sweep to Bovard so the first slice is playable even when the extract is thin.
 
