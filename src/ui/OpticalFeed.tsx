@@ -99,7 +99,7 @@ export function OpticalFeed() {
 
   if (room) {
     return (
-      <aside className={`optical ${thermal ? 'is-thermal' : ''} no-pano`}>
+      <aside className={`optical fill ${thermal ? 'is-thermal' : ''} no-pano`}>
         <img
           src={room.still}
           alt={room.title}
@@ -110,6 +110,14 @@ export function OpticalFeed() {
             e.currentTarget.src = room.fallback
           }}
         />
+        <div className="still-marks">
+          {room.mark ? <b className="evac">{room.mark}</b> : null}
+          {room.labels.map((label) => (
+            <b key={label.text} style={{ color: label.color }}>
+              {label.text}
+            </b>
+          ))}
+        </div>
         <span>{room.credit}</span>
       </aside>
     )
