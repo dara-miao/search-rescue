@@ -1,3 +1,4 @@
+import { insideInterior } from '../game/interiors'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 
@@ -41,10 +42,16 @@ export function Hud({
 
   const found = survivors.filter((p) => p.found).length
   const near = survivors.find((p) => p.id === nearestId)
+  const objective = survivors.find((p) => !p.found) ?? near
   const canMark = Boolean(near && !near.found && nearestDist <= CAMPUS.markRange)
   const marked = survivors.find((p) => p.id === lastMarked)
   const started = moving || elapsed > 6
-  const turn = near ? headingTo(robot.x, robot.z, robot.yaw, near.x, near.z) : 0
+  const aim = canMark ? near : objective
+  const turn = aim ? headingTo(robot.x, robot.z, robot.yaw, aim.x, aim.z) : 0
+  const aimDist = aim
+    ? Math.hypot(robot.x - aim.x, robot.z - aim.z)
+    : nearestDist
+  const room = insideInterior(robot.x, robot.z)
 
   return (
     <div className="hud">
@@ -58,7 +65,7 @@ export function Hud({
 
       <div className="ticks" aria-label="Victims">
         {survivors.map((p, i) => (
-          <span key={p.id} className={p.found ? 'found' : p.id === nearestId ? 'next' : ''}>
+          <span key={p.id} className={p.found ? 'found' : p.id === objective?.id ? 'next' : ''}>
             {i + 1}
           </span>
         ))}
@@ -70,15 +77,17 @@ export function Hud({
         </button>
       ) : (
         <div className="objective">
-          {started && near && (
+          {started && aim && (
             <i className="needle" style={{ transform: `rotate(${(turn * 180) / Math.PI}deg)` }} />
           )}
           <span>
             {!started
-              ? 'Hold MOVE'
-              : near
-                ? `${near.name} · ${near.note} · ${nearestDist.toFixed(0)}m`
-                : 'Sweep the quad'}
+              ? 'West door is ahead'
+              : room
+                ? `${room.title} · still`
+                : aim
+                  ? `${aim.name} · ${aim.note} · ${aimDist.toFixed(0)}m`
+                  : 'Sweep the quad'}
           </span>
         </div>
       )}

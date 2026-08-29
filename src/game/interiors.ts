@@ -16,15 +16,10 @@ export type InteriorDef = {
   still: string
   stillLeft?: string
   stillRight?: string
-  stillFar?: string
   credit: string
   fallback: string
   hall: Hall
   mark?: string
-  depth?: number
-  width?: number
-  height?: number
-  door?: number
   labels: Array<{ text: string; color: string; along: number; side: number; y: number }>
 }
 
@@ -51,6 +46,20 @@ export function alongOf(hall: Hall, x: number, z: number) {
   return (x - hall.x) * hall.ax + (z - hall.z) * hall.az
 }
 
+export function sideOf(hall: Hall, x: number, z: number) {
+  return (x - hall.x) * hall.px + (z - hall.z) * hall.pz
+}
+
+/** Through the door into a room — not the west steps. */
+export function insideInterior(x: number, z: number): InteriorDef | null {
+  for (const room of INTERIORS) {
+    const along = alongOf(room.hall, x, z)
+    const side = sideOf(room.hall, x, z)
+    if (along > 0.15 && along < 16 && Math.abs(side) < 5.2) return room
+  }
+  return null
+}
+
 function offsetHall(hall: Hall, along: number, side: number): Hall {
   return {
     ...hall,
@@ -75,18 +84,13 @@ export const INTERIORS: InteriorDef[] = [
     still: '/interiors/times-mirror-hall.jpg',
     stillLeft: '/interiors/times-mirror-stacks.jpg',
     stillRight: '/interiors/times-mirror-aisle.jpg',
-    stillFar: '/interiors/times-mirror-study.jpg',
     credit: 'Times-Mirror stills',
     fallback: '/doheny-times-mirror.jpg',
     hall: dohenyHall,
     mark: 'WEST DOOR',
-    depth: 12.2,
-    width: 8.0,
-    height: 6.2,
-    door: 2.7,
     labels: [
       { text: 'EVAC — west door', color: '#6ee0b0', along: -3, side: 0, y: 3.6 },
-      { text: 'HOT — stacks', color: '#ff6a1a', along: 8, side: 1.5, y: 3.1 },
+      { text: 'HOT — stacks', color: '#ff6a1a', along: 14, side: 1.4, y: 3.1 },
     ],
   },
   {
@@ -95,16 +99,11 @@ export const INTERIORS: InteriorDef[] = [
     still: '/interiors/doheny-rotunda.jpg',
     stillLeft: '/interiors/doheny-nave.jpg',
     stillRight: '/doheny-lobby.jpg',
-    stillFar: '/interiors/doheny-desk.jpg',
     credit: 'Rotunda stills',
     fallback: '/doheny-lobby.jpg',
-    hall: offsetHall(dohenyHall, 30, 0),
+    hall: offsetHall(dohenyHall, 28, 0),
     mark: 'ROTUNDA',
-    depth: 10.0,
-    width: 9.0,
-    height: 6.8,
-    door: 2.8,
-    labels: [{ text: 'NO GO — rotunda', color: '#ff3355', along: 5, side: 0, y: 3.2 }],
+    labels: [{ text: 'NO GO — rotunda', color: '#ff3355', along: 6, side: 0, y: 3.2 }],
   },
   {
     id: 'doheny-stairs',
@@ -112,13 +111,9 @@ export const INTERIORS: InteriorDef[] = [
     still: '/interiors/doheny-stairs.jpg',
     credit: 'Stair hall still',
     fallback: '/interiors/doheny-stairs.jpg',
-    hall: offsetHall(dohenyHall, 15, -8.5),
+    hall: offsetHall(dohenyHall, 16, -7),
     mark: 'STAIRS',
-    depth: 8.0,
-    width: 6.2,
-    height: 6.4,
-    door: 2.4,
-    labels: [{ text: 'EVAC — stairs', color: '#6ee0b0', along: 3.5, side: 0, y: 3.0 }],
+    labels: [{ text: 'EVAC — stairs', color: '#6ee0b0', along: 4, side: 0, y: 3.0 }],
   },
   {
     id: 'doheny-dining',
@@ -126,13 +121,9 @@ export const INTERIORS: InteriorDef[] = [
     still: '/interiors/doheny-dining.jpg',
     credit: 'Dining hall still',
     fallback: '/interiors/doheny-dining.jpg',
-    hall: offsetHall(dohenyHall, 36, 8.5),
+    hall: offsetHall(dohenyHall, 34, 7),
     mark: 'DINING',
-    depth: 9.0,
-    width: 7.0,
-    height: 5.6,
-    door: 2.4,
-    labels: [{ text: 'HOT — dining', color: '#ff6a1a', along: 4, side: 0, y: 3.0 }],
+    labels: [{ text: 'HOT — dining', color: '#ff6a1a', along: 5, side: 0, y: 3.0 }],
   },
   {
     id: 'treasure-room',
@@ -141,13 +132,9 @@ export const INTERIORS: InteriorDef[] = [
     credit: 'Seauton · Wikimedia CC BY 4.0',
     fallback:
       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Armstrong_doheny_library_treasure_room_mural_and_bust.jpg/960px-Armstrong_doheny_library_treasure_room_mural_and_bust.jpg',
-    hall: offsetHall(dohenyHall, 21, 10.5),
+    hall: offsetHall(dohenyHall, 22, 8),
     mark: 'TREASURE',
-    depth: 7.4,
-    width: 6.2,
-    height: 5.4,
-    door: 2.2,
-    labels: [{ text: 'HOT — treasure room', color: '#ff6a1a', along: 4, side: 0, y: 3.0 }],
+    labels: [{ text: 'HOT — treasure room', color: '#ff6a1a', along: 5, side: 0, y: 3.0 }],
   },
 ]
 
@@ -161,10 +148,6 @@ if (bovardHall) {
       'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Madilyn_Bailey_at_USC_Bovard_Auditorium.jpg/960px-Madilyn_Bailey_at_USC_Bovard_Auditorium.jpg',
     hall: bovardHall,
     mark: 'BOVARD',
-    depth: 12.0,
-    width: 10.0,
-    height: 7.4,
-    door: 3.2,
     labels: [{ text: 'EVAC — Bovard', color: '#6ee0b0', along: -2.2, side: 0, y: 3.4 }],
   })
 }
@@ -180,12 +163,6 @@ export function interiorAt(x: number, z: number): InteriorDef | null {
     }
   }
   return best
-}
-
-export function stillAt(room: InteriorDef, x: number, z: number) {
-  if (!room.stillFar) return room.still
-  const depth = room.depth ?? 11
-  return alongOf(room.hall, x, z) > depth * 0.42 ? room.stillFar : room.still
 }
 
 export function nearInterior(x: number, z: number) {
