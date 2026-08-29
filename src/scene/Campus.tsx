@@ -1,17 +1,28 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  CanvasTexture,
-  ExtrudeGeometry,
-  Path,
-  RepeatWrapping,
-  SRGBColorSpace,
-  Shape,
-  Texture,
-  TextureLoader,
-} from 'three'
+import { useMemo } from 'react'
+import { CanvasTexture, ExtrudeGeometry, Path, RepeatWrapping, Shape } from 'three'
 import { Billboard, Text } from '@react-three/drei'
-import { BUILDINGS, DOHENY_DOOR, LANDMARKS, TREES, satPlane, type CampusBuilding } from '../game/world'
+import { BUILDINGS, LANDMARKS, TREES, type CampusBuilding } from '../game/world'
 import { C } from './colors'
+import { Ground } from './Ground'
+
+function doorOf(building: CampusBuilding) {
+  const ring = building.outer
+  let best = { ax: 0, az: 0, bx: 1, bz: 0, score: Infinity }
+  for (let i = 0; i < ring.length - 1; i++) {
+    const ax = ring[i][0]
+    const az = ring[i][1]
+    const bx = ring[i + 1][0]
+    const bz = ring[i + 1][1]
+    const mx = (ax + bx) / 2
+    const mz = (az + bz) / 2
+    const score = mx * mx + mz * mz
+    const len = Math.hypot(bx - ax, bz - az)
+    if (len > 4 && score < best.score) {
+      best = { ax, az, bx, bz, score }
+    }
+  }
+  return { ax: best.ax, az: best.az, bx: best.bx, bz: best.bz }
+}
 
 function makeFacade(brick: boolean, fire: boolean) {
   const canvas = document.createElement('canvas')
@@ -137,11 +148,19 @@ function RoofCap({ building, thermal }: { building: CampusBuilding; thermal: boo
   )
 }
 
-function HollowLibrary({ building, thermal }: { building: CampusBuilding; thermal: boolean }) {
+function HollowLibrary({
+  building,
+  thermal,
+  cutaway = false,
+}: {
+  building: CampusBuilding
+  thermal: boolean
+  cutaway?: boolean
+}) {
   const walls = useMemo(() => {
     const list: Array<{ x: number; z: number; w: number; rot: number }> = []
     const ring = building.outer
-    const door = DOHENY_DOOR
+    const door = doorOf(building)
     for (let i = 0; i < ring.length - 1; i++) {
       const ax = ring[i][0]
       const az = ring[i][1]
@@ -198,7 +217,7 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
       </mesh>
       {walls.map((w, i) => (
         <mesh key={i} position={[w.x, building.height / 2, w.z]} rotation={[0, w.rot, 0]} castShadow>
-          <boxGeometry args={[0.7, building.height, w.w]} />
+          <boxGeometry args={[0.7, cutaway ? 8.4 : building.height, w.w]} />
           <meshStandardMaterial
             color={wall}
             roughness={0.9}
@@ -207,10 +226,10 @@ function HollowLibrary({ building, thermal }: { building: CampusBuilding; therma
           />
         </mesh>
       ))}
-      <RoofCap building={building} thermal={thermal} />
+      {!cutaway && <RoofCap building={building} thermal={thermal} />}
       <Billboard position={[building.cx, building.height + 3.2, building.cz]}>
         <Text fontSize={2.4} color={thermal ? '#ff7a22' : '#ffd56a'} anchorX="center" outlineWidth={0.1} outlineColor="#000">
-          Doheny Memorial Library
+          {building.name.split(',')[0]}
         </Text>
       </Billboard>
     </group>
@@ -341,48 +360,15 @@ function LandmarkLabels({ thermal }: { thermal: boolean }) {
   )
 }
 
-function useOptionalTexture(url: string | null) {
-  const [tex, setTex] = useState<Texture | null>(null)
-
-  useEffect(() => {
-    if (!url) {
-      setTex(null)
-      return
-    }
-    let cancelled = false
-    let loaded: Texture | null = null
-    const loader = new TextureLoader()
-    loader.load(
-      url,
-      (t) => {
-        if (cancelled) {
-          t.dispose()
-          return
-        }
-        t.wrapS = RepeatWrapping
-        t.wrapT = RepeatWrapping
-        t.anisotropy = 8
-        t.colorSpace = SRGBColorSpace
-        loaded = t
-        setTex(t)
-      },
-      undefined,
-      () => {
-        if (!cancelled) setTex(null)
-      },
-    )
-    return () => {
-      cancelled = true
-      loaded?.dispose()
-    }
-  }, [url])
-
-  return tex
-}
-
-export function Campus({ thermal, photoreal = false }: { thermal: boolean; photoreal?: boolean }) {
-  const sat = satPlane()
-  const dusk = useOptionalTexture(photoreal ? null : sat.url)
+export function Campus({
+  thermal,
+  photoreal = false,
+  cutaway = false,
+}: {
+  thermal: boolean
+  photoreal?: boolean
+  cutaway?: boolean
+}) {
   const facadeBrick = useMemo(() => makeFacade(true, true), [])
   const facadeStone = useMemo(() => makeFacade(false, false), [])
 
@@ -392,24 +378,14 @@ export function Campus({ thermal, photoreal = false }: { thermal: boolean; photo
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[sat.cx, 0, sat.cz]} receiveShadow>
-        <planeGeometry args={[sat.width, sat.depth]} />
-        <meshStandardMaterial
-          map={dusk ?? undefined}
-          color={dusk ? (thermal ? '#8aa4b4' : '#ffffff') : thermal ? '#143044' : '#5a646c'}
-          roughness={1}
-          metalness={0}
-          emissive={thermal ? '#041018' : '#1a120c'}
-          emissiveIntensity={thermal ? 0.15 : dusk ? 0.04 : 0.08}
-        />
-      </mesh>
+      <Ground thermal={thermal} />
       {BUILDINGS.map((b) =>
         b.enterable ? (
-          <HollowLibrary key={b.id} building={b} thermal={thermal} />
+          <HollowLibrary key={b.id} building={b} thermal={thermal} cutaway={cutaway} />
         ) : (
           <group key={b.id}>
             <Footprint building={b} thermal={thermal} facade={b.brick ? facadeBrick : facadeStone} />
-            <RoofCap building={b} thermal={thermal} />
+            <RoofCap building={building} thermal={thermal} />
           </group>
         ),
       )}
