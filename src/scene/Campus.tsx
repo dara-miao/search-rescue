@@ -385,7 +385,7 @@ export function Campus({
         ) : (
           <group key={b.id}>
             <Footprint building={b} thermal={thermal} facade={b.brick ? facadeBrick : facadeStone} />
-            <RoofCap building={building} thermal={thermal} />
+            <RoofCap building={b} thermal={thermal} />
           </group>
         ),
       )}
