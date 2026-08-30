@@ -24,39 +24,58 @@
 
 .onboard-card {
   display: block;
-  width: min(440px, 100%);
+  width: min(420px, 100%);
 }
 
 .onboard-card h1 {
-  font-size: clamp(40px, 8vw, 64px);
+  font-size: clamp(36px, 7vw, 58px);
+}
+
+.onboard-beat {
+  min-height: 9.5rem;
+  animation: onboard-in 220ms ease;
+}
+
+@keyframes onboard-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .onboard-card .lede {
-  max-width: 38ch;
+  max-width: 32ch;
 }
 
-.onboard-card .lede + .lede {
-  margin-top: -6px;
+.onboard-dots {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.onboard-card .where {
-  margin: 0 0 18px;
-  max-width: 40ch;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  line-height: 1.5;
-  color: var(--gold);
+.onboard-dots li {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.onboard-dots li.done {
+  background: rgba(255, 204, 0, 0.45);
+}
+
+.onboard-dots li.on {
+  background: var(--gold);
 }
 
 .onboard-card .deploy {
-  margin-top: 18px;
-}
-
-.onboard-card .fineprint {
-  margin: 4px 0 0;
-  max-width: 46ch;
-  line-height: 1.45;
+  margin-top: 22px;
 }
 
 @media (max-width: 900px) {

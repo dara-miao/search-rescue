@@ -1,37 +1,56 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useGame } from '../game/store'
 
+const BEATS = [
+  {
+    h1: 'Doheny is on fire.',
+  },
+  {
+    h1: 'The fire is inside the library.',
+    lede: 'You cannot go in.',
+  },
+  {
+    h1: 'Four people are still outside.',
+    lede: 'Walk to each one and mark them before the heat makes the rest of the ground too dangerous.',
+  },
+] as const
+
 export function Briefing({ onDeploy }: { onDeploy: () => void }) {
+  const [step, setStep] = useState(0)
+  const last = step >= BEATS.length - 1
+  const beat = BEATS[step]
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Enter' || e.code === 'Space') {
-        e.preventDefault()
-        onDeploy()
-      }
+      if (e.code !== 'Enter' && e.code !== 'Space') return
+      e.preventDefault()
+      if (last) onDeploy()
+      else setStep((n) => n + 1)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onDeploy])
+  }, [last, onDeploy])
 
   return (
     <div className="onboard">
       <div className="onboard-card">
-        <p className="eyebrow">Search Rescue · USC</p>
-        <h1>Doheny is on fire.</h1>
-        <p className="lede">
-          The fire is inside the library. You cannot go in.
-        </p>
-        <p className="lede">
-          Four people are still outside. Walk to each one and mark them before heat from the west
-          door makes that ground too dangerous.
-        </p>
-        <p className="where">West door · West steps · Tommy Trojan · Bovard lawn</p>
-        <p className="fineprint">
-          Start opens a map of campus on the left and your walk on the right. Stick up walks. C looks
-          around.
-        </p>
-        <button type="button" className="deploy" autoFocus onClick={onDeploy}>
-          Start
+        <div key={step} className="onboard-beat">
+          <h1>{beat.h1}</h1>
+          {'lede' in beat && beat.lede ? <p className="lede">{beat.lede}</p> : null}
+        </div>
+        <ol className="onboard-dots" aria-label={`Step ${step + 1} of ${BEATS.length}`}>
+          {BEATS.map((_, i) => (
+            <li key={i} className={i === step ? 'on' : i < step ? 'done' : undefined} />
+          ))}
+        </ol>
+        <button
+          type="button"
+          className="deploy"
+          autoFocus
+          key={step}
+          onClick={() => (last ? onDeploy() : setStep((n) => n + 1))}
+        >
+          {last ? 'Start' : 'Next'}
         </button>
       </div>
     </div>
