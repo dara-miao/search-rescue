@@ -1,8 +1,12 @@
+import { keepOffProps } from './props'
+import { tilesLive } from './tilesCollide'
 import { BUILDINGS, CAMPUS, type CampusBuilding } from './world'
 
 export const DOOR_GAP = 4.6
 /** Body radius plus wall half-thickness (0.35) and mast camera lead. */
-const SKIN = 0.52
+const SKIN = 0.72
+/** Extra keep-out once Google facades are in the WORLD canvas. */
+const TILE_SKIN = 1.25
 
 type Hit = { px: number; pz: number; dist: number; t: number }
 
@@ -112,7 +116,7 @@ function keepOffBuilding(x: number, z: number, building: CampusBuilding, radius:
 
   let nx = x
   let nz = z
-  for (let iter = 0; iter < 4; iter++) {
+  for (let iter = 0; iter < 6; iter++) {
     const inside = pointInRing(nx, nz, ring)
     const hit = nearestEdge(nx, nz, ring)
     if (!hit) break
@@ -122,22 +126,123 @@ function keepOffBuilding(x: number, z: number, building: CampusBuilding, radius:
     nx = next.x
     nz = next.z
   }
+  if (pointInRing(nx, nz, ring)) {
+    let dx = nx - building.cx
+    let dz = nz - building.cz
+    let L = Math.hypot(dx, dz)
+    if (L < 1e-4) {
+      dx = 1
+      dz = 0
+      L = 1
+    }
+    const hit = nearestEdge(nx, nz, ring)
+    const out = L + (hit?.dist ?? 8) + radius + 0.4
+    nx = building.cx + (dx / L) * out
+    nz = building.cz + (dz / L) * out
+    if (pointInRing(nx, nz, ring)) {
+      const edge = nearestEdge(nx, nz, ring)
+      if (edge) {
+        const pushed = pushOff(nx, nz, edge, radius, true, building.cx, building.cz)
+        nx = pushed.x
+        nz = pushed.z
+      }
+    }
+  }
   return { x: nx, z: nz }
 }
 
-/** Keep the mast a body-radius off every OSM footprint — door is visual, not a hole. Production rebuild. */
-export function keepOut(x: number, z: number, radius = CAMPUS.robotRadius + SKIN) {
+export function bodyRadius() {
+  return CAMPUS.robotRadius + SKIN + (tilesLive() ? TILE_SKIN : 0)
+}
+
+function clampCampus(x: number, z: number) {
   const b = CAMPUS.bounds
-  let nx = Math.max(b.minX + 2, Math.min(b.maxX - 2, x))
-  let nz = Math.max(b.minZ + 2, Math.min(b.maxZ - 2, z))
-  for (let pass = 0; pass < 2; pass++) {
+  return {
+    x: Math.max(b.minX + 2, Math.min(b.maxX - 2, x)),
+    z: Math.max(b.minZ + 2, Math.min(b.maxZ - 2, z)),
+  }
+}
+
+/** Keep the mast a body-radius off every OSM footprint — door is visual, not a hole. */
+export function keepOut(x: number, z: number, radius = bodyRadius()) {
+  let { x: nx, z: nz } = clampCampus(x, z)
+  for (let pass = 0; pass < 3; pass++) {
     for (const building of BUILDINGS) {
       const next = keepOffBuilding(nx, nz, building, radius)
       nx = next.x
       nz = next.z
     }
   }
-  return { x: nx, z: nz }
+  const props = keepOffProps(nx, nz)
+  return clampCampus(props.x, props.z)
+}
+
+function segCross(
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  cx: number,
+  cz: number,
+  dx: number,
+  dz: number,
+) {
+  const rx = bx - ax
+  const rz = bz - az
+  const sx = dx - cx
+  const sz = dz - cz
+  const den = rx * sz - rz * sx
+  if (Math.abs(den) < 1e-9) return null
+  const qx = cx - ax
+  const qz = cz - az
+  const t = (qx * sz - qz * sx) / den
+  const u = (qx * rz - qz * rx) / den
+  if (t < 0 || t > 1 || u < 0 || u > 1) return null
+  return t
+}
+
+/** Sweep from the last pose so a long step cannot tunnel a thin facade. */
+export function keepOutFrom(px: number, pz: number, x: number, z: number, radius = bodyRadius()) {
+  const dest = keepOut(x, z, radius)
+  let bestT = 1
+  let nx = 0
+  let nz = 0
+  let found = false
+  for (const building of BUILDINGS) {
+    const ring = building.outer
+    const n = ring.length
+    if (n < 2) continue
+    const closed =
+      Math.abs(ring[0][0] - ring[n - 1][0]) < 1e-4 && Math.abs(ring[0][1] - ring[n - 1][1]) < 1e-4
+    const last = closed ? n - 1 : n
+    for (let i = 0; i < last; i++) {
+      const a = ring[i]
+      const b = ring[(i + 1) % n]
+      const t = segCross(px, pz, dest.x, dest.z, a[0], a[1], b[0], b[1])
+      if (t === null || t >= bestT) continue
+      const ex = b[0] - a[0]
+      const ez = b[1] - a[1]
+      let ox = -ez
+      let oz = ex
+      const L = Math.hypot(ox, oz) || 1
+      ox /= L
+      oz /= L
+      const mx = (a[0] + b[0]) / 2
+      const mz = (a[1] + b[1]) / 2
+      if ((px - mx) * ox + (pz - mz) * oz < 0) {
+        ox = -ox
+        oz = -oz
+      }
+      bestT = t
+      nx = ox
+      nz = oz
+      found = true
+    }
+  }
+  if (!found) return dest
+  const ix = px + (dest.x - px) * bestT
+  const iz = pz + (dest.z - pz) * bestT
+  return keepOut(ix + nx * radius, iz + nz * radius, radius)
 }
 
 export function insideSolid(x: number, z: number) {
