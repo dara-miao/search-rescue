@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react'
 import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
+import { stepBody, type Body } from './motion'
 import { DEPLOY, useGame } from './store'
-import { resolveCollision } from './world'
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
+  const body = useRef<Body>({
+    x: DEPLOY.x,
+    y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
+    z: DEPLOY.z,
+    vx: 0,
+    vy: 0,
+    vz: 0,
+  })
   if (!api.current || typeof api.current.setYaw !== 'function') {
     api.current = createInput()
   }
@@ -21,6 +29,8 @@ export function useSimLoop(active: boolean) {
 
     input.attach()
     input.resetLook(DEPLOY.yaw, 0.16)
+    const spawn = useGame.getState().robot
+    body.current = { x: spawn.x, y: spawn.y, z: spawn.z, vx: 0, vy: 0, vz: 0 }
 
     let last = performance.now()
     let raf = 0
@@ -53,22 +63,22 @@ export function useSimLoop(active: boolean) {
         }
 
         const aimed = input.consume()
-        const walk = aimed.sprint ? 11.2 : 6.6
         const sin = Math.sin(aimed.yaw)
         const cos = Math.cos(aimed.yaw)
-        const vx = (sin * forward + cos * aimed.strafe) * walk
-        const vz = (-cos * forward + sin * aimed.strafe) * walk
-        const next = resolveCollision(store.robot.x + vx * dt, store.robot.z + vz * dt)
-        const moving = Math.hypot(vx, vz) > 0.15
+        const wishX = (sin * forward + cos * aimed.strafe) * (aimed.sprint ? 11.2 : 6.6)
+        const wishZ = (-cos * forward + sin * aimed.strafe) * (aimed.sprint ? 11.2 : 6.6)
+        const next = stepBody(body.current, wishX, wishZ, aimed.sprint, dt)
+        body.current = next
+        const speed = Math.hypot(next.vx, next.vz)
 
         store.applyRobot({
           x: next.x,
-          y: heightAt(next.x, next.z) + 0.52,
+          y: next.y,
           z: next.z,
           yaw: aimed.yaw,
           pitch: aimed.pitch,
-          speed: Math.hypot(vx, vz),
-          moving,
+          speed,
+          moving: speed > 0.15,
         })
 
         if (input.pressed('KeyQ')) store.setWorldOrbit(store.worldOrbit + dt * 0.9)
