@@ -32,7 +32,21 @@
 }
 
 .onboard-card .lede {
-  max-width: 42ch;
+  max-width: 38ch;
+}
+
+.onboard-card .lede + .lede {
+  margin-top: -6px;
+}
+
+.onboard-card .where {
+  margin: 0 0 18px;
+  max-width: 40ch;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--gold);
 }
 
 .onboard-card .deploy {
