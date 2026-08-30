@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
+import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
-import { useGame } from './store'
-import { CAMPUS, resolveCollision } from './world'
+import { DEPLOY, useGame } from './store'
+import { resolveCollision } from './world'
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
@@ -19,7 +20,7 @@ export function useSimLoop(active: boolean) {
     }
 
     input.attach()
-    input.resetLook(CAMPUS.spawn.yaw, -0.08)
+    input.resetLook(DEPLOY.yaw, -0.08)
 
     let last = performance.now()
     let raf = 0
@@ -62,6 +63,7 @@ export function useSimLoop(active: boolean) {
 
         store.applyRobot({
           x: next.x,
+          y: heightAt(next.x, next.z) + 0.52,
           z: next.z,
           yaw: aimed.yaw,
           pitch: aimed.pitch,

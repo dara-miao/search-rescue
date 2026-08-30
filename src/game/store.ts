@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { fetchCampusGoogle, type IngressMeta, type PlaceLabel } from './google'
+import { heightAt } from './ground'
 import { hasGoogleKey } from './maps'
 import { CAMPUS, SURVIVORS, dist2 } from './world'
 
@@ -57,12 +58,15 @@ function freshSurvivors(): SurvivorState[] {
   return SURVIVORS.map((s) => ({ ...s, found: false }))
 }
 
+/** On the west steps, facing into Times-Mirror. */
+export const DEPLOY = { x: 108.6, z: 50.2, yaw: 1.28 }
+
 function freshRobot(): RobotState {
   return {
-    x: CAMPUS.spawn.x,
-    y: 0.52,
-    z: CAMPUS.spawn.z,
-    yaw: CAMPUS.spawn.yaw,
+    x: DEPLOY.x,
+    y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
+    z: DEPLOY.z,
+    yaw: DEPLOY.yaw,
     pitch: -0.08,
     speed: 0,
     moving: false,
