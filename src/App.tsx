@@ -31,7 +31,7 @@ export default function App() {
       <div className="app">
         <div className="onboard-stage">
           <Canvas
-            camera={{ position: [190, 22, 80], fov: 40, near: 0.4, far: 1600 }}
+            camera={{ position: [200, 96, 90], fov: 46, near: 0.4, far: 1600 }}
             shadows
             dpr={[1, 1.7]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
