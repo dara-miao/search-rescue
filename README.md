@@ -36,13 +36,14 @@ Then open the printed local URL (this project binds to port `43147`).
 
 | Input | Action |
 | --- | --- |
-| Drive stick | Point the stick to walk that way |
-| W S / A D | Drive / turn |
+| Drive | Stick up/down walks the way you face. Left/right turns. |
+| Look | Stick left/right turns the mast. Up/down nods. No walk. |
+| C | Switch Drive / Look |
+| W S / A D | Walk / turn |
 | Shift | Sprint |
 | F / Space | Mark a survivor in range |
-| T | Toggle thermal on the mast cam |
+| T | Thermal on the mast |
 | Q / E | Orbit the world camera |
-| Touch | On-screen drive stick, Mark, Thermal |
 
 ## Mission
 
