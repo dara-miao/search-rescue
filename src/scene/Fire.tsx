@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Color, InstancedMesh, Object3D } from 'three'
+import { heightAt } from '../game/ground'
 import { DOHENY } from '../game/world'
 
 const dummy = new Object3D()
@@ -121,16 +122,17 @@ export function Fire({ thermal }: { thermal: boolean }) {
   const x = DOHENY.cx
   const z = DOHENY.cz
   const h = DOHENY.height
+  const y = heightAt(x, z)
   return (
     <group>
-      <FlameField origin={[x, 1.4, z]} count={90} spread={18} height={h * 0.55} thermal={thermal} />
-      <FlameField origin={[x - 8, 3, z + 4]} count={50} spread={8} height={h * 0.45} thermal={thermal} />
-      <FlameField origin={[x + 7, h * 0.45, z - 3]} count={46} spread={9} height={h * 0.5} thermal={thermal} />
-      <FlameField origin={[x, h * 0.7, z]} count={40} spread={14} height={8} thermal={thermal} />
-      <Smoke origin={[x, h * 0.85, z]} count={42} thermal={thermal} />
-      <pointLight position={[x, 8, z]} intensity={thermal ? 10 : 90} distance={70} color={thermal ? '#ff6600' : '#ff6a1a'} />
-      <pointLight position={[x - 8, 5, z]} intensity={thermal ? 5 : 36} distance={32} color="#ff3c00" />
-      <pointLight position={[x + 6, 10, z - 4]} intensity={thermal ? 5 : 30} distance={28} color="#ff8a20" />
+      <FlameField origin={[x, y + 1.4, z]} count={90} spread={18} height={h * 0.55} thermal={thermal} />
+      <FlameField origin={[x - 8, y + 3, z + 4]} count={50} spread={8} height={h * 0.45} thermal={thermal} />
+      <FlameField origin={[x + 7, y + h * 0.45, z - 3]} count={46} spread={9} height={h * 0.5} thermal={thermal} />
+      <FlameField origin={[x, y + h * 0.7, z]} count={40} spread={14} height={8} thermal={thermal} />
+      <Smoke origin={[x, y + h * 0.85, z]} count={42} thermal={thermal} />
+      <pointLight position={[x, y + 8, z]} intensity={thermal ? 10 : 90} distance={70} color={thermal ? '#ff6600' : '#ff6a1a'} />
+      <pointLight position={[x - 8, y + 5, z]} intensity={thermal ? 5 : 36} distance={32} color="#ff3c00" />
+      <pointLight position={[x + 6, y + 10, z - 4]} intensity={thermal ? 5 : 30} distance={28} color="#ff8a20" />
     </group>
   )
 }

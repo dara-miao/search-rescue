@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import type { Group } from 'three'
+import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
 import { CAMPUS } from '../game/world'
 import { C } from './colors'
@@ -110,7 +111,7 @@ export function People({ thermal }: { thermal: boolean }) {
           key={p.id}
           x={p.x}
           z={p.z}
-          y={p.y}
+          y={heightAt(p.x, p.z)}
           name={p.name}
           found={p.found}
           next={p.id === nearestId}
@@ -119,7 +120,7 @@ export function People({ thermal }: { thermal: boolean }) {
       ))}
       {nearestId && nearestDist < CAMPUS.markRange * 2.5 && (
         <mesh
-          position={[robot.x, 0.06, robot.z]}
+          position={[robot.x, heightAt(robot.x, robot.z) + 0.08, robot.z]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <ringGeometry args={[CAMPUS.markRange - 0.08, CAMPUS.markRange, 40]} />
