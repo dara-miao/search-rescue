@@ -1,3 +1,4 @@
+import { stickAxis, stickWish } from '../src/game/steer'
 import { createField, heatAt, seedField, spreadField, APRON, TOMMY } from '../src/sim/field'
 import { inCone, opticalClear } from '../src/sim/sensors'
 import { createSim, SIM_DT, stepSim } from '../src/sim/step'
@@ -31,6 +32,10 @@ assert(!opticalClear(0, 0, 10, 0, () => 0.6), 'optical miss through smoke 0.6')
 assert(opticalClear(0, 0, 10, 0, () => 0.1), 'optical clear in light smoke')
 assert(inCone(0, 0, 0, 0, -10, 0.96, 18), 'thermal cone hits dead ahead')
 assert(!inCone(0, 0, 0, 10, 0, 0.96, 18), 'thermal cone misses 90°')
+
+assert(stickAxis(0.05) === 0, 'stick deadzone ignores noise')
+assert(stickWish('drive', -1, 1).turn < 0 && stickWish('drive', -1, 1).forward > 0, 'drive: left turns, up walks')
+assert(stickWish('look', -1, 1).forward === 0 && stickWish('look', -1, 1).nod > 0, 'look: no walk, up nods')
 
 if (process.exitCode) {
   console.error('sim tests failed')
