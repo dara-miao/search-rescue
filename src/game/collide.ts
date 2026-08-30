@@ -1,4 +1,4 @@
-import { BUILDINGS, CAMPUS, doorOf, type CampusBuilding } from './world'
+import { BUILDINGS, CAMPUS, type CampusBuilding } from './world'
 
 export const DOOR_GAP = 4.6
 /** Body radius plus wall half-thickness (0.35) and mast camera lead. */
@@ -147,8 +147,27 @@ export function insideSolid(x: number, z: number) {
   return null
 }
 
+/** Same pick as the reconstruct: longest-enough edge closest to Tommy. */
+export function doorOf(building: CampusBuilding) {
+  const ring = building.outer
+  let best = { ax: 0, az: 0, bx: 1, bz: 0, score: Infinity }
+  for (let i = 0; i < ring.length - 1; i++) {
+    const ax = ring[i][0]
+    const az = ring[i][1]
+    const bx = ring[i + 1][0]
+    const bz = ring[i + 1][1]
+    const mx = (ax + bx) / 2
+    const mz = (az + bz) / 2
+    const score = mx * mx + mz * mz
+    const len = Math.hypot(bx - ax, bz - az)
+    if (len > 4 && score < best.score) {
+      best = { ax, az, bx, bz, score }
+    }
+  }
+  return { ax: best.ax, az: best.az, bx: best.bx, bz: best.bz }
+}
+
 export function doorMid(building: CampusBuilding) {
   const door = doorOf(building)
-  if (!door) return null
   return { x: (door.ax + door.bx) / 2, z: (door.az + door.bz) / 2, door }
 }

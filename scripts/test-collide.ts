@@ -1,6 +1,6 @@
-import { keepOut, insideSolid, inDoorGap, doorMid, DOOR_GAP } from '../src/game/collide'
+import { keepOut, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
 import { stepBody, type Body } from '../src/game/motion'
-import { BUILDINGS, doorOf } from '../src/game/world'
+import { BUILDINGS } from '../src/game/world'
 
 function assert(ok: boolean, msg: string) {
   if (!ok) {
