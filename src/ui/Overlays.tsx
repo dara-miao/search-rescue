@@ -14,17 +14,18 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
   }, [onDeploy])
 
   return (
-    <div className="overlay">
-      <div className="overlay-card brief">
-        <p className="eyebrow">Search rescue</p>
-        <h1>Doheny is on fire.</h1>
+    <div className="onboard">
+      <div className="onboard-card">
+        <p className="eyebrow">Search Rescue · University Park</p>
+        <h1>The fire is inside. You work the door.</h1>
         <p className="lede">
-          Deploy west of the library. Detect on the mast, then mark. Heat is spreading from the west
-          door.
+          Doheny is burning. You cannot go in. Four people are still outside — west door, west steps,
+          Tommy, Bovard lawn. Heat is coming out that door. Find them, get close, mark them before the
+          apron goes NO GO.
         </p>
-        <ul className="mission-list">
+        <ol className="mission-list">
           <li>
-            <b>1</b> West door
+            <b>1</b> West door — first. Already hot.
           </li>
           <li>
             <b>2</b> West steps
@@ -35,8 +36,11 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
           <li>
             <b>4</b> Bovard lawn
           </li>
-        </ul>
-        <p className="fineprint">Stick: up walks, left/right turns. Look pans without walking. C switches.</p>
+        </ol>
+        <p className="fineprint">
+          Deploy opens two views: WORLD is the campus from above. ROBOT is your walk. Stick up walks,
+          left/right turns. C switches to Look.
+        </p>
         <button type="button" className="deploy" autoFocus onClick={onDeploy}>
           Deploy
         </button>

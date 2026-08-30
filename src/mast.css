@@ -11,10 +11,8 @@
   display: none !important;
 }
 
-.overlay-card.brief {
-  max-width: 440px;
+.onboard-card {
   display: block;
-  padding: 8px 0 0;
 }
 
 .optical {

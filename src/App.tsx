@@ -28,6 +28,14 @@ export default function App() {
     if (document.pointerLockElement) document.exitPointerLock()
   }, [playing])
 
+  if (phase === 'briefing') {
+    return (
+      <div className="app">
+        <Briefing onDeploy={start} />
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <main className={`split ${thermal ? 'thermal' : ''}`}>
@@ -71,7 +79,6 @@ export default function App() {
         </section>
       </main>
 
-      {phase === 'briefing' && <Briefing onDeploy={start} />}
       <EndCard />
     </div>
   )
