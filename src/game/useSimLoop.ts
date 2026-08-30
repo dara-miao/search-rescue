@@ -2,9 +2,13 @@ import { useEffect, useRef } from 'react'
 import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
 import { stepBody, type Body } from './motion'
+import { stickWish } from './steer'
 import { DEPLOY, useGame } from './store'
 import { wishScale } from '../sim/robot'
 import { SIM_DT } from '../sim/step'
+
+const TURN_RATE = 1.55
+const NOD_RATE = 1.15
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
@@ -36,7 +40,6 @@ export function useSimLoop(active: boolean) {
 
     let last = performance.now()
     let raf = 0
-    let stickYaw0: number | null = null
     let acc = 0
 
     const frame = (now: number) => {
@@ -47,22 +50,19 @@ export function useSimLoop(active: boolean) {
       if (store.phase === 'playing') {
         const left = input.pressed('KeyA') || input.pressed('ArrowLeft')
         const right = input.pressed('KeyD') || input.pressed('ArrowRight')
-        if (left || right) input.turn(((right ? 1 : 0) - (left ? 1 : 0)) * dt * 2.35)
+        if (left || right) input.turn(((right ? 1 : 0) - (left ? 1 : 0)) * dt * TURN_RATE)
 
         const pad = input.consume()
-        const mag = Math.hypot(pad.stickX, pad.stickY)
         let forward = pad.forward
-
-        if (pad.stickActive && mag > 0.12) {
-          if (stickYaw0 === null) stickYaw0 = pad.yaw
-          input.setYaw(stickYaw0 + Math.atan2(pad.stickX, pad.stickY))
-          forward = mag
-        } else if (!pad.stickActive) {
-          stickYaw0 = null
+        const wish = pad.stickActive ? stickWish(store.padMode, pad.stickX, pad.stickY) : null
+        if (wish) {
+          input.turn(wish.turn * dt * TURN_RATE)
+          input.nod(wish.nod * dt * NOD_RATE)
+          forward = wish.forward
         }
 
-        if (pad.lookActive) {
-          input.addLook(pad.lookX * 920 * dt, -pad.lookY * 680 * dt)
+        if (input.consumeEdge('KeyC')) {
+          store.setPadMode(store.padMode === 'drive' ? 'look' : 'drive')
         }
 
         const aimed = input.consume()

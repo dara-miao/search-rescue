@@ -7,9 +7,6 @@ export type InputState = {
   stickActive: boolean
   stickX: number
   stickY: number
-  lookX: number
-  lookY: number
-  lookActive: boolean
 }
 
 export function createInput() {
@@ -17,13 +14,12 @@ export function createInput() {
   const edges = new Set<string>()
   const look = { yaw: 0, pitch: 0 }
   const stick = { x: 0, y: 0, active: false }
-  const lookStick = { x: 0, y: 0, active: false }
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return
     if (!keys.has(e.code)) edges.add(e.code)
     keys.add(e.code)
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyF', 'KeyT', 'KeyA', 'KeyD'].includes(e.code)) {
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyF', 'KeyT', 'KeyA', 'KeyD', 'KeyC'].includes(e.code)) {
       e.preventDefault()
     }
   }
@@ -59,9 +55,6 @@ export function createInput() {
       stickActive: stick.active,
       stickX: stick.x,
       stickY: stick.y,
-      lookX: lookStick.x,
-      lookY: lookStick.y,
-      lookActive: lookStick.active,
     }
   }
 
@@ -71,16 +64,8 @@ export function createInput() {
     stick.active = active
   }
 
-  const setLookStick = (x: number, y: number, active: boolean) => {
-    lookStick.x = x
-    lookStick.y = y
-    lookStick.active = active
-  }
-
-  const addLook = (dx: number, dy: number) => {
-    look.yaw -= dx * 0.004
-    look.pitch -= dy * 0.0032
-    look.pitch = Math.max(-0.85, Math.min(0.55, look.pitch))
+  const nod = (pitchDelta: number) => {
+    look.pitch = Math.max(-0.85, Math.min(0.55, look.pitch + pitchDelta))
   }
 
   const turn = (yawDelta: number) => {
@@ -104,7 +89,7 @@ export function createInput() {
     return true
   }
 
-  return { attach, detach, consume, setStick, setLookStick, addLook, turn, setYaw, resetLook, pressed, consumeEdge }
+  return { attach, detach, consume, setStick, nod, turn, setYaw, resetLook, pressed, consumeEdge }
 }
 
 export type InputApi = ReturnType<typeof createInput>
