@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { fetchCampusGoogle, type IngressMeta, type PlaceLabel } from './google'
 import { heightAt } from './ground'
 import { hasGoogleKey } from './maps'
+import type { PadMode } from './steer'
 import { dist2 } from './world'
 import { createSim, markNearest, stepSim } from '../sim/step'
 import type { FailCode, SimState, VictimSim } from '../sim/types'
@@ -39,11 +40,13 @@ type GameStore = {
   evacPath: Array<[number, number]>
   evacMeta: IngressMeta | null
   googleFeeds: 'idle' | 'loading' | 'live' | 'error'
+  padMode: PadMode
   start: () => void
   reset: () => void
   hydrateGoogle: () => Promise<void>
   setTilesReady: (ready: boolean) => void
   toggleThermal: () => void
+  setPadMode: (mode: PadMode) => void
   setWorldOrbit: (v: number) => void
   applyRobot: (patch: Partial<RobotState>) => void
   tick: (dt: number) => void
@@ -129,6 +132,7 @@ export const useGame = create<GameStore>((set, get) => ({
   evacPath: [],
   evacMeta: null,
   googleFeeds: 'idle',
+  padMode: 'drive',
 
   hydrateGoogle: async () => {
     if (!hasGoogleKey()) {
@@ -155,6 +159,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const robot = freshRobot()
     set({
       thermal: false,
+      padMode: 'drive',
       robot,
       lastMarked: null,
       ...syncFromSim(sim, robot, 0),
@@ -167,6 +172,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const robot = freshRobot()
     set({
       thermal: false,
+      padMode: 'drive',
       robot,
       lastMarked: null,
       ...syncFromSim(sim, robot, 0),
@@ -175,6 +181,8 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   toggleThermal: () => set((s) => ({ thermal: !s.thermal })),
+
+  setPadMode: (mode) => set({ padMode: mode }),
 
   setTilesReady: (ready) => set({ tilesReady: ready }),
 
