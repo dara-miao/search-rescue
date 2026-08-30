@@ -1,9 +1,47 @@
 import { useMemo } from 'react'
 import { CanvasTexture, ExtrudeGeometry, Path, RepeatWrapping, Shape } from 'three'
 import { Billboard, Text } from '@react-three/drei'
+import { coverAt, GROUND, heightAt } from '../game/ground'
 import { BUILDINGS, LANDMARKS, TREES, type CampusBuilding } from '../game/world'
 import { C } from './colors'
 import { Ground } from './Ground'
+
+function extraPalms(): Array<[number, number]> {
+  const pts: Array<[number, number]> = []
+  for (const path of GROUND.paths) {
+    for (let i = 0; i < path.length; i++) {
+      const [x, z] = path[i]
+      const prev = path[Math.max(0, i - 1)]
+      const next = path[Math.min(path.length - 1, i + 1)]
+      const dx = next[0] - prev[0]
+      const dz = next[1] - prev[1]
+      const len = Math.hypot(dx, dz) || 1
+      const side = i % 2 === 0 ? 1 : -1
+      const ox = x + (-dz / len) * (7.2 + (i % 3)) * side
+      const oz = z + (dx / len) * (7.2 + (i % 3)) * side
+      if (coverAt(ox, oz) === 'lawn') pts.push([ox, oz])
+    }
+  }
+  const seeds: Array<[number, number]> = [
+    [-42, -16],
+    [18, 18],
+    [-18, -42],
+    [48, -8],
+    [70, 20],
+    [-60, -8],
+    [30, -28],
+  ]
+  for (const [cx, cz] of seeds) {
+    for (let k = 0; k < 5; k++) {
+      const a = k * 1.37 + cx * 0.01
+      const r = 8 + (k % 3) * 5
+      const x = cx + Math.cos(a) * r
+      const z = cz + Math.sin(a) * r
+      if (coverAt(x, z) === 'lawn') pts.push([x, z])
+    }
+  }
+  return pts
+}
 
 function doorOf(building: CampusBuilding) {
   const ring = building.outer
@@ -201,8 +239,9 @@ function HollowLibrary({
   }, [building])
 
   const wall = thermal ? C.thermalCold : '#6d2d2e'
+  const y = heightAt(building.cx, building.cz)
   return (
-    <group>
+    <group position={[0, y, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
         <shapeGeometry
           args={[
@@ -241,7 +280,7 @@ function TommyTrojan({ thermal }: { thermal: boolean }) {
   const dark = thermal ? '#201408' : C.bronzeDark
   const spot = LANDMARKS.find((l) => l.name.includes('Tommy')) ?? { x: 0, z: 0 }
   return (
-    <group position={[spot.x, 0, spot.z]}>
+    <group position={[spot.x, heightAt(spot.x, spot.z), spot.z]}>
       <mesh position={[0, 0.55, 0]} castShadow>
         <boxGeometry args={[3.1, 1.1, 3.1]} />
         <meshStandardMaterial color={thermal ? '#151515' : C.granite} roughness={0.7} />
@@ -303,7 +342,7 @@ function Fountain({ thermal }: { thermal: boolean }) {
   const f = LANDMARKS.find((l) => l.kind === 'fountain')
   if (!f) return null
   return (
-    <group position={[f.x, 0, f.z]}>
+    <group position={[f.x, heightAt(f.x, f.z), f.z]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.08, 0]}>
         <circleGeometry args={[6.2, 40]} />
         <meshStandardMaterial color={thermal ? '#0a2030' : '#4a5a62'} roughness={0.4} metalness={0.2} />
@@ -323,25 +362,48 @@ function Fountain({ thermal }: { thermal: boolean }) {
 }
 
 function Palms({ thermal }: { thermal: boolean }) {
+  const spots = useMemo(() => {
+    const seen = new Set<string>()
+    const all: Array<[number, number]> = [...TREES, ...extraPalms()]
+    const unique: Array<[number, number]> = []
+    for (const [x, z] of all) {
+      const key = `${x.toFixed(1)},${z.toFixed(1)}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      unique.push([x, z])
+    }
+    return unique
+  }, [])
+
   return (
     <group>
-      {TREES.map(([x, z], i) => (
-        <group key={`${x}-${z}-${i}`} position={[x, 0, z]}>
-          <mesh position={[0, 3.2, 0]} castShadow>
-            <cylinderGeometry args={[0.16, 0.26, 6.4, 7]} />
-            <meshStandardMaterial color={thermal ? '#1a2a30' : C.trunk} roughness={1} />
-          </mesh>
-          {Array.from({ length: 8 }, (_, k) => {
-            const a = (k / 8) * Math.PI * 2
-            return (
-              <mesh key={k} position={[Math.sin(a) * 0.7, 6.45, Math.cos(a) * 0.7]} rotation={[0.72, a, 0.12]}>
-                <boxGeometry args={[0.16, 0.07, 2.3]} />
-                <meshStandardMaterial color={thermal ? '#0c2830' : C.frond} roughness={0.9} />
-              </mesh>
-            )
-          })}
-        </group>
-      ))}
+      {spots.map(([x, z], i) => {
+        const lean = ((x * 13 + z * 7) % 17) / 17
+        const scale = 0.78 + lean * 0.5
+        const fronds = 7 + (i % 3)
+        const h = 6.4 * scale
+        return (
+          <group key={`${x}-${z}-${i}`} position={[x, heightAt(x, z), z]} scale={scale}>
+            <mesh position={[0, h / 2, 0]} castShadow>
+              <cylinderGeometry args={[0.16, 0.26, 6.4, 7]} />
+              <meshStandardMaterial color={thermal ? '#1a2a30' : C.trunk} roughness={1} />
+            </mesh>
+            {Array.from({ length: fronds }, (_, k) => {
+              const a = (k / fronds) * Math.PI * 2 + lean
+              return (
+                <mesh
+                  key={k}
+                  position={[Math.sin(a) * 0.7, 6.45, Math.cos(a) * 0.7]}
+                  rotation={[0.72, a, 0.12]}
+                >
+                  <boxGeometry args={[0.16, 0.07, 2.3]} />
+                  <meshStandardMaterial color={thermal ? '#0c2830' : C.frond} roughness={0.9} />
+                </mesh>
+              )
+            })}
+          </group>
+        )
+      })}
     </group>
   )
 }
@@ -383,7 +445,7 @@ export function Campus({
         b.enterable ? (
           <HollowLibrary key={b.id} building={b} thermal={thermal} cutaway={cutaway} />
         ) : (
-          <group key={b.id}>
+          <group key={b.id} position={[0, heightAt(b.cx, b.cz), 0]}>
             <Footprint building={b} thermal={thermal} facade={b.brick ? facadeBrick : facadeStone} />
             <RoofCap building={b} thermal={thermal} />
           </group>
