@@ -5,7 +5,9 @@ Search and rescue on the real University Park campus. Dual feed through a fire a
 The campus is a Pebble Beach-style reconstruct: real University Park layout, video-game ground.
 
 - **OpenStreetMap** building rings for collision and extrusions
+- **Open-Meteo / Copernicus DEM** for the 14m campus relief the mast walks
 - **Cover mesh** for lawn, walkway, street, steps, and plaza (first slice: Doheny west steps → Tommy → Bovard lawn)
+- **Draped walks and plazas** sitting on the DEM, plus an afternoon sky
 - **Street View Static** on the robot as the optical inset (heading from the mast)
 - **Places Nearby** for real University Park names
 - **Directions** walking polyline from spawn to Doheny west door
@@ -68,7 +70,7 @@ Enable these APIs on that key:
 
 Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Photoreal tiles load from the Map Tiles API for WORLD. Without a key, the reconstruct still plays. Restrict the key to Map Tiles, Street View, Places, and Directions if you can — it is a client-side Vite env var.
 
-`scripts/extract-campus-ground.mjs` can refresh OSM paths and lawns into `src/data/ground.json`. `src/game/ground.ts` then repairs the west steps, Doheny apron, and the sweep to Bovard so the first slice is playable even when the extract is thin.
+`scripts/fetch-campus-elevation.mjs` writes the Open-Meteo grid into `src/data/ground.json`. `scripts/extract-campus-ground.mjs` can refresh OSM paths and lawns when Overpass is reachable. `src/game/ground.ts` then repairs the west steps, Doheny apron, and the sweep to Bovard so the first slice is playable even when the extract is thin.
 
 Building outlines come from [OpenStreetMap](https://www.openstreetmap.org/copyright). Aerial fallback is [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 

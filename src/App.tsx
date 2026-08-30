@@ -60,7 +60,7 @@ export default function App() {
 
         <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
           <Canvas
-            camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 480 }}
+            camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 900 }}
             dpr={[1, 1.6]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
           >

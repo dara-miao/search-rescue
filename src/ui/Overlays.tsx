@@ -20,8 +20,8 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
         <h1>Doheny is on fire.</h1>
         <p className="lede">
           You deploy on the west steps. WORLD is a Google Maps birdseye of the real campus.
-          ROBOT walks the reconstruct and pulls Street View from the mast. Mark the four
-          victims.
+          ROBOT walks a Pebble-style reconstruct — Open-Meteo heights, draped walks, afternoon
+          sky — and pulls Street View from the mast. Mark the four victims.
         </p>
         <ul className="mission-list">
           <li>
