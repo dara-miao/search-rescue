@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 import { Line } from '@react-three/drei'
+import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
 
 export function Ingress() {
   const path = useGame((s) => s.evacPath)
   const points = useMemo(
-    () => path.map(([x, z]) => [x, 0.22, z] as [number, number, number]),
+    () => path.map(([x, z]) => [x, heightAt(x, z) + 0.22, z] as [number, number, number]),
     [path],
   )
   const under = useMemo(
-    () => path.map(([x, z]) => [x, 0.16, z] as [number, number, number]),
+    () => path.map(([x, z]) => [x, heightAt(x, z) + 0.16, z] as [number, number, number]),
     [path],
   )
 

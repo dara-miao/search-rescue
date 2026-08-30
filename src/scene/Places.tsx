@@ -1,4 +1,5 @@
 import { Billboard, Text } from '@react-three/drei'
+import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
 
 const KEEP = /Doheny|Bovard|Leavey|Tutor|Tommy|Alumni Park/
@@ -12,7 +13,7 @@ export function Places({ thermal }: { thermal: boolean }) {
   return (
     <group>
       {places.slice(0, 6).map((place) => (
-        <Billboard key={place.id} position={[place.x, place.kind === 'library' ? 24 : 16, place.z]}>
+        <Billboard key={place.id} position={[place.x, heightAt(place.x, place.z) + (place.kind === 'library' ? 24 : 16), place.z]}>
           <Text
             fontSize={1.35}
             color={thermal ? '#8ec8e0' : '#e8dcc4'}
