@@ -1,6 +1,6 @@
-import { keepOut } from './collide'
+import { bodyRadius, keepOutFrom } from './collide'
 import { heightAt } from './ground'
-import { TREES } from './world'
+import { sweepTiles } from './tilesCollide'
 
 export type Body = {
   x: number
@@ -18,22 +18,6 @@ const BRAKE = 14
 const GRAVITY = 22
 const STEP = 0.52
 const MAX_UP = 0.72
-const TREE_R = 0.9
-
-function resolveTrees(x: number, z: number): { x: number; z: number } {
-  let nx = x
-  let nz = z
-  for (const [tx, tz] of TREES) {
-    const dx = nx - tx
-    const dz = nz - tz
-    const d = Math.hypot(dx, dz)
-    if (d > 0.02 && d < TREE_R) {
-      nx = tx + (dx / d) * TREE_R
-      nz = tz + (dz / d) * TREE_R
-    }
-  }
-  return { x: nx, z: nz }
-}
 
 /** Sample the grade in the move direction. Rise/run; 0.7 is about 35°. */
 export function gradeAhead(x: number, z: number, vx: number, vz: number) {
@@ -85,14 +69,14 @@ export function stepBody(
   }
 
   const travel = Math.hypot(vx, vz) * dt
-  const parts = Math.max(1, Math.ceil(travel / 0.2))
+  const parts = Math.max(1, Math.ceil(travel / 0.12))
   const sdt = dt / parts
+  const radius = bodyRadius()
   let cx = x
   let cz = z
   for (let i = 0; i < parts; i++) {
-    const slid = keepOut(cx + vx * sdt, cz + vz * sdt)
-    const cleared = resolveTrees(slid.x, slid.z)
-    const sealed = keepOut(cleared.x, cleared.z)
+    const slid = keepOutFrom(cx, cz, cx + vx * sdt, cz + vz * sdt, radius)
+    const sealed = sweepTiles(cx, y, cz, slid.x, slid.z, radius)
     cx = sealed.x
     cz = sealed.z
   }
