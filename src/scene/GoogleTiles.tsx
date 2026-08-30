@@ -1,7 +1,17 @@
 import { TilesPlugin, TilesRenderer, TilesAttributionOverlay } from '3d-tiles-renderer/r3f'
 import { ReorientationPlugin, TilesFadePlugin, UpdateOnChangePlugin } from '3d-tiles-renderer/plugins'
+import type { Object3D } from 'three'
+import { disposeTileScene, registerTileScene } from '../game/tilesCollide'
 import { GOOGLE_MAPS_KEY, TOMMY_GEO } from '../game/maps'
 import { useGame } from '../game/store'
+
+function sceneFromLoad(payload: unknown): Object3D | null {
+  if (!payload || typeof payload !== 'object') return null
+  const rec = payload as { scene?: Object3D; isObject3D?: boolean }
+  if (rec.scene) return rec.scene
+  if (rec.isObject3D) return payload as Object3D
+  return null
+}
 
 const LAT = (TOMMY_GEO.lat * Math.PI) / 180
 const LON = (TOMMY_GEO.lon * Math.PI) / 180
@@ -101,7 +111,15 @@ export function GoogleTiles({
       <TilesRenderer
         url={`${GOOGLE_ROOT}?key=${key}`}
         errorTarget={variant === 'robot' ? 6 : 10}
-        onLoadModel={() => setTilesReady(true)}
+        onLoadModel={(payload: unknown) => {
+          setTilesReady(true)
+          const scene = sceneFromLoad(payload)
+          if (scene) registerTileScene(scene)
+        }}
+        onDisposeModel={(payload: unknown) => {
+          const scene = sceneFromLoad(payload)
+          if (scene) disposeTileScene(scene)
+        }}
       >
         <TilesPlugin plugin={GooglePhotorealTiles} args={[{ apiToken: key }]} />
         <TilesPlugin

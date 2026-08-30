@@ -21,7 +21,7 @@ The mission stays outdoors. We do not reconstruct Doheny interiors.
 
 Find and mark four missing people before the clock runs out.
 
-The walk is a character controller. Slice 1 of the sim is wired: a 20 Hz heat field on the Doheny → Tommy → Bovard sweep, victim exposure, optical/thermal detect, and HOT / NO GO / EVAC. Architecture is in [SIMULATION.md](./SIMULATION.md).
+The walk is a character controller. Building footprints, palms, Tommy, and the fountain are solid, and WORLD photoreal facades are raycast so the mast cannot ghost through them. Doheny’s west door cut is visual; interiors stay abandoned. Slice 1 of the sim is wired: a 20 Hz heat field on the Doheny → Tommy → Bovard sweep, victim exposure, optical/thermal detect, and HOT / NO GO / EVAC. Architecture is in [SIMULATION.md](./SIMULATION.md).
 
 ## Run it
 

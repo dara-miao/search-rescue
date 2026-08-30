@@ -1,4 +1,5 @@
-import { keepOut, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
+import { keepOut, keepOutFrom, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
+import { keepOffProps, PROP_CIRCLES } from '../src/game/props'
 import { stepBody, type Body } from '../src/game/motion'
 import { BUILDINGS } from '../src/game/world'
 
@@ -67,6 +68,32 @@ assert(dohWalk.x < doheny.cx, 'deploy sprint does not cross Doheny')
 
 const deploy = keepOut(82, 36)
 assert(Math.hypot(deploy.x - 82, deploy.z - 36) < 0.05, 'deploy is clear of every hull')
+
+const mid = doorMid(doheny)
+const inwardX = doheny.cx - mid.x
+const inwardZ = doheny.cz - mid.z
+const inwardL = Math.hypot(inwardX, inwardZ) || 1
+const ux = inwardX / inwardL
+const uz = inwardZ / inwardL
+const tunneled = keepOutFrom(mid.x - ux * 8, mid.z - uz * 8, mid.x + ux * 12, mid.z + uz * 12)
+assert(!insideSolid(tunneled.x, tunneled.z), 'an 8 m lunge at the door cannot tunnel in')
+assert((tunneled.x - mid.x) * ux + (tunneled.z - mid.z) * uz < 1.2, 'lunge stops on the outside of the door')
+
+const fountain = PROP_CIRCLES.find((p) => p.r > 5)
+if (fountain) {
+  const off = keepOffProps(fountain.x, fountain.z)
+  assert(Math.hypot(off.x - fountain.x, off.z - fountain.z) >= fountain.r - 0.05, 'fountain is solid')
+}
+const tommy = PROP_CIRCLES.find((p) => Math.hypot(p.x, p.z) < 2 && p.r > 2)
+if (tommy) {
+  const off = keepOffProps(tommy.x, tommy.z)
+  assert(Math.hypot(off.x - tommy.x, off.z - tommy.z) >= tommy.r - 0.05, 'Tommy plinth is solid')
+}
+const nearPalm = PROP_CIRCLES.find((p) => p.r < 1.4 && Math.hypot(p.x - 82, p.z - 36) > 8)
+if (nearPalm) {
+  const off = keepOut(nearPalm.x, nearPalm.z)
+  assert(Math.hypot(off.x - nearPalm.x, off.z - nearPalm.z) >= nearPalm.r - 0.08, 'palms are solid')
+}
 
 if (process.exitCode) {
   console.error('collide tests failed')
