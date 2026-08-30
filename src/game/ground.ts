@@ -1,5 +1,4 @@
 import raw from '../data/ground.json'
-import { BUILDINGS } from './world'
 
 const DEPLOY = { x: 108.6, z: 50.2, yaw: 1.28 }
 
@@ -77,31 +76,6 @@ export function corridorPolygon(path: Vec2[], half: number): Vec2[] {
     right.push([path[i][0] - px, path[i][1] - pz])
   }
   return [...left, ...right.reverse(), left[0]]
-}
-
-function inflate(poly: Vec2[], pad: number): Vec2[] {
-  if (poly.length < 3) return poly
-  const closed =
-    Math.abs(poly[0][0] - poly[poly.length - 1][0]) < 0.05 &&
-    Math.abs(poly[0][1] - poly[poly.length - 1][1]) < 0.05
-  const n = closed ? poly.length - 1 : poly.length
-  let cx = 0
-  let cz = 0
-  for (let i = 0; i < n; i++) {
-    cx += poly[i][0]
-    cz += poly[i][1]
-  }
-  cx /= n
-  cz /= n
-  const out: Vec2[] = []
-  for (let i = 0; i < n; i++) {
-    const dx = poly[i][0] - cx
-    const dz = poly[i][1] - cz
-    const len = Math.hypot(dx, dz) || 1
-    out.push([poly[i][0] + (dx / len) * pad, poly[i][1] + (dz / len) * pad])
-  }
-  out.push(out[0])
-  return out
 }
 
 function clone(data: GroundData): GroundData {
@@ -186,11 +160,6 @@ export function repairGround(data: GroundData): GroundData {
     polygon: orientedRect([-9, -48], 0.4, 24, 20),
     cover: 'plaza',
   })
-
-  for (const building of BUILDINGS) {
-    if (building.outer.length < 4) continue
-    next.plazas.push({ polygon: inflate(building.outer, 3.6), cover: 'plaza' })
-  }
 
   next.lawns.push({
     polygon: orientedRect([-42, -16], 0.55, 32, 24),
@@ -285,11 +254,11 @@ export function heightAt(x: number, z: number) {
 }
 
 export const COVER_COLOR: Record<Cover, [number, number, number]> = {
-  lawn: [0.36, 0.58, 0.3],
-  walkway: [0.78, 0.7, 0.54],
-  street: [0.42, 0.4, 0.38],
-  steps: [0.84, 0.76, 0.6],
-  plaza: [0.82, 0.74, 0.58],
+  lawn: [0.34, 0.62, 0.28],
+  walkway: [0.8, 0.72, 0.55],
+  street: [0.44, 0.42, 0.4],
+  steps: [0.86, 0.78, 0.62],
+  plaza: [0.84, 0.76, 0.6],
   dirt: [0.56, 0.46, 0.34],
 }
 
