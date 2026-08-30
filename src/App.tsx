@@ -6,19 +6,8 @@ import { useGame } from './game/store'
 import { MissionScene } from './scene/MissionScene'
 import { Briefing, EndCard } from './ui/Overlays'
 import { AnalogKnob } from './ui/AnalogKnob'
-import { Hud } from './ui/Hud'
+import { MastHud, WorldChrome } from './ui/Hud'
 import { OpticalFeed } from './ui/OpticalFeed'
-import { hasGoogleTiles } from './game/maps'
-
-function WorldPaneLabel({ playing }: { playing: boolean }) {
-  const tilesReady = useGame((s) => s.tilesReady)
-  const waiting = playing && hasGoogleTiles() && !tilesReady
-  return (
-    <div className="pane-label">
-      {waiting ? 'WORLD · LOADING MAP' : hasGoogleTiles() ? 'WORLD · MAP' : 'WORLD'}
-    </div>
-  )
-}
 
 export default function App() {
   const phase = useGame((s) => s.phase)
@@ -53,7 +42,7 @@ export default function App() {
           >
             <MissionScene variant="world" cinematic={!playing} />
           </Canvas>
-          <WorldPaneLabel playing={playing} />
+          <WorldChrome />
         </section>
 
         <div className="gutter" aria-hidden="true" />
@@ -67,23 +56,25 @@ export default function App() {
             <MissionScene variant="robot" />
           </Canvas>
           {playing && <OpticalFeed />}
-          <div className="pane-label right">{thermal ? 'ROBOT THERMAL' : 'ROBOT'}</div>
+          {playing && (
+            <MastHud
+              onMark={tryMark}
+              onThermal={toggleThermal}
+              drive={
+                <AnalogKnob
+                  label="DRIVE"
+                  hint="point to walk"
+                  className={`knob-move ${showNudge ? 'nudge' : ''}`}
+                  onVector={(x, y, active) => input.current?.setStick(x, y, active)}
+                />
+              }
+            />
+          )}
         </section>
       </main>
 
       {phase === 'briefing' && <Briefing onDeploy={start} />}
       <EndCard />
-      {playing && <Hud onMark={tryMark} onThermal={toggleThermal} />}
-      {playing && (
-        <div className="knobs">
-          <AnalogKnob
-            label="DRIVE"
-            hint="point to walk"
-            className={`knob-move ${showNudge ? 'nudge' : ''}`}
-            onVector={(x, y, active) => input.current?.setStick(x, y, active)}
-          />
-        </div>
-      )}
     </div>
   )
 }

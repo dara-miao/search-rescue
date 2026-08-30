@@ -102,6 +102,10 @@ export function OpticalFeed() {
 
   return (
     <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
+      <header>
+        <b>{noPano ? 'Still' : 'Optical'}</b>
+        <em>{thermal ? 'Thermal overlay' : noPano ? 'No pano' : 'Street View'}</em>
+      </header>
       <img
         src={src}
         alt={noPano ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
@@ -113,7 +117,7 @@ export function OpticalFeed() {
             'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
         }}
       />
-      {noPano ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : null}
+      {noPano ? <span>EEJCC / Wikimedia CC BY-SA 4.0</span> : <span>Live from the mast heading</span>}
     </aside>
   )
 }
