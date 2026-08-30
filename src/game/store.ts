@@ -65,7 +65,7 @@ function nearestSeen(sim: SimState, x: number, z: number) {
   let nearestId: string | null = null
   let nearestDist = 999
   for (const person of sim.victims) {
-    if (person.status === 'marked' || person.status === 'unseen') continue
+    if (person.status === 'marked' || person.status === 'lost') continue
     const d = dist2(x, z, person.x, person.z)
     if (d < nearestDist) {
       nearestDist = d
