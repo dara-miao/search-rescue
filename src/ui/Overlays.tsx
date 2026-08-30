@@ -21,7 +21,8 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
           <h1>Doheny is on fire.</h1>
           <p className="lede">
             Deploy on the walk west of the library. WORLD is the real campus from Google Maps.
-            ROBOT walks the reconstruct. Mark all four victims before the clock runs out.
+            ROBOT walks the reconstruct. Heat is spreading from Doheny. Detect victims on the
+            mast, then mark them before the apron goes NO GO.
           </p>
           <ul className="mission-list">
             <li>
@@ -47,7 +48,7 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
             </li>
             <li>
               <kbd>F</kbd>
-              <span>Mark a victim when the button lights</span>
+              <span>Mark only after the mast detects them</span>
             </li>
             <li>
               <kbd>T</kbd>
@@ -72,6 +73,7 @@ export function EndCard() {
   const phase = useGame((s) => s.phase)
   const survivors = useGame((s) => s.survivors)
   const elapsed = useGame((s) => s.elapsed)
+  const failNote = useGame((s) => s.failNote)
   const reset = useGame((s) => s.reset)
   const start = useGame((s) => s.start)
 
@@ -96,7 +98,7 @@ export function EndCard() {
     <div className="overlay dim">
       <div className="overlay-card short">
         <p className="eyebrow">{win ? 'Clear' : 'Failed'}</p>
-        <h1>{win ? 'All four marked.' : 'Time ran out.'}</h1>
+        <h1>{win ? 'All four marked.' : failNote || 'Time ran out.'}</h1>
         <p className="lede">
           {found} of {survivors.length} · {Math.floor(elapsed)}s
         </p>

@@ -2,20 +2,13 @@ import { create } from 'zustand'
 import { fetchCampusGoogle, type IngressMeta, type PlaceLabel } from './google'
 import { heightAt } from './ground'
 import { hasGoogleKey } from './maps'
-import { CAMPUS, SURVIVORS, dist2 } from './world'
+import { dist2 } from './world'
+import { createSim, markNearest, stepSim } from '../sim/step'
+import type { FailCode, SimState, VictimSim } from '../sim/types'
 
 export type Phase = 'briefing' | 'playing' | 'complete' | 'failed'
 
-export type SurvivorState = {
-  id: string
-  name: string
-  role: string
-  x: number
-  z: number
-  y: number
-  note: string
-  found: boolean
-}
+export type SurvivorState = VictimSim & { found: boolean; y: number }
 
 export type RobotState = {
   x: number
@@ -33,9 +26,12 @@ type GameStore = {
   tilesReady: boolean
   elapsed: number
   robot: RobotState
+  sim: SimState
   survivors: SurvivorState[]
   nearestId: string | null
   nearestDist: number
+  failNote: string
+  failCode: FailCode | null
   worldOrbit: number
   markFlash: number
   lastMarked: string | null
@@ -54,8 +50,47 @@ type GameStore = {
   tryMark: () => boolean
 }
 
-function freshSurvivors(): SurvivorState[] {
-  return SURVIVORS.map((s) => ({ ...s, found: false }))
+function viewSurvivors(sim: SimState): SurvivorState[] {
+  return sim.victims.map((v) => ({
+    ...v,
+    found: v.status === 'marked',
+    y: 0,
+  }))
+}
+
+function nearestSeen(sim: SimState, x: number, z: number) {
+  let nearestId: string | null = null
+  let nearestDist = 999
+  for (const person of sim.victims) {
+    if (person.status === 'marked' || person.status === 'unseen') continue
+    const d = dist2(x, z, person.x, person.z)
+    if (d < nearestDist) {
+      nearestDist = d
+      nearestId = person.id
+    }
+  }
+  return { nearestId, nearestDist }
+}
+
+function phaseOf(sim: SimState): Phase {
+  if (sim.complete) return 'complete'
+  if (sim.fail) return 'failed'
+  return 'playing'
+}
+
+function syncFromSim(sim: SimState, robot: RobotState, markFlash: number) {
+  const near = nearestSeen(sim, robot.x, robot.z)
+  return {
+    sim,
+    elapsed: sim.elapsed,
+    survivors: viewSurvivors(sim),
+    nearestId: near.nearestId,
+    nearestDist: near.nearestDist,
+    failNote: sim.failNote,
+    failCode: sim.fail,
+    phase: phaseOf(sim),
+    markFlash: Math.max(0, markFlash),
+  }
 }
 
 /** On the walk west of Doheny, facing the fire — not inside the door. */
@@ -73,15 +108,20 @@ function freshRobot(): RobotState {
   }
 }
 
+const boot = createSim()
+
 export const useGame = create<GameStore>((set, get) => ({
   phase: 'briefing',
   thermal: false,
   tilesReady: false,
   elapsed: 0,
   robot: freshRobot(),
-  survivors: freshSurvivors(),
+  sim: boot,
+  survivors: viewSurvivors(boot),
   nearestId: null,
   nearestDist: 999,
+  failNote: '',
+  failCode: null,
   worldOrbit: 0.35,
   markFlash: 0,
   lastMarked: null,
@@ -110,31 +150,29 @@ export const useGame = create<GameStore>((set, get) => ({
     }
   },
 
-  start: () =>
+  start: () => {
+    const sim = createSim()
+    const robot = freshRobot()
     set({
+      thermal: false,
+      robot,
+      lastMarked: null,
+      ...syncFromSim(sim, robot, 0),
       phase: 'playing',
-      thermal: false,
-      elapsed: 0,
-      robot: freshRobot(),
-      survivors: freshSurvivors(),
-      nearestId: null,
-      nearestDist: 999,
-      markFlash: 0,
-      lastMarked: null,
-    }),
+    })
+  },
 
-  reset: () =>
+  reset: () => {
+    const sim = createSim()
+    const robot = freshRobot()
     set({
-      phase: 'briefing',
       thermal: false,
-      elapsed: 0,
-      robot: freshRobot(),
-      survivors: freshSurvivors(),
-      nearestId: null,
-      nearestDist: 999,
-      markFlash: 0,
+      robot,
       lastMarked: null,
-    }),
+      ...syncFromSim(sim, robot, 0),
+      phase: 'briefing',
+    })
+  },
 
   toggleThermal: () => set((s) => ({ thermal: !s.thermal })),
 
@@ -150,47 +188,18 @@ export const useGame = create<GameStore>((set, get) => ({
   tick: (dt) => {
     const s = get()
     if (s.phase !== 'playing') return
-
-    const elapsed = s.elapsed + dt
-    const { x, z } = s.robot
-    let nearestId: string | null = null
-    let nearestDist = 999
-    for (const person of s.survivors) {
-      if (person.found) continue
-      const d = dist2(x, z, person.x, person.z)
-      if (d < nearestDist) {
-        nearestDist = d
-        nearestId = person.id
-      }
-    }
-
-    const foundCount = s.survivors.filter((p) => p.found).length
-    let phase: Phase = s.phase
-    if (foundCount >= s.survivors.length) phase = 'complete'
-    else if (elapsed >= CAMPUS.timeLimit) phase = 'failed'
-
-    set({
-      elapsed,
-      nearestId,
-      nearestDist,
-      phase,
-      markFlash: Math.max(0, s.markFlash - dt),
-    })
+    stepSim(s.sim, s.robot, s.thermal, dt)
+    set(syncFromSim(s.sim, s.robot, s.markFlash - dt))
   },
 
   tryMark: () => {
     const s = get()
-    if (s.phase !== 'playing' || !s.nearestId) return false
-    if (s.nearestDist > CAMPUS.markRange) return false
-    const survivors = s.survivors.map((p) =>
-      p.id === s.nearestId ? { ...p, found: true } : p,
-    )
-    const allFound = survivors.every((p) => p.found)
+    if (s.phase !== 'playing') return false
+    const id = markNearest(s.sim, s.robot)
+    if (!id) return false
     set({
-      survivors,
-      lastMarked: s.nearestId,
-      markFlash: 2.2,
-      phase: allFound ? 'complete' : s.phase,
+      ...syncFromSim(s.sim, s.robot, 2.2),
+      lastMarked: id,
     })
     return true
   },
