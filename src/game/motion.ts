@@ -1,5 +1,6 @@
+import { keepOut } from './collide'
 import { heightAt } from './ground'
-import { TREES, resolveCollision } from './world'
+import { TREES } from './world'
 
 export type Body = {
   x: number
@@ -83,8 +84,19 @@ export function stepBody(
     vz = 0
   }
 
-  const slid = resolveCollision(x + vx * dt, z + vz * dt)
-  const cleared = resolveTrees(slid.x, slid.z)
+  const travel = Math.hypot(vx, vz) * dt
+  const parts = Math.max(1, Math.ceil(travel / 0.2))
+  const sdt = dt / parts
+  let cx = x
+  let cz = z
+  for (let i = 0; i < parts; i++) {
+    const slid = keepOut(cx + vx * sdt, cz + vz * sdt)
+    const cleared = resolveTrees(slid.x, slid.z)
+    const sealed = keepOut(cleared.x, cleared.z)
+    cx = sealed.x
+    cz = sealed.z
+  }
+  const cleared = { x: cx, z: cz }
   if (dt > 1e-5) {
     vx = (cleared.x - x) / dt
     vz = (cleared.z - z) / dt

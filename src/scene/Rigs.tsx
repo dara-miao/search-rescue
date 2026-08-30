@@ -47,8 +47,8 @@ export function MastRig() {
     const fz = -Math.cos(robot.yaw)
     const pitch = robot.pitch
     const eyeY = robot.y + 1.08
-    const eyeX = robot.x + fx * 0.48
-    const eyeZ = robot.z + fz * 0.48
+    const eyeX = robot.x + fx * 0.18
+    const eyeZ = robot.z + fz * 0.18
     state.camera.position.set(eyeX, eyeY, eyeZ)
     const lookDist = Math.cos(pitch) * 12
     state.camera.lookAt(eyeX + fx * lookDist, eyeY + Math.sin(pitch) * 12, eyeZ + fz * lookDist)
