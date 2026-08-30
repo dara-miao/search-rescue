@@ -16,33 +16,22 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
   return (
     <div className="onboard">
       <div className="onboard-card">
-        <p className="eyebrow">Search Rescue · University Park</p>
-        <h1>The fire is inside. You work the door.</h1>
+        <p className="eyebrow">Search Rescue · USC</p>
+        <h1>Doheny is on fire.</h1>
         <p className="lede">
-          Doheny is burning. You cannot go in. Four people are still outside — west door, west steps,
-          Tommy, Bovard lawn. Heat is coming out that door. Find them, get close, mark them before the
-          apron goes NO GO.
+          The fire is inside the library. You cannot go in.
         </p>
-        <ol className="mission-list">
-          <li>
-            <b>1</b> West door — first. Already hot.
-          </li>
-          <li>
-            <b>2</b> West steps
-          </li>
-          <li>
-            <b>3</b> Tommy
-          </li>
-          <li>
-            <b>4</b> Bovard lawn
-          </li>
-        </ol>
+        <p className="lede">
+          Four people are still outside. Walk to each one and mark them before heat from the west
+          door makes that ground too dangerous.
+        </p>
+        <p className="where">West door · West steps · Tommy Trojan · Bovard lawn</p>
         <p className="fineprint">
-          Deploy opens two views: WORLD is the campus from above. ROBOT is your walk. Stick up walks,
-          left/right turns. C switches to Look.
+          Start opens a map of campus on the left and your walk on the right. Stick up walks. C looks
+          around.
         </p>
         <button type="button" className="deploy" autoFocus onClick={onDeploy}>
-          Deploy
+          Start
         </button>
       </div>
     </div>

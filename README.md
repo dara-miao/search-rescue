@@ -47,14 +47,14 @@ Then open the printed local URL (this project binds to port `43147`).
 
 ## Mission
 
-A structure fire is moving through Doheny. Enter at the west door. Four people are unaccounted for:
+A structure fire is inside Doheny. You stay outside. Four people are still on the quad:
 
 - Victim 1 — Doheny west door
 - Victim 2 — Doheny west steps
 - Victim 3 — behind Tommy Trojan
 - Victim 4 — lawn west of Bovard
 
-Get close, mark them, and last-known positions write back into the campus feed.
+Walk to each one and mark them before heat from the west door makes that ground too dangerous. The first screen is a single briefing — the WORLD / ROBOT split opens after you start.
 
 ## Data
 
