@@ -12,15 +12,13 @@ import { OpticalFeed } from './ui/OpticalFeed'
 export default function App() {
   const phase = useGame((s) => s.phase)
   const thermal = useGame((s) => s.thermal)
+  const padMode = useGame((s) => s.padMode)
   const start = useGame((s) => s.start)
   const toggleThermal = useGame((s) => s.toggleThermal)
   const tryMark = useGame((s) => s.tryMark)
   const hydrateGoogle = useGame((s) => s.hydrateGoogle)
-  const moving = useGame((s) => s.robot.moving)
-  const elapsed = useGame((s) => s.elapsed)
   const playing = phase === 'playing'
   const input = useSimLoop(playing)
-  const showNudge = playing && !moving && elapsed < 8
 
   useEffect(() => {
     void hydrateGoogle()
@@ -62,9 +60,9 @@ export default function App() {
               onThermal={toggleThermal}
               drive={
                 <AnalogKnob
-                  label="DRIVE"
-                  hint="point to walk"
-                  className={`knob-move ${showNudge ? 'nudge' : ''}`}
+                  label={padMode === 'look' ? 'LOOK' : 'DRIVE'}
+                  hint={padMode === 'look' ? 'left/right turn · up/down nod' : 'up walk · left/right turn'}
+                  className={padMode === 'look' ? 'knob-look' : 'knob-move'}
                   onVector={(x, y, active) => input.current?.setStick(x, y, active)}
                 />
               }

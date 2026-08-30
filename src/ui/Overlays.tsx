@@ -16,54 +16,30 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
   return (
     <div className="overlay">
       <div className="overlay-card brief">
-        <div className="brief-copy">
-          <p className="eyebrow">Search rescue</p>
-          <h1>Doheny is on fire.</h1>
-          <p className="lede">
-            Deploy on the walk west of the library. WORLD is the real campus from Google Maps.
-            ROBOT walks the reconstruct. Heat is spreading from Doheny. Detect victims on the
-            mast, then mark them before the apron goes NO GO.
-          </p>
-          <ul className="mission-list">
-            <li>
-              <b>1</b> Doheny west door
-            </li>
-            <li>
-              <b>2</b> West steps
-            </li>
-            <li>
-              <b>3</b> Tommy Trojan
-            </li>
-            <li>
-              <b>4</b> West of Bovard
-            </li>
-          </ul>
-        </div>
-        <div className="brief-panel">
-          <p className="eyebrow">Mast console</p>
-          <ul className="legend">
-            <li>
-              <kbd>Stick</kbd>
-              <span>Point it the way you want to walk</span>
-            </li>
-            <li>
-              <kbd>F</kbd>
-              <span>Mark only after the mast detects them</span>
-            </li>
-            <li>
-              <kbd>T</kbd>
-              <span>Thermal on the mast only</span>
-            </li>
-            <li>
-              <kbd>Q E</kbd>
-              <span>Orbit the WORLD map</span>
-            </li>
-          </ul>
-          <button type="button" className="deploy" autoFocus onClick={onDeploy}>
-            Deploy
-          </button>
-          <p className="fineprint">Enter deploys. Shift sprints.</p>
-        </div>
+        <p className="eyebrow">Search rescue</p>
+        <h1>Doheny is on fire.</h1>
+        <p className="lede">
+          Deploy west of the library. Detect on the mast, then mark. Heat is spreading from the west
+          door.
+        </p>
+        <ul className="mission-list">
+          <li>
+            <b>1</b> West door
+          </li>
+          <li>
+            <b>2</b> West steps
+          </li>
+          <li>
+            <b>3</b> Tommy
+          </li>
+          <li>
+            <b>4</b> Bovard lawn
+          </li>
+        </ul>
+        <p className="fineprint">Stick: up walks, left/right turns. Look pans without walking. C switches.</p>
+        <button type="button" className="deploy" autoFocus onClick={onDeploy}>
+          Deploy
+        </button>
       </div>
     </div>
   )

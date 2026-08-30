@@ -78,13 +78,10 @@ export function AnalogKnob({
   }
 
   return (
-    <div
-      ref={well}
-      className={`knob ${hot ? 'hot' : ''} ${className ?? ''}`}
-      onPointerDown={onDown}
-    >
+    <div ref={well} className={`knob ${hot ? 'hot' : ''} ${className ?? ''}`} onPointerDown={onDown}>
       <i className="knob-ring" />
       <i className="knob-cross" aria-hidden="true" />
+      <i className="knob-fwd" aria-hidden="true" />
       <b className="knob-thumb" style={{ transform: `translate(${thumb.x}px, ${thumb.y}px)` }} />
       <span>
         {label}
