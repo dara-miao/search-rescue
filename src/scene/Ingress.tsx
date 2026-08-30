@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { Line } from '@react-three/drei'
 import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
+import { EVAC_PATH } from '../sim/evac'
 
 export function Ingress() {
-  const path = useGame((s) => s.evacPath)
+  const google = useGame((s) => s.evacPath)
+  const path = google.length >= 2 ? google : EVAC_PATH
   const points = useMemo(
     () => path.map(([x, z]) => [x, heightAt(x, z) + 0.22, z] as [number, number, number]),
     [path],

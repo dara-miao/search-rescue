@@ -3,6 +3,7 @@ import { Campus } from './Campus'
 import { Fire } from './Fire'
 import { GoogleTiles } from './GoogleTiles'
 import { Ingress } from './Ingress'
+import { LastKnowns } from './LastKnowns'
 import { Lights } from './Lights'
 import { People } from './People'
 import { Places } from './Places'
@@ -31,7 +32,8 @@ export function MissionScene({
       <Places thermal={thermal} />
       <Ingress />
       <Fire thermal={thermal} />
-      <People thermal={thermal} />
+      <People thermal={thermal} world={variant === 'world'} />
+      {variant === 'world' && <LastKnowns />}
       <Robot variant={variant} />
       {variant === 'world' ? <WorldRig cinematic={cinematic} /> : <MastRig />}
       {variant === 'robot' && thermal && (

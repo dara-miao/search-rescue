@@ -3,6 +3,8 @@ import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
 import { stepBody, type Body } from './motion'
 import { DEPLOY, useGame } from './store'
+import { wishScale } from '../sim/robot'
+import { SIM_DT } from '../sim/step'
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
@@ -35,6 +37,7 @@ export function useSimLoop(active: boolean) {
     let last = performance.now()
     let raf = 0
     let stickYaw0: number | null = null
+    let acc = 0
 
     const frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000)
@@ -63,11 +66,13 @@ export function useSimLoop(active: boolean) {
         }
 
         const aimed = input.consume()
+        const cap = wishScale(store.sim.robot.zone, store.sim.robot.noGoTime)
+        const sprint = aimed.sprint && cap.sprint
         const sin = Math.sin(aimed.yaw)
         const cos = Math.cos(aimed.yaw)
-        const wishX = (sin * forward + cos * aimed.strafe) * (aimed.sprint ? 11.2 : 6.6)
-        const wishZ = (-cos * forward + sin * aimed.strafe) * (aimed.sprint ? 11.2 : 6.6)
-        const next = stepBody(body.current, wishX, wishZ, aimed.sprint, dt)
+        const wishX = (sin * forward + cos * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
+        const wishZ = (-cos * forward + sin * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
+        const next = stepBody(body.current, wishX, wishZ, sprint, dt)
         body.current = next
         const speed = Math.hypot(next.vx, next.vz)
 
@@ -91,7 +96,11 @@ export function useSimLoop(active: boolean) {
           store.toggleThermal()
         }
 
-        store.tick(dt)
+        acc += dt
+        while (acc >= SIM_DT) {
+          useGame.getState().tick(SIM_DT)
+          acc -= SIM_DT
+        }
       }
 
       raf = requestAnimationFrame(frame)
