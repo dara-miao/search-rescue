@@ -11,8 +11,50 @@
   display: none !important;
 }
 
+.onboard {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 22px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(157, 34, 53, 0.28), transparent 46%),
+    #07080b;
+}
+
 .onboard-card {
   display: block;
+  width: min(440px, 100%);
+}
+
+.onboard-card h1 {
+  font-size: clamp(40px, 8vw, 64px);
+}
+
+.onboard-card .lede {
+  max-width: 42ch;
+}
+
+.onboard-card .deploy {
+  margin-top: 18px;
+}
+
+.onboard-card .fineprint {
+  margin: 4px 0 0;
+  max-width: 46ch;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .onboard {
+    align-items: flex-end;
+    padding: 20px 16px 28px;
+  }
+
+  .onboard-card {
+    max-height: 88vh;
+    overflow: auto;
+  }
 }
 
 .optical {
