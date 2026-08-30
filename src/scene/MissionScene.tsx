@@ -23,18 +23,19 @@ export function MissionScene({
   const tilesReady = useGame((s) => s.tilesReady)
   const googleWorld = variant === 'world' && hasGoogleTiles()
   const photoreal = googleWorld && tilesReady
+  const quiet = cinematic
 
   return (
     <>
       <Lights thermal={thermal} photoreal={photoreal} />
       {googleWorld && <GoogleTiles variant="world" />}
       <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world' && !photoreal} />
-      <Places thermal={thermal} />
-      <Ingress />
+      {!quiet && <Places thermal={thermal} />}
+      {!quiet && <Ingress />}
       <Fire thermal={thermal} />
-      <People thermal={thermal} world={variant === 'world'} />
-      {variant === 'world' && <LastKnowns />}
-      <Robot variant={variant} />
+      {!quiet && <People thermal={thermal} world={variant === 'world'} />}
+      {variant === 'world' && !quiet && <LastKnowns />}
+      {!quiet && <Robot variant={variant} />}
       {variant === 'world' ? <WorldRig cinematic={cinematic} /> : <MastRig />}
       {variant === 'robot' && thermal && (
         <EffectComposer enableNormalPass={false}>

@@ -31,7 +31,17 @@ export default function App() {
   if (phase === 'briefing') {
     return (
       <div className="app">
-        <Briefing onDeploy={start} />
+        <div className="onboard-stage">
+          <Canvas
+            camera={{ position: [190, 22, 80], fov: 40, near: 0.4, far: 1600 }}
+            shadows
+            dpr={[1, 1.7]}
+            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
+          >
+            <MissionScene variant="world" cinematic />
+          </Canvas>
+          <Briefing onDeploy={start} />
+        </div>
       </div>
     )
   }

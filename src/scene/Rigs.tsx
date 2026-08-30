@@ -12,20 +12,22 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
 
   useFrame((state, dt) => {
     const { robot, worldOrbit, phase } = useGame.getState()
-    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
-      state.camera.fov = 46
+    const hero = cinematic || phase === 'briefing'
+    const fov = hero ? 40 : 46
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== fov) {
+      state.camera.fov = fov
       state.camera.updateProjectionMatrix()
     }
 
-    if (cinematic || phase === 'briefing') {
-      orbit.current += dt * 0.05
-      const r = 64
+    if (hero) {
+      orbit.current += dt * 0.1
+      const r = 46
       state.camera.position.set(
         DOHENY.cx + Math.sin(orbit.current) * r,
-        96,
+        22,
         DOHENY.cz + Math.cos(orbit.current) * r,
       )
-      state.camera.lookAt(DOHENY.cx, 2, DOHENY.cz)
+      state.camera.lookAt(DOHENY.cx, 9, DOHENY.cz)
       return
     }
 
