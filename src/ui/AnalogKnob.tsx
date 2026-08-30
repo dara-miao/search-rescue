@@ -3,13 +3,9 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react'
 const DEAD = 0.1
 
 export function AnalogKnob({
-  label,
-  hint,
   className,
   onVector,
 }: {
-  label: string
-  hint: string
   className?: string
   onVector: (x: number, y: number, active: boolean) => void
 }) {
@@ -78,15 +74,16 @@ export function AnalogKnob({
   }
 
   return (
-    <div ref={well} className={`knob ${hot ? 'hot' : ''} ${className ?? ''}`} onPointerDown={onDown}>
+    <div
+      ref={well}
+      className={`knob ${hot ? 'hot' : ''} ${className ?? ''}`}
+      aria-label="Walk"
+      onPointerDown={onDown}
+    >
       <i className="knob-ring" />
       <i className="knob-cross" aria-hidden="true" />
       <i className="knob-fwd" aria-hidden="true" />
       <b className="knob-thumb" style={{ transform: `translate(${thumb.x}px, ${thumb.y}px)` }} />
-      <span>
-        {label}
-        <em>{hint}</em>
-      </span>
     </div>
   )
 }

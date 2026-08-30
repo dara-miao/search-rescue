@@ -54,15 +54,11 @@ export function useSimLoop(active: boolean) {
 
         const pad = input.consume()
         let forward = pad.forward
-        const wish = pad.stickActive ? stickWish(store.padMode, pad.stickX, pad.stickY) : null
+        const wish = pad.stickActive ? stickWish('drive', pad.stickX, pad.stickY) : null
         if (wish) {
           input.turn(wish.turn * dt * TURN_RATE)
           input.nod(wish.nod * dt * NOD_RATE)
           forward = wish.forward
-        }
-
-        if (input.consumeEdge('KeyC')) {
-          store.setPadMode(store.padMode === 'drive' ? 'look' : 'drive')
         }
 
         const aimed = input.consume()

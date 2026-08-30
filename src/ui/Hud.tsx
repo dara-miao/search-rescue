@@ -57,11 +57,9 @@ export function WorldChrome() {
 
 export function MastHud({
   onMark,
-  onThermal,
   drive,
 }: {
   onMark: () => void
-  onThermal: () => void
   drive: ReactNode
 }) {
   const thermal = useGame((s) => s.thermal)
@@ -75,8 +73,6 @@ export function MastHud({
   const zone = useGame((s) => s.sim.robot.zone)
   const hull = useGame((s) => s.sim.robot.hull)
   const evac = useGame((s) => s.sim.robot.onEvac)
-  const padMode = useGame((s) => s.padMode)
-  const setPadMode = useGame((s) => s.setPadMode)
 
   const found = survivors.filter((p) => p.found).length
   const near = survivors.find((p) => p.id === nearestId)
@@ -147,24 +143,11 @@ export function MastHud({
           </div>
         </div>
 
-        <div className="console-drive">
-          {drive}
-          <div className="pad-mode" role="group" aria-label="Stick mode">
-            <button type="button" className={padMode === 'drive' ? 'on' : ''} onClick={() => setPadMode('drive')}>
-              Drive
-            </button>
-            <button type="button" className={padMode === 'look' ? 'on' : ''} onClick={() => setPadMode('look')}>
-              Look
-            </button>
-          </div>
-        </div>
+        <div className="console-drive">{drive}</div>
 
         <div className="console-actions">
           <button type="button" className={canMark ? 'mark-go' : 'mark-wait'} disabled={!canMark} onClick={onMark}>
             Mark
-          </button>
-          <button type="button" className={`heat ${thermal ? 'on' : ''}`} onClick={onThermal} aria-pressed={thermal}>
-            {thermal ? 'Heat on' : 'Heat'}
           </button>
         </div>
       </div>
