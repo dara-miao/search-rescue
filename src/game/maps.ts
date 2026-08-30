@@ -1,6 +1,6 @@
 import { campus } from './world'
 
-export const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
+export const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY as string | undefined
 
 export const TOMMY_GEO = {
   lat: campus.origin.lat,
