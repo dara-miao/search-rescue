@@ -58,8 +58,8 @@ function freshSurvivors(): SurvivorState[] {
   return SURVIVORS.map((s) => ({ ...s, found: false }))
 }
 
-/** On the west steps, facing into Times-Mirror. */
-export const DEPLOY = { x: 108.6, z: 50.2, yaw: 1.28 }
+/** On the walk west of Doheny, facing the fire — not inside the door. */
+export const DEPLOY = { x: 82, z: 36, yaw: 1.32 }
 
 function freshRobot(): RobotState {
   return {

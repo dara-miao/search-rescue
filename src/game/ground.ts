@@ -1,6 +1,7 @@
 import raw from '../data/ground.json'
 
-const DEPLOY = { x: 108.6, z: 50.2, yaw: 1.28 }
+const STEPS = { x: 108.6, z: 50.2, yaw: 1.28 }
+const DEPLOY = { x: 82, z: 36, yaw: 1.32 }
 
 export type Cover = 'lawn' | 'walkway' | 'street' | 'steps' | 'plaza' | 'dirt'
 
@@ -145,11 +146,11 @@ export function repairGround(data: GroundData): GroundData {
   ], 3.6)
 
   next.steps.push({
-    polygon: orientedRect([DEPLOY.x, DEPLOY.z], DEPLOY.yaw, 12, 7.6),
+    polygon: orientedRect([STEPS.x, STEPS.z], STEPS.yaw, 12, 7.6),
     cover: 'steps',
   })
   next.plazas.push({
-    polygon: orientedRect([114.2, 49.8], DEPLOY.yaw, 9, 9),
+    polygon: orientedRect([114.2, 49.8], STEPS.yaw, 9, 9),
     cover: 'plaza',
   })
   next.plazas.push({

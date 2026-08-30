@@ -80,9 +80,9 @@ export function Hud({
           )}
           <span>
             {!started
-              ? 'West door is ahead'
+              ? 'Doheny is ahead · west door'
               : aim
-                ? `${aim.name} \u00b7 ${aim.note} \u00b7 ${aimDist.toFixed(0)}m`
+                ? `${aim.name} · ${aim.note} · ${aimDist.toFixed(0)}m`
                 : 'Sweep the quad'}
           </span>
         </div>
@@ -91,7 +91,7 @@ export function Hud({
       {markFlash > 0 && marked && (
         <div className="toast">
           {marked.name} marked
-          {found < survivors.length ? ` \u00b7 ${survivors.length - found} left` : ''}
+          {found < survivors.length ? ` · ${survivors.length - found} left` : ''}
         </div>
       )}
 
