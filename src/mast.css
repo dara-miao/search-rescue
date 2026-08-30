@@ -152,10 +152,10 @@
   gap: 8px;
 }
 
-.pad-mode {
-  display: flex;
-  width: 118px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+.pad-mode,
+.knob span,
+.heat {
+  display: none !important;
 }
 
 .pad-mode button {
