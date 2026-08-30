@@ -67,7 +67,7 @@ function freshRobot(): RobotState {
     y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
     z: DEPLOY.z,
     yaw: DEPLOY.yaw,
-    pitch: -0.08,
+    pitch: 0.16,
     speed: 0,
     moving: false,
   }

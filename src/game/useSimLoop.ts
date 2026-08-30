@@ -20,7 +20,7 @@ export function useSimLoop(active: boolean) {
     }
 
     input.attach()
-    input.resetLook(DEPLOY.yaw, -0.08)
+    input.resetLook(DEPLOY.yaw, 0.16)
 
     let last = performance.now()
     let raf = 0
