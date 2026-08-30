@@ -30,8 +30,8 @@ export function MissionScene({
       <Lights thermal={thermal} photoreal={photoreal} />
       {googleWorld && <GoogleTiles variant="world" />}
       <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world' && !photoreal} />
-      {!quiet && <Places thermal={thermal} />}
-      {!quiet && <Ingress />}
+      {!quiet && variant === 'world' && !photoreal && <Places thermal={thermal} />}
+      {!quiet && variant === 'world' && <Ingress />}
       <Fire thermal={thermal} />
       {!quiet && <People thermal={thermal} world={variant === 'world'} />}
       {variant === 'world' && !quiet && <LastKnowns />}

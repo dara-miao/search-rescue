@@ -3,8 +3,6 @@ import { hasGoogleKey, headingDelta } from '../game/maps'
 import { mastStreetViewArgs, streetViewImageUrl, streetViewMeta } from '../game/google'
 import { useGame } from '../game/store'
 
-const TIMES_MIRROR = '/doheny-times-mirror.jpg'
-
 export function OpticalFeed() {
   const thermal = useGame((s) => s.thermal)
   const [src, setSrc] = useState<string | null>(null)
@@ -50,7 +48,7 @@ export function OpticalFeed() {
           last.panoZ = z
           last.heading = heading
           last.pitch = pitch
-          setSrc(TIMES_MIRROR)
+          setSrc(null)
           setNoPano(true)
           return
         }
@@ -98,22 +96,15 @@ export function OpticalFeed() {
   }, [])
 
   if (!hasGoogleKey()) return null
-  if (!src) return null
+  if (!src || noPano) return null
 
   return (
     <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
       <img
         src={src}
-        alt={noPano ? 'Times-Mirror reading room, Doheny Memorial Library' : ''}
+        alt=""
         draggable={false}
-        onError={(e) => {
-          if (!noPano || e.currentTarget.dataset.fallback) return
-          e.currentTarget.dataset.fallback = '1'
-          e.currentTarget.src =
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/960px-Doheny_Library_interior.jpg'
-        }}
       />
-      {noPano && <span>EEJCC / Wikimedia CC BY-SA 4.0</span>}
     </aside>
   )
 }

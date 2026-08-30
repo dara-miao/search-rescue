@@ -55,7 +55,6 @@ export function stepVictims(sim: SimState, dt: number) {
 export function tryMarkVictim(sim: SimState, id: string, range: number, robotX: number, robotZ: number) {
   const v = sim.victims.find((p) => p.id === id)
   if (!v || v.status === 'lost' || v.status === 'marked') return false
-  if (sim.elapsed > v.detectUntil) return false
   if (Math.hypot(robotX - v.x, robotZ - v.z) > range) return false
   v.status = 'marked'
   v.lastKnown = {

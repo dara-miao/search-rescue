@@ -61,7 +61,6 @@ export function markNearest(sim: SimState, pose: Pose) {
   let best: { id: string; dist: number } | null = null
   for (const v of sim.victims) {
     if (v.status === 'marked' || v.status === 'lost') continue
-    if (sim.elapsed > v.detectUntil) continue
     const dist = Math.hypot(pose.x - v.x, pose.z - v.z)
     if (dist > CAMPUS.markRange) continue
     if (!best || dist < best.dist) best = { id: v.id, dist }

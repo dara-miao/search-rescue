@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
-import { recentlyDetected } from '../sim/sensors'
 import type { HeatZone, VictimSim } from '../sim/types'
 
 function formatTime(seconds: number) {
@@ -38,16 +37,14 @@ export function WorldChrome() {
   const phase = useGame((s) => s.phase)
   const tilesReady = useGame((s) => s.tilesReady)
   const zone = useGame((s) => s.sim.robot.zone)
-  const evac = useGame((s) => s.sim.robot.onEvac)
   const playing = phase === 'playing'
 
   if (!playing) return null
-  if (tilesReady && !evac && zone !== 'hot' && zone !== 'nogo') return null
+  if (tilesReady && zone !== 'hot' && zone !== 'nogo') return null
 
   return (
     <div className="world-chrome">
       {!tilesReady && <span className="chip">Loading map</span>}
-      {evac && <span className="chip evac">EVAC</span>}
       {(zone === 'hot' || zone === 'nogo') && (
         <span className={`chip ${zone === 'nogo' ? 'nogo' : 'hot'}`}>{zoneLabel(zone)}</span>
       )}
@@ -72,23 +69,19 @@ export function MastHud({
   const robot = useGame((s) => s.robot)
   const zone = useGame((s) => s.sim.robot.zone)
   const hull = useGame((s) => s.sim.robot.hull)
-  const evac = useGame((s) => s.sim.robot.onEvac)
 
   const found = survivors.filter((p) => p.found).length
   const near = survivors.find((p) => p.id === nearestId)
-  const canMark = Boolean(near && recentlyDetected(near, elapsed) && nearestDist <= CAMPUS.markRange)
+  const canMark = Boolean(near && nearestDist <= CAMPUS.markRange)
   const marked = survivors.find((p) => p.id === lastMarked)
-  const aim = canMark
-    ? near
-    : survivors.find((p) => p.status === 'detected' && recentlyDetected(p, elapsed)) ??
-      survivors.find((p) => p.lastKnown && p.status !== 'marked')
-  const aimX = aim?.lastKnown?.x ?? aim?.x
-  const aimZ = aim?.lastKnown?.z ?? aim?.z
-  const known = Boolean(aim && (aim.status !== 'unseen' || aim.lastKnown))
+  const aim = near ?? survivors.find((p) => p.status !== 'marked' && p.status !== 'lost')
+  const aimX = aim?.x
+  const aimZ = aim?.z
+  const known = Boolean(aim && aimX !== undefined && aimZ !== undefined)
   const turn = known && aim && aimX !== undefined && aimZ !== undefined ? headingTo(robot.x, robot.z, robot.yaw, aimX, aimZ) : 0
   const aimDist = known && aim && aimX !== undefined && aimZ !== undefined ? Math.hypot(robot.x - aimX, robot.z - aimZ) : 999
   const timeLeft = CAMPUS.timeLimit - elapsed
-  const showZone = evac || zone !== 'safe' || hull > 0.35
+  const showZone = zone === 'hot' || zone === 'nogo' || hull > 0.35
 
   return (
     <div className={`mast ${thermal ? 'is-thermal' : ''}`}>
@@ -100,8 +93,8 @@ export function MastHud({
           </span>
         </div>
         {showZone && (
-          <div className={`zone-chip ${zone}${evac ? ' on-evac' : ''}`}>
-            {evac ? 'EVAC' : zoneLabel(zone)}
+          <div className={`zone-chip ${zone}`}>
+            {zoneLabel(zone)}
             {hull > 0.35 && <i className="hull" style={{ width: `${hull * 100}%` }} />}
           </div>
         )}
@@ -129,15 +122,15 @@ export function MastHud({
           <div className="objective">
             {known && <i className="needle" style={{ transform: `rotate(${(turn * 180) / Math.PI}deg)` }} />}
             <div>
-              <strong>{canMark && near ? `Mark ${near.name}` : known && aim ? aim.name : 'Sweep the door'}</strong>
+              <strong>{canMark && near ? `Mark ${near.name}` : aim?.name ?? 'Find them'}</strong>
               <span>
                 {canMark
                   ? `${nearestDist.toFixed(0)} m`
-                  : known && aim
-                    ? `${aimDist < 99 ? `${aimDist.toFixed(0)} m` : 'far'}`
+                  : known && aimDist < 99
+                    ? `${aimDist.toFixed(0)} m`
                     : zone === 'nogo'
                       ? 'Turn back'
-                      : 'Detect, then mark'}
+                      : ''}
               </span>
             </div>
           </div>
