@@ -1,4 +1,6 @@
-import { Sky, Stars } from '@react-three/drei'
+import { useMemo } from 'react'
+import { Stars } from '@react-three/drei'
+import { BackSide, CanvasTexture, SRGBColorSpace } from 'three'
 import { C } from './colors'
 
 const SUN = (() => {
@@ -13,6 +15,40 @@ const SUN = (() => {
     Math.sin(phi) * Math.cos(azimuth),
   ] as [number, number, number]
 })()
+
+function BlueDome() {
+  const map = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 8
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+    const g = ctx.createLinearGradient(0, 0, 0, 256)
+    g.addColorStop(0, '#1a5fad')
+    g.addColorStop(0.42, '#2f86d0')
+    g.addColorStop(0.58, '#4ea0dc')
+    g.addColorStop(1, '#5aa8d8')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 8, 256)
+    const tex = new CanvasTexture(canvas)
+    tex.colorSpace = SRGBColorSpace
+    return tex
+  }, [])
+
+  return (
+    <mesh renderOrder={-10} frustumCulled={false}>
+      <sphereGeometry args={[680, 32, 24]} />
+      <meshBasicMaterial
+        map={map ?? undefined}
+        color={map ? '#ffffff' : '#2f86d0'}
+        side={BackSide}
+        toneMapped={false}
+        depthWrite={false}
+        fog={false}
+      />
+    </mesh>
+  )
+}
 
 export function Lights({
   thermal,
@@ -51,21 +87,14 @@ export function Lights({
   if (!thermal && !photoreal) {
     return (
       <>
-        <color attach="background" args={['#87b4dc']} />
-        <fog attach="fog" args={['#c5d4e0', 240, 720]} />
-        <Sky
-          distance={900}
-          sunPosition={SUN}
-          turbidity={2.4}
-          rayleigh={1.15}
-          mieCoefficient={0.003}
-          mieDirectionalG={0.8}
-        />
+        <color attach="background" args={['#2f86d0']} />
+        <fog attach="fog" args={['#5aa3d0', 360, 980]} />
+        <BlueDome />
         <ambientLight intensity={0.82} color="#fff4e6" />
-        <hemisphereLight args={['#c8dff5', '#5a4a38', 1.05]} />
+        <hemisphereLight args={['#8ec6f0', '#5a4a38', 1.05]} />
         <directionalLight
           position={[SUN[0] * 90, SUN[1] * 90, SUN[2] * 90]}
-          intensity={1.55}
+          intensity={1.45}
           color="#fff6e4"
           castShadow
           shadow-mapSize={[1024, 1024]}
