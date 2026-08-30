@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useGame } from '../game/store'
 
 const BEATS = [
@@ -16,40 +16,43 @@ const BEATS = [
 ] as const
 
 export function Briefing({ onDeploy }: { onDeploy: () => void }) {
-  const [step, setStep] = useState(0)
+  const step = useGame((s) => s.briefingStep)
+  const setBriefingStep = useGame((s) => s.setBriefingStep)
   const last = step >= BEATS.length - 1
-  const beat = BEATS[step]
+  const beat = BEATS[Math.min(step, BEATS.length - 1)]
+
+  const advance = () => {
+    if (last) onDeploy()
+    else setBriefingStep(step + 1)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Enter' && e.code !== 'Space') return
+      if (e.repeat) return
+      if (e.target instanceof HTMLElement && e.target.closest('button')) return
       e.preventDefault()
-      if (last) onDeploy()
-      else setStep((n) => n + 1)
+      advance()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [last, onDeploy])
+  }, [last, step, onDeploy, setBriefingStep])
 
   return (
     <div className="onboard">
       <div className="onboard-card">
-        <div key={step} className="onboard-beat">
-          <h1>{beat.h1}</h1>
-          {'lede' in beat && beat.lede ? <p className="lede">{beat.lede}</p> : null}
+        <div className="onboard-slot">
+          <div key={step} className="onboard-beat">
+            <h1>{beat.h1}</h1>
+            {'lede' in beat && beat.lede ? <p className="lede">{beat.lede}</p> : null}
+          </div>
         </div>
         <ol className="onboard-dots" aria-label={`Step ${step + 1} of ${BEATS.length}`}>
           {BEATS.map((_, i) => (
             <li key={i} className={i === step ? 'on' : i < step ? 'done' : undefined} />
           ))}
         </ol>
-        <button
-          type="button"
-          className="deploy"
-          autoFocus
-          key={step}
-          onClick={() => (last ? onDeploy() : setStep((n) => n + 1))}
-        >
+        <button type="button" className="deploy" autoFocus key={step} onClick={advance}>
           {last ? 'Start' : 'Next'}
         </button>
       </div>
