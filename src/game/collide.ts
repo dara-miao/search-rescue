@@ -125,7 +125,7 @@ function keepOffBuilding(x: number, z: number, building: CampusBuilding, radius:
   return { x: nx, z: nz }
 }
 
-/** Keep the mast a body-radius off every OSM footprint — door is visual, not a hole. */
+/** Keep the mast a body-radius off every OSM footprint — door is visual, not a hole. Production rebuild. */
 export function keepOut(x: number, z: number, radius = CAMPUS.robotRadius + SKIN) {
   const b = CAMPUS.bounds
   let nx = Math.max(b.minX + 2, Math.min(b.maxX - 2, x))
