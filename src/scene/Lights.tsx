@@ -2,10 +2,10 @@ import { Sky, Stars } from '@react-three/drei'
 import { C } from './colors'
 
 const SUN = (() => {
-  const hour = 15.2
+  const hour = 13.4
   const t = (hour - 6) / 12
-  const elevation = Math.sin(Math.max(0.05, Math.min(0.95, t)) * Math.PI) * 0.62
-  const azimuth = Math.PI * 0.78 + (hour - 12) * 0.16
+  const elevation = Math.sin(Math.max(0.05, Math.min(0.95, t)) * Math.PI) * 0.78
+  const azimuth = Math.PI * 0.72 + (hour - 12) * 0.12
   const phi = Math.PI / 2 - elevation
   return [
     Math.sin(phi) * Math.sin(azimuth),
@@ -51,15 +51,15 @@ export function Lights({
   if (!thermal && !photoreal) {
     return (
       <>
-        <color attach="background" args={['#8aa8c4']} />
-        <fog attach="fog" args={['#b7c4ce', 140, 560]} />
+        <color attach="background" args={['#87b4dc']} />
+        <fog attach="fog" args={['#c5d4e0', 240, 720]} />
         <Sky
-          distance={800}
+          distance={900}
           sunPosition={SUN}
-          turbidity={6.5}
-          rayleigh={2.1}
-          mieCoefficient={0.006}
-          mieDirectionalG={0.86}
+          turbidity={2.4}
+          rayleigh={1.15}
+          mieCoefficient={0.003}
+          mieDirectionalG={0.8}
         />
         <ambientLight intensity={0.82} color="#fff4e6" />
         <hemisphereLight args={['#c8dff5', '#5a4a38', 1.05]} />

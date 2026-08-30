@@ -34,15 +34,10 @@ export function MissionScene({
       <People thermal={thermal} />
       <Robot variant={variant} />
       {variant === 'world' ? <WorldRig cinematic={cinematic} /> : <MastRig />}
-      {variant === 'robot' && (
+      {variant === 'robot' && thermal && (
         <EffectComposer enableNormalPass={false}>
-          <Bloom
-            intensity={thermal ? 1.4 : 0.85}
-            luminanceThreshold={thermal ? 0.2 : 0.62}
-            luminanceSmoothing={0.4}
-            mipmapBlur
-          />
-          <Vignette eskil={false} offset={0.18} darkness={thermal ? 0.85 : 0.45} />
+          <Bloom intensity={1.4} luminanceThreshold={0.2} luminanceSmoothing={0.4} mipmapBlur />
+          <Vignette eskil={false} offset={0.18} darkness={0.85} />
         </EffectComposer>
       )}
     </>
