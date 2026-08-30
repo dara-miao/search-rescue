@@ -1,0 +1,165 @@
+/* Layout for the slim mast. Lives after index.css so a stale GitHub sheet cannot hide Drive/Look. */
+
+.orbit,
+.keys,
+.console-kicker,
+.console-hint,
+.range,
+.clock .bar,
+.legend,
+.brief-panel {
+  display: none !important;
+}
+
+.overlay-card.brief {
+  max-width: 440px;
+  display: block;
+  padding: 8px 0 0;
+}
+
+.optical {
+  top: 56px;
+  width: min(200px, 34%);
+  box-shadow: none;
+}
+
+.optical header {
+  display: none;
+}
+
+.roster {
+  margin-left: auto;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.roster li {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.roster em,
+.roster small {
+  display: none;
+}
+
+.console-readout {
+  display: flex;
+  align-items: center;
+}
+
+.console-drive {
+  flex: 0 0 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pad-mode {
+  display: flex;
+  width: 118px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.pad-mode button {
+  flex: 1;
+  border: 0;
+  padding: 6px 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pad-mode button.on {
+  background: rgba(255, 204, 0, 0.16);
+  color: var(--gold);
+}
+
+.knob-look + .pad-mode button.on {
+  background: rgba(158, 198, 255, 0.2);
+  color: #9ec6ff;
+}
+
+.knob-fwd {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+.knob-look .knob-fwd {
+  background: #9ec6ff;
+}
+
+.zone-chip {
+  position: relative;
+  min-width: 72px;
+  padding: 6px 8px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #d8cbb8;
+}
+
+.zone-chip.safe {
+  border-color: #6ee0b0;
+  color: #8ff0c8;
+}
+
+.zone-chip.warm,
+.zone-chip.hot {
+  border-color: #ff8a1a;
+  color: #ffb060;
+}
+
+.zone-chip.nogo {
+  border-color: #ff4d3a;
+  color: #ff8a7a;
+}
+
+.zone-chip .hull {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #ff4d3a;
+}
+
+.world-chrome .chip.evac {
+  border-color: #6ee0b0;
+  color: #8ff0c8;
+}
+
+.world-chrome .chip.hot {
+  border-color: #ff8a1a;
+  color: #ffb060;
+}
+
+.world-chrome .chip.nogo {
+  border-color: #ff4d3a;
+  color: #ff8a7a;
+}
+
+.roster li.unseen {
+  opacity: 0.4;
+}
+
+.roster li.lost {
+  border-color: #8a8a8a;
+  color: #b0b0b0;
+}
