@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
+import { insideSolid, keepOut } from '../game/collide'
 import { useGame } from '../game/store'
 import { DOHENY } from '../game/world'
 
@@ -52,12 +53,40 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   return null
 }
 
-/** High SW 3/4: unit sits in the lower third, lawn and Doheny fill the rest. */
+const CHASE: Array<[number, number]> = [
+  [-7, 13],
+  [-12, 8],
+  [8, 12],
+  [-14, 2],
+  [2, 14],
+  [12, 6],
+]
+
+function chaseXZ(x: number, z: number) {
+  let best = { x: x - 7, z: z + 13, d: 0 }
+  for (const [ox, oz] of CHASE) {
+    const rawX = x + ox
+    const rawZ = z + oz
+    if (insideSolid(rawX, rawZ)) continue
+    const c = keepOut(rawX, rawZ, 2.6)
+    const d = Math.hypot(c.x - x, c.z - z)
+    if (d > best.d) best = { x: c.x, z: c.z, d }
+  }
+  if (insideSolid(best.x, best.z) || best.d < 6) {
+    const fallback = keepOut(x - 7, z + 13, 3.2)
+    return { x: fallback.x, z: fallback.z, d: Math.hypot(fallback.x - x, fallback.z - z) }
+  }
+  return best
+}
+
+/** High 3/4 that stays outside OSM hulls so the lens never sits in a wall. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
-    state.camera.position.set(robot.x - 7, robot.y + 8.4, robot.z + 13)
-    state.camera.lookAt(robot.x + 2.5, robot.y + 0.35, robot.z - 1.5)
+    const cam = chaseXZ(robot.x, robot.z)
+    const lift = cam.d < 9 ? 12 : 8.4
+    state.camera.position.set(cam.x, robot.y + lift, cam.z)
+    state.camera.lookAt(robot.x, robot.y + 0.4, robot.z)
     if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
       state.camera.fov = 46
       state.camera.updateProjectionMatrix()

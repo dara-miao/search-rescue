@@ -33,8 +33,14 @@ export default function App() {
 
   useEffect(() => holdContext(root.current), [])
 
+  useEffect(() => {
+    if (phase !== 'playing') return
+    root.current?.focus()
+    window.focus()
+  }, [phase])
+
   return (
-    <div className="app" ref={root}>
+    <div className="app" ref={root} tabIndex={-1}>
       <main className={`split${briefing ? ' solo' : ''}`}>
         <section className="pane">
           <Canvas

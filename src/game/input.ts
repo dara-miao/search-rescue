@@ -9,6 +9,27 @@ export type InputState = {
   stickY: number
 }
 
+const KEY_CODE: Record<string, string> = {
+  w: 'KeyW',
+  a: 'KeyA',
+  s: 'KeyS',
+  d: 'KeyD',
+  q: 'KeyQ',
+  e: 'KeyE',
+  f: 'KeyF',
+  t: 'KeyT',
+  ' ': 'Space',
+  arrowup: 'ArrowUp',
+  arrowdown: 'ArrowDown',
+  arrowleft: 'ArrowLeft',
+  arrowright: 'ArrowRight',
+}
+
+function codeOf(e: KeyboardEvent) {
+  if (e.code) return e.code
+  return KEY_CODE[e.key.toLowerCase()] ?? ''
+}
+
 export function createInput() {
   const keys = new Set<string>()
   const edges = new Set<string>()
@@ -17,14 +38,17 @@ export function createInput() {
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return
-    if (!keys.has(e.code)) edges.add(e.code)
-    keys.add(e.code)
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyT'].includes(e.code)) {
+    const code = codeOf(e)
+    if (!code) return
+    if (!keys.has(code)) edges.add(code)
+    keys.add(code)
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyT'].includes(code)) {
       e.preventDefault()
     }
   }
   const onKeyUp = (e: KeyboardEvent) => {
-    keys.delete(e.code)
+    const code = codeOf(e)
+    if (code) keys.delete(code)
   }
 
   const attach = () => {
