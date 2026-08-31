@@ -26,8 +26,10 @@ const KEY_CODE: Record<string, string> = {
 }
 
 function codeOf(e: KeyboardEvent) {
-  if (e.code) return e.code
-  return KEY_CODE[e.key.toLowerCase()] ?? ''
+  const mapped = KEY_CODE[e.key.toLowerCase()]
+  if (mapped) return mapped
+  if (e.code && e.code !== 'Unidentified') return e.code
+  return ''
 }
 
 export function createInput() {
@@ -35,6 +37,7 @@ export function createInput() {
   const edges = new Set<string>()
   const look = { yaw: 0, pitch: 0 }
   const stick = { x: 0, y: 0, active: false }
+  let hold = false
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return
@@ -62,10 +65,11 @@ export function createInput() {
     window.removeEventListener('keyup', onKeyUp, true)
     keys.clear()
     edges.clear()
+    hold = false
   }
 
   const consume = (): InputState => {
-    const up = keys.has('KeyW') || keys.has('ArrowUp')
+    const up = hold || keys.has('KeyW') || keys.has('ArrowUp')
     const down = keys.has('KeyS') || keys.has('ArrowDown')
 
     const forward = Math.max(-1, Math.min(1, (up ? 1 : 0) - (down ? 1 : 0)))
@@ -86,6 +90,10 @@ export function createInput() {
     stick.x = x
     stick.y = y
     stick.active = active
+  }
+
+  const setHold = (on: boolean) => {
+    hold = on
   }
 
   const nod = (pitchDelta: number) => {
@@ -113,7 +121,7 @@ export function createInput() {
     return true
   }
 
-  return { attach, detach, consume, setStick, nod, turn, setYaw, resetLook, pressed, consumeEdge }
+  return { attach, detach, consume, setStick, setHold, nod, turn, setYaw, resetLook, pressed, consumeEdge }
 }
 
 export type InputApi = ReturnType<typeof createInput>

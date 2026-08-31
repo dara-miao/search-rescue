@@ -63,7 +63,12 @@ const CHASE: Array<[number, number]> = [
 ]
 
 function chaseXZ(x: number, z: number) {
-  let best = { x: x - 7, z: z + 13, d: 0 }
+  const preferred = keepOut(x - 7, z + 13, 2.6)
+  const pd = Math.hypot(preferred.x - x, preferred.z - z)
+  if (!insideSolid(preferred.x, preferred.z) && pd > 8) {
+    return { x: preferred.x, z: preferred.z, d: pd }
+  }
+  let best = { x: preferred.x, z: preferred.z, d: pd }
   for (const [ox, oz] of CHASE) {
     const rawX = x + ox
     const rawZ = z + oz
@@ -72,21 +77,18 @@ function chaseXZ(x: number, z: number) {
     const d = Math.hypot(c.x - x, c.z - z)
     if (d > best.d) best = { x: c.x, z: c.z, d }
   }
-  if (insideSolid(best.x, best.z) || best.d < 6) {
-    const fallback = keepOut(x - 7, z + 13, 3.2)
-    return { x: fallback.x, z: fallback.z, d: Math.hypot(fallback.x - x, fallback.z - z) }
-  }
   return best
 }
 
-/** High 3/4 that stays outside OSM hulls so the lens never sits in a wall. */
+/** High SW 3/4 toward Doheny; orbit only if that pose sits in a hull. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
     const cam = chaseXZ(robot.x, robot.z)
-    const lift = cam.d < 9 ? 12 : 8.4
-    state.camera.position.set(cam.x, robot.y + lift, cam.z)
-    state.camera.lookAt(robot.x, robot.y + 0.4, robot.z)
+    const tight = cam.d < 9
+    state.camera.position.set(cam.x, robot.y + (tight ? 12 : 8.4), cam.z)
+    if (tight) state.camera.lookAt(robot.x, robot.y + 0.4, robot.z)
+    else state.camera.lookAt(robot.x + 6, robot.y + 0.5, robot.z - 3)
     if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
       state.camera.fov = 46
       state.camera.updateProjectionMatrix()

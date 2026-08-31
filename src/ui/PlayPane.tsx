@@ -8,6 +8,10 @@ import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
+function isHud(target: EventTarget | null) {
+  return target instanceof HTMLElement && Boolean(target.closest('.knob, .console, .mast-top, .optical, button'))
+}
+
 export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
   const thermal = useGame((s) => s.thermal)
   const playing = useGame((s) => s.phase === 'playing')
@@ -16,7 +20,21 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
   return (
     <>
       <div className="gutter" aria-hidden="true" />
-      <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
+      <section
+        className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}
+        onPointerDown={(e) => {
+          if (!playing || isHud(e.target)) return
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId)
+          } catch {
+            /* window pointerup still clears the hold */
+          }
+          input.current?.setHold(true)
+        }}
+        onPointerUp={() => input.current?.setHold(false)}
+        onPointerCancel={() => input.current?.setHold(false)}
+        onLostPointerCapture={() => input.current?.setHold(false)}
+      >
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
