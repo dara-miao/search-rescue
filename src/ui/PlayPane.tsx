@@ -1,17 +1,17 @@
+import type { MutableRefObject } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
-import { useSimLoop } from '../game/useSimLoop'
+import type { InputApi } from '../game/input'
 import { useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
 import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
-export function PlayPane() {
+export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
   const thermal = useGame((s) => s.thermal)
   const playing = useGame((s) => s.phase === 'playing')
   const tryMark = useGame((s) => s.tryMark)
-  const input = useSimLoop(playing)
 
   return (
     <>
@@ -20,6 +20,7 @@ export function PlayPane() {
         <Canvas
           camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 1100 }}
           dpr={[1, 1.35]}
+          resize={{ scroll: false, debounce: 0 }}
           gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
         >
           <RobotScene />

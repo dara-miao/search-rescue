@@ -1,28 +1,28 @@
 import { Canvas } from '@react-three/fiber'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { ACESFilmicToneMapping } from 'three'
+import { useSimLoop } from './game/useSimLoop'
 import { useGame } from './game/store'
 import { WorldView } from './scene/WorldView'
 import { Briefing, EndCard } from './ui/Overlays'
 import { WorldChrome } from './ui/Hud'
 
-const PlayPane = lazy(() => import('./ui/PlayPane').then((m) => ({ default: m.PlayPane })))
+const loadPlayPane = () => import('./ui/PlayPane').then((m) => ({ default: m.PlayPane }))
+const PlayPane = lazy(loadPlayPane)
 
 export default function App() {
   const phase = useGame((s) => s.phase)
   const start = useGame((s) => s.start)
   const briefingStep = useGame((s) => s.briefingStep)
   const briefing = phase === 'briefing'
-  const [playReady, setPlayReady] = useState(false)
+  const input = useSimLoop(phase === 'playing')
 
   useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
   }, [phase])
 
-  // First briefing beat stays WORLD-tiles only. After Next, warm the robot
-  // canvas offscreen so Start is not a black pane.
   useEffect(() => {
-    if (!briefing || briefingStep >= 1) setPlayReady(true)
+    if (briefingStep >= 1 || !briefing) void loadPlayPane()
   }, [briefing, briefingStep])
 
   return (
@@ -39,12 +39,10 @@ export default function App() {
           {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
 
-        {playReady && (
-          <div className={briefing ? 'play-warm' : 'play-live'}>
-            <Suspense fallback={<section className="pane robot-pane robot-boot" aria-hidden="true" />}>
-              <PlayPane />
-            </Suspense>
-          </div>
+        {!briefing && (
+          <Suspense fallback={<section className="pane robot-pane robot-boot" aria-hidden="true" />}>
+            <PlayPane input={input} />
+          </Suspense>
         )}
       </main>
 
