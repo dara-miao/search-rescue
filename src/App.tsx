@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { View } from '@react-three/drei'
-import { lazy, Suspense, useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 import { ACESFilmicToneMapping } from 'three'
 import { useSimLoop } from './game/useSimLoop'
 import { useGame } from './game/store'
@@ -9,8 +9,6 @@ import { Briefing, EndCard } from './ui/Overlays'
 import { PlayPane } from './ui/PlayPane'
 import { WorldChrome } from './ui/Hud'
 
-const RobotScene = lazy(() => import('./scene/RobotScene').then((m) => ({ default: m.RobotScene })))
-
 export default function App() {
   const phase = useGame((s) => s.phase)
   const start = useGame((s) => s.start)
@@ -18,8 +16,6 @@ export default function App() {
   const briefing = phase === 'briefing'
   const input = useSimLoop(phase === 'playing')
   const root = useRef<HTMLDivElement>(null)
-  const worldPane = useRef<HTMLElement>(null)
-  const robotPane = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
@@ -47,23 +43,17 @@ export default function App() {
         dpr={[1, 1.25]}
         gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
       >
-        <View index={1} frames={Infinity} track={worldPane as RefObject<HTMLElement>}>
-          <WorldView cinematic={briefing} />
-        </View>
-        {!briefing && (
-          <View index={2} frames={Infinity} track={robotPane as RefObject<HTMLElement>}>
-            <Suspense fallback={null}>
-              <RobotScene />
-            </Suspense>
-          </View>
-        )}
+        <View.Port />
       </Canvas>
 
       <main className={`split${briefing ? ' solo' : ''}`}>
-        <section className="pane" ref={worldPane}>
+        <section className="pane">
+          <View index={1} frames={Infinity} className="view-fill">
+            <WorldView cinematic={briefing} />
+          </View>
           {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
-        {!briefing && <PlayPane input={input} paneRef={robotPane} />}
+        {!briefing && <PlayPane input={input} />}
       </main>
 
       <EndCard />
