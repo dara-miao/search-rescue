@@ -99,7 +99,7 @@ function syncFromSim(sim: SimState, robot: RobotState, markFlash: number) {
 }
 
 /** On the walk west of Doheny, facing the fire — not inside the door. */
-export const DEPLOY = { x: 82, z: 36, yaw: 1.32 }
+export const DEPLOY = { x: 94, z: 52, yaw: 1.37 }
 
 function freshRobot(): RobotState {
   return {
