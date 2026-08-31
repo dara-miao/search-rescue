@@ -1,6 +1,6 @@
-import { bodyRadius, keepOutFrom } from './collide'
+import { bodyRadius, keepOut, keepOutFrom } from './collide'
 import { heightAt } from './ground'
-import { sweepTiles } from './tilesCollide'
+import { sweepTiles, walkableTileY } from './tilesCollide'
 
 export type Body = {
   x: number
@@ -80,13 +80,22 @@ export function stepBody(
     cx = sealed.x
     cz = sealed.z
   }
-  const cleared = { x: cx, z: cz }
+  let cleared = { x: cx, z: cz }
+  if (walkableTileY(cleared.x, cleared.z) == null) {
+    const ejected = keepOut(cleared.x, cleared.z)
+    cleared = walkableTileY(ejected.x, ejected.z) == null ? { x, z } : ejected
+    if (cleared.x === x && cleared.z === z) {
+      vx = 0
+      vz = 0
+    }
+  }
   if (dt > 1e-5) {
     vx = (cleared.x - x) / dt
     vz = (cleared.z - z) / dt
   }
 
-  const ground = heightAt(cleared.x, cleared.z) + STEP
+  const tileY = walkableTileY(cleared.x, cleared.z)
+  const ground = (tileY ?? heightAt(cleared.x, cleared.z)) + STEP
   if (y > ground + 0.12) {
     vy -= GRAVITY * dt
     y += vy * dt

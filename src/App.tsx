@@ -49,7 +49,7 @@ export default function App() {
       <main className={`split ${thermal ? 'thermal' : ''}`}>
         <section className="pane">
           <Canvas
-            camera={{ position: [40, 96, 70], fov: 46, near: 0.4, far: 1600 }}
+            camera={{ position: [40, 110, 70], fov: 46, near: 0.4, far: 1600 }}
             shadows
             dpr={[1, 1.7]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}

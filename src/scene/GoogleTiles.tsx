@@ -1,9 +1,12 @@
 import { TilesPlugin, TilesRenderer, TilesAttributionOverlay } from '3d-tiles-renderer/r3f'
 import { ReorientationPlugin, TilesFadePlugin, UpdateOnChangePlugin } from '3d-tiles-renderer/plugins'
-import type { Object3D } from 'three'
-import { disposeTileScene, registerTileScene } from '../game/tilesCollide'
+import { useRef } from 'react'
+import type { Group, Object3D } from 'three'
+import { heightAt } from '../game/ground'
 import { GOOGLE_MAPS_KEY, TOMMY_GEO } from '../game/maps'
-import { useGame } from '../game/store'
+import { DEPLOY, useGame } from '../game/store'
+import { disposeTileScene, isRoofHit, measureRoofCentroid, probeTileGround, registerTileScene } from '../game/tilesCollide'
+import { DOHENY } from '../game/world'
 
 function sceneFromLoad(payload: unknown): Object3D | null {
   if (!payload || typeof payload !== 'object') return null
@@ -97,6 +100,44 @@ class GooglePhotorealTiles {
   }
 }
 
+/** WGS84 ellipsoid height at Tommy — LA geoid is ~−35 m on a ~56 m campus. */
+const TOMMY_ELLIPSOID_M = 22
+
+let alignTimer = 0
+
+function snapTilesToCampus(align: Group | null) {
+  if (!align) return
+  align.updateMatrixWorld(true)
+  const roof = measureRoofCentroid(DOHENY.cx, DOHENY.cz)
+  if (roof) {
+    const dx = DOHENY.cx - roof.x
+    const dz = DOHENY.cz - roof.z
+    if (Math.hypot(dx, dz) > 1.4) {
+      align.position.x += dx
+      align.position.z += dz
+      align.updateMatrixWorld(true)
+    }
+  }
+  const probes: Array<[number, number]> = [
+    [0, 0],
+    [DEPLOY.x, DEPLOY.z],
+    [111.4, 48.2],
+  ]
+  let lift = 0
+  let n = 0
+  for (const [x, z] of probes) {
+    const tileY = probeTileGround(x, z)
+    const dem = heightAt(x, z)
+    if (tileY == null || isRoofHit(tileY, dem)) continue
+    lift += dem - tileY
+    n += 1
+  }
+  if (n && Math.abs(lift / n) > 0.3) {
+    align.position.y += lift / n
+    align.updateMatrixWorld(true)
+  }
+}
+
 export function GoogleTiles({
   variant,
 }: {
@@ -104,10 +145,12 @@ export function GoogleTiles({
 }) {
   const key = GOOGLE_MAPS_KEY
   const setTilesReady = useGame((s) => s.setTilesReady)
+  const align = useRef<Group>(null)
   if (!key) return null
 
   return (
-    <group rotation={[0, Math.PI, 0]}>
+    <group ref={align}>
+      <group rotation={[0, Math.PI, 0]}>
       <TilesRenderer
         url={`${GOOGLE_ROOT}?key=${key}`}
         errorTarget={variant === 'robot' ? 6 : 10}
@@ -115,6 +158,8 @@ export function GoogleTiles({
           setTilesReady(true)
           const scene = sceneFromLoad(payload)
           if (scene) registerTileScene(scene)
+          window.clearTimeout(alignTimer)
+          alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 480)
         }}
         onDisposeModel={(payload: unknown) => {
           const scene = sceneFromLoad(payload)
@@ -128,7 +173,7 @@ export function GoogleTiles({
             {
               lat: LAT,
               lon: LON,
-              height: 28,
+              height: TOMMY_ELLIPSOID_M,
               recenter: true,
             },
           ]}
@@ -148,6 +193,7 @@ export function GoogleTiles({
           />
         )}
       </TilesRenderer>
+      </group>
     </group>
   )
 }
