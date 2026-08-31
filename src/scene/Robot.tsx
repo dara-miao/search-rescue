@@ -40,8 +40,12 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
       {!hideBody && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]}>
-            <circleGeometry args={[0.9, 28]} />
-            <meshBasicMaterial color="#ffcc00" transparent opacity={0.55} depthWrite={false} />
+            <ringGeometry args={[2.15, 3.05, 40]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.72} depthWrite={false} />
+          </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]}>
+            <circleGeometry args={[1.15, 28]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.42} depthWrite={false} />
           </mesh>
           <mesh position={[0, 0.08, 0]} castShadow>
             <boxGeometry args={[0.58, 0.22, 0.92]} />

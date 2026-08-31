@@ -99,12 +99,8 @@ export function OpticalFeed() {
   if (!src || noPano) return null
 
   return (
-    <aside className={`optical ${thermal ? 'is-thermal' : ''} ${noPano ? 'no-pano' : ''}`}>
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-      />
+    <aside className={`optical ${thermal ? 'is-thermal' : ''}`}>
+      <img src={src} alt="" draggable={false} />
     </aside>
   )
 }
