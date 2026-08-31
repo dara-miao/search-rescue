@@ -39,21 +39,21 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
     <group ref={group}>
       {!hideBody && (
         <>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]}>
-            <ringGeometry args={[4.2, 6.1, 48]} />
-            <meshBasicMaterial color="#ffcc00" transparent opacity={0.88} depthWrite={false} toneMapped={false} />
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]} renderOrder={20}>
+            <ringGeometry args={[5.4, 9.2, 48]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.95} depthTest={false} depthWrite={false} toneMapped={false} />
           </mesh>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]}>
-            <circleGeometry args={[2.2, 32]} />
-            <meshBasicMaterial color="#ffcc00" transparent opacity={0.38} depthWrite={false} toneMapped={false} />
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]} renderOrder={20}>
+            <circleGeometry args={[4.2, 32]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.42} depthTest={false} depthWrite={false} toneMapped={false} />
           </mesh>
-          <mesh position={[0, 7.2, 0]}>
-            <cylinderGeometry args={[0.14, 0.14, 14.4, 8]} />
-            <meshBasicMaterial color="#ffcc00" toneMapped={false} />
+          <mesh position={[0, 11, 0]} renderOrder={21}>
+            <cylinderGeometry args={[0.55, 0.55, 22, 10]} />
+            <meshBasicMaterial color="#ffcc00" depthTest={false} toneMapped={false} />
           </mesh>
-          <mesh position={[0, 14.6, 0]}>
-            <sphereGeometry args={[0.7, 12, 12]} />
-            <meshBasicMaterial color="#ffcc00" toneMapped={false} />
+          <mesh position={[0, 22.4, 0]} renderOrder={22}>
+            <sphereGeometry args={[1.7, 14, 14]} />
+            <meshBasicMaterial color="#ffcc00" depthTest={false} toneMapped={false} />
           </mesh>
           <mesh position={[0, 0.08, 0]} castShadow>
             <boxGeometry args={[0.58, 0.22, 0.92]} />
