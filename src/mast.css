@@ -289,3 +289,59 @@
   border-color: #8a8a8a;
   color: #b0b0b0;
 }
+
+@media (max-width: 900px) {
+  .split:not(.solo) .pane:first-child {
+    flex: 0 0 34%;
+    min-height: 0;
+  }
+
+  .split:not(.solo) .robot-pane {
+    flex: 1 1 auto;
+    min-height: 56%;
+  }
+
+  .optical {
+    width: min(120px, 28%);
+    top: 44px;
+    left: 6px;
+  }
+
+  .mast-top {
+    flex-wrap: nowrap;
+    margin: 6px 6px 0;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .console {
+    flex-wrap: nowrap;
+    margin: 0 6px 6px;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .console-drive {
+    flex: 0 0 72px;
+  }
+
+  .console-actions {
+    flex: 0 0 58px;
+  }
+
+  .knob {
+    width: 68px;
+    height: 68px;
+  }
+
+  .mark-go,
+  .mark-wait {
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 640px) {
+  .optical {
+    display: none;
+  }
+}
