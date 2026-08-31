@@ -63,7 +63,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
           </mesh>
         </>
       )}
-      <group scale={youPin ? 1 : 2.1}>
+      <group scale={youPin ? 1 : 5.2}>
       <mesh position={[0, 0.08, 0]} castShadow>
         <boxGeometry args={[0.58, 0.22, 0.92]} />
         <meshStandardMaterial color="#16181d" metalness={0.6} roughness={0.35} />
