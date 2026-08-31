@@ -16,9 +16,9 @@ export function RobotScene() {
     <>
       <PerspectiveCamera
         makeDefault
-        position={[DEPLOY.x - Math.sin(DEPLOY.yaw) * 13, 6, DEPLOY.z + Math.cos(DEPLOY.yaw) * 13]}
-        fov={54}
-        near={0.4}
+        position={[DEPLOY.x - 6, 18, DEPLOY.z + 11]}
+        fov={50}
+        near={0.8}
         far={1100}
       />
       <Lights thermal={thermal} />
