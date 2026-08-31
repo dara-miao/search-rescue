@@ -6,28 +6,13 @@ import { WorldView } from './scene/WorldView'
 import { Briefing, EndCard } from './ui/Overlays'
 import { WorldChrome } from './ui/Hud'
 
-const PlayPane = lazy(() => import('./ui/PlayPane').then((m) => ({ default: m.PlayPane })))
-
-function idle(work: () => void) {
-  const ric = window.requestIdleCallback
-  if (ric) return ric(work, { timeout: 1200 })
-  return window.setTimeout(work, 280)
-}
+const playPane = import('./ui/PlayPane')
+const PlayPane = lazy(() => playPane.then((m) => ({ default: m.PlayPane })))
 
 export default function App() {
   const phase = useGame((s) => s.phase)
   const start = useGame((s) => s.start)
   const briefing = phase === 'briefing'
-
-  useEffect(() => {
-    const id = idle(() => {
-      void import('./ui/PlayPane')
-    })
-    return () => {
-      window.clearTimeout(id as number)
-      window.cancelIdleCallback?.(id as number)
-    }
-  }, [])
 
   useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
@@ -48,7 +33,7 @@ export default function App() {
         </section>
 
         {!briefing && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<section className="pane robot-pane" aria-hidden="true" />}>
             <PlayPane />
           </Suspense>
         )}

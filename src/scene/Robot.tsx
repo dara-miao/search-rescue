@@ -40,12 +40,20 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
       {!hideBody && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]}>
-            <ringGeometry args={[2.15, 3.05, 40]} />
-            <meshBasicMaterial color="#ffcc00" transparent opacity={0.72} depthWrite={false} />
+            <ringGeometry args={[4.2, 6.1, 48]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.88} depthWrite={false} toneMapped={false} />
           </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]}>
-            <circleGeometry args={[1.15, 28]} />
-            <meshBasicMaterial color="#ffcc00" transparent opacity={0.42} depthWrite={false} />
+            <circleGeometry args={[2.2, 32]} />
+            <meshBasicMaterial color="#ffcc00" transparent opacity={0.38} depthWrite={false} toneMapped={false} />
+          </mesh>
+          <mesh position={[0, 7.2, 0]}>
+            <cylinderGeometry args={[0.14, 0.14, 14.4, 8]} />
+            <meshBasicMaterial color="#ffcc00" toneMapped={false} />
+          </mesh>
+          <mesh position={[0, 14.6, 0]}>
+            <sphereGeometry args={[0.7, 12, 12]} />
+            <meshBasicMaterial color="#ffcc00" toneMapped={false} />
           </mesh>
           <mesh position={[0, 0.08, 0]} castShadow>
             <boxGeometry args={[0.58, 0.22, 0.92]} />
