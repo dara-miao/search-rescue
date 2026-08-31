@@ -15,6 +15,7 @@ export default function App() {
   const start = useGame((s) => s.start)
   const tryMark = useGame((s) => s.tryMark)
   const hydrateGoogle = useGame((s) => s.hydrateGoogle)
+  const briefing = phase === 'briefing'
   const playing = phase === 'playing'
   const input = useSimLoop(playing)
 
@@ -26,57 +27,42 @@ export default function App() {
     if (document.pointerLockElement) document.exitPointerLock()
   }, [playing])
 
-  if (phase === 'briefing') {
-    return (
-      <div className="app">
-        <div className="onboard-stage">
+  return (
+    <div className="app">
+      <main className={`split${briefing ? ' solo' : ''}${thermal ? ' thermal' : ''}`}>
+        <section className="pane">
           <Canvas
             camera={{ position: [200, 96, 90], fov: 46, near: 0.4, far: 1600 }}
             shadows
             dpr={[1, 1.7]}
             gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
           >
-            <MissionScene variant="world" cinematic />
+            <MissionScene variant="world" cinematic={briefing} />
           </Canvas>
-          <Briefing onDeploy={start} />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="app">
-      <main className={`split ${thermal ? 'thermal' : ''}`}>
-        <section className="pane">
-          <Canvas
-            camera={{ position: [40, 110, 70], fov: 46, near: 0.4, far: 1600 }}
-            shadows
-            dpr={[1, 1.7]}
-            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
-          >
-            <MissionScene variant="world" cinematic={!playing} />
-          </Canvas>
-          <WorldChrome />
+          {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
 
-        <div className="gutter" aria-hidden="true" />
-
-        <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
-          <Canvas
-            camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 1100 }}
-            dpr={[1, 1.6]}
-            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
-          >
-            <MissionScene variant="robot" />
-          </Canvas>
-          {playing && <OpticalFeed />}
-          {playing && (
-            <MastHud
-              onMark={tryMark}
-              drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
-            />
-          )}
-        </section>
+        {!briefing && (
+          <>
+            <div className="gutter" aria-hidden="true" />
+            <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
+              <Canvas
+                camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 1100 }}
+                dpr={[1, 1.6]}
+                gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
+              >
+                <MissionScene variant="robot" />
+              </Canvas>
+              {playing && <OpticalFeed />}
+              {playing && (
+                <MastHud
+                  onMark={tryMark}
+                  drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
+                />
+              )}
+            </section>
+          </>
+        )}
       </main>
 
       <EndCard />

@@ -33,8 +33,8 @@ export function MissionScene({
         <Campus thermal={thermal} photoreal={photoreal} cutaway={variant === 'world' && !photoreal} />
       )}
       {!quiet && variant === 'world' && !photoreal && <Places thermal={thermal} />}
-      {!quiet && variant === 'world' && <Ingress />}
-      {!quiet && <Fire thermal={thermal} />}
+      {!quiet && variant === 'world' && !photoreal && <Ingress />}
+      {!quiet && !(variant === 'world' && photoreal) && <Fire thermal={thermal} />}
       {!quiet && <People thermal={thermal} world={variant === 'world'} />}
       {variant === 'world' && !quiet && <LastKnowns />}
       {!quiet && <Robot variant={variant} />}
