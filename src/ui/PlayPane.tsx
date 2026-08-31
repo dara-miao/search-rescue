@@ -20,7 +20,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
-          camera={{ position: [DEPLOY.x - 2, 5, DEPLOY.z + 7], fov: 55, near: 0.35, far: 1600 }}
+          camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.35, far: 1600 }}
           dpr={[1, 1]}
           gl={{ antialias: false, powerPreference: 'default', toneMapping: ACESFilmicToneMapping }}
           onCreated={({ gl }) => {

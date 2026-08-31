@@ -52,14 +52,14 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   return null
 }
 
-/** Close south 3/4 aimed at the chassis, looking a few meters toward Doheny. */
+/** High SW 3/4: unit sits in the lower third, lawn and Doheny fill the rest. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
-    state.camera.position.set(robot.x - 2, robot.y + 3.4, robot.z + 7)
-    state.camera.lookAt(robot.x + 8, robot.y + 1.2, robot.z - 2)
-    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 55) {
-      state.camera.fov = 55
+    state.camera.position.set(robot.x - 7, robot.y + 8.4, robot.z + 13)
+    state.camera.lookAt(robot.x + 2.5, robot.y + 0.35, robot.z - 1.5)
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
+      state.camera.fov = 46
       state.camera.updateProjectionMatrix()
     }
     state.camera.updateMatrixWorld()
