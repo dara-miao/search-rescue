@@ -19,7 +19,7 @@ export function createInput() {
     if (e.repeat) return
     if (!keys.has(e.code)) edges.add(e.code)
     keys.add(e.code)
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyF', 'KeyT', 'KeyA', 'KeyD', 'KeyC'].includes(e.code)) {
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyT'].includes(e.code)) {
       e.preventDefault()
     }
   }

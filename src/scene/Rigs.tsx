@@ -41,11 +41,11 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
       return
     }
 
-    const ox = Math.sin(worldOrbit) * 8
-    const oz = Math.cos(worldOrbit) * 8
-    _desired.set(robot.x + ox, robot.y + 92, robot.z + oz)
-    state.camera.position.lerp(_desired, 0.1)
-    _target.set(robot.x, robot.y, robot.z)
+    const ox = Math.sin(worldOrbit) * 42
+    const oz = Math.cos(worldOrbit) * 42
+    _desired.set(robot.x + ox, 96, robot.z + oz)
+    state.camera.position.lerp(_desired, 0.08)
+    _target.set(robot.x, 2, robot.z)
     state.camera.lookAt(_target)
   })
 
