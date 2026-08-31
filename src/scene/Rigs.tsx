@@ -52,16 +52,14 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   return null
 }
 
-/** South-west 3/4, looking past the unit toward Doheny so sky and facades stay in frame. */
+/** Short south 3/4 aimed at the unit so ground and facades stay in frame. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
-    const fx = Math.sin(robot.yaw)
-    const fz = -Math.cos(robot.yaw)
-    state.camera.position.set(robot.x - 8, robot.y + 12, robot.z + 18)
-    state.camera.lookAt(robot.x + fx * 22, robot.y + 2.6, robot.z + fz * 22)
-    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 56) {
-      state.camera.fov = 56
+    state.camera.position.set(robot.x - 2, robot.y + 5.2, robot.z + 8)
+    state.camera.lookAt(robot.x, robot.y + 1, robot.z)
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 60) {
+      state.camera.fov = 60
       state.camera.updateProjectionMatrix()
     }
     state.camera.updateMatrixWorld()

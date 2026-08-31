@@ -1,6 +1,4 @@
-import { PerspectiveCamera } from '@react-three/drei'
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
-import { DEPLOY } from '../game/store'
 import { useGame } from '../game/store'
 import { Campus } from './Campus'
 import { Fire } from './Fire'
@@ -14,13 +12,6 @@ export function RobotScene() {
 
   return (
     <>
-      <PerspectiveCamera
-        makeDefault
-        position={[DEPLOY.x - 8, 14, DEPLOY.z + 18]}
-        fov={56}
-        near={0.8}
-        far={1100}
-      />
       <Lights thermal={thermal} />
       <Campus thermal={thermal} />
       <Fire thermal={thermal} />
