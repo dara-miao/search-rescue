@@ -52,14 +52,14 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   return null
 }
 
-/** Short south 3/4 aimed at the unit so ground and facades stay in frame. */
+/** Close south 3/4 aimed at the chassis, looking a few meters toward Doheny. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
-    state.camera.position.set(robot.x - 2, robot.y + 5.2, robot.z + 8)
-    state.camera.lookAt(robot.x, robot.y + 1, robot.z)
-    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 60) {
-      state.camera.fov = 60
+    state.camera.position.set(robot.x - 1.2, robot.y + 2.5, robot.z + 3.8)
+    state.camera.lookAt(robot.x + 5, robot.y + 1.1, robot.z - 1)
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 58) {
+      state.camera.fov = 58
       state.camera.updateProjectionMatrix()
     }
     state.camera.updateMatrixWorld()

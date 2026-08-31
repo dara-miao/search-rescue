@@ -17,8 +17,8 @@ const DIRS: Array<[number, number]> = [
 ]
 const EYES = [0.38, 1.05, 1.72, 2.55]
 
-/** A hit this far above the DEM is a roof or canopy, not the walk. */
-export const ROOF_ABOVE_DEM = 3.6
+/** A hit this far above the DEM is a roof or canopy, not the walk. Tents sit under 3 m. */
+export const ROOF_ABOVE_DEM = 1.55
 
 let live = false
 
