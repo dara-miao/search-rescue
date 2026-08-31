@@ -11,6 +11,11 @@
   display: none !important;
 }
 
+.split {
+  position: relative;
+  z-index: 1;
+}
+
 .split.solo {
   display: block;
 }
@@ -20,20 +25,8 @@
   height: 100%;
 }
 
-/* Warm the robot WebGL context offscreen during briefing beats 2–3. */
-.play-warm {
-  position: fixed;
-  left: -120vw;
-  top: 0;
-  width: 50vw;
-  height: 100vh;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.play-live {
-  display: contents;
+.pane {
+  background: transparent;
 }
 
 .robot-boot {
