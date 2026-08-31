@@ -57,17 +57,14 @@ export function MastRig() {
     const { robot } = useGame.getState()
     const fx = Math.sin(robot.yaw)
     const fz = -Math.cos(robot.yaw)
-    const pitch = robot.pitch
-    const eyeY = robot.y + 1.08
-    const eyeX = robot.x + fx * 0.04
-    const eyeZ = robot.z + fz * 0.04
-    state.camera.position.set(eyeX, eyeY, eyeZ)
-    const lookDist = Math.cos(pitch) * 12
-    state.camera.lookAt(eyeX + fx * lookDist, eyeY + Math.sin(pitch) * 12, eyeZ + fz * lookDist)
+    const back = 13
+    const lift = 5.4
+    state.camera.position.set(robot.x - fx * back, robot.y + lift, robot.z - fz * back)
+    state.camera.lookAt(robot.x + fx * 9, robot.y + 1.1, robot.z + fz * 9)
     if (state.camera.type === 'PerspectiveCamera') {
       const cam = state.camera
-      if ('fov' in cam && cam.fov !== 64) {
-        cam.fov = 64
+      if ('fov' in cam && cam.fov !== 54) {
+        cam.fov = 54
         cam.updateProjectionMatrix()
       }
     }

@@ -14,7 +14,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
   const group = useRef<Group>(null)
   const legs = useRef<Array<Group | null>>([null, null, null, null])
   const gait = useRef(0)
-  const hideBody = variant === 'robot'
+  const youPin = variant === 'world'
 
   useFrame((_, dt) => {
     const { robot } = useGame.getState()
@@ -37,7 +37,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
 
   return (
     <group ref={group}>
-      {!hideBody && (
+      {youPin && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]} renderOrder={20}>
             <ringGeometry args={[5.4, 9.2, 48]} />
@@ -55,43 +55,43 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
             <sphereGeometry args={[1.7, 14, 14]} />
             <meshBasicMaterial color="#ffcc00" depthTest={false} toneMapped={false} />
           </mesh>
-          <mesh position={[0, 0.08, 0]} castShadow>
-            <boxGeometry args={[0.58, 0.22, 0.92]} />
-            <meshStandardMaterial color="#16181d" metalness={0.6} roughness={0.35} />
-          </mesh>
-          <mesh position={[0, 0.2, 0.02]}>
-            <boxGeometry args={[0.5, 0.08, 0.72]} />
-            <meshStandardMaterial color="#9d2235" metalness={0.3} roughness={0.45} />
-          </mesh>
-          <mesh position={[0, 0.22, -0.18]}>
-            <boxGeometry args={[0.42, 0.04, 0.18]} />
-            <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.7} />
-          </mesh>
-          {LEGS.map((leg, i) => (
-            <group
-              key={i}
-              ref={(el) => {
-                legs.current[i] = el
-              }}
-              position={leg.hip}
-            >
-              <mesh position={[0, -0.22, 0]}>
-                <boxGeometry args={[0.12, 0.38, 0.14]} />
-                <meshStandardMaterial color="#1a1d22" metalness={0.55} roughness={0.4} />
-              </mesh>
-              <mesh position={[0, -0.5, 0.02]}>
-                <boxGeometry args={[0.11, 0.32, 0.13]} />
-                <meshStandardMaterial color="#111318" metalness={0.5} roughness={0.45} />
-              </mesh>
-              <mesh position={[0, -0.68, 0.04]}>
-                <boxGeometry args={[0.16, 0.08, 0.22]} />
-                <meshStandardMaterial color="#0c0d10" metalness={0.4} roughness={0.5} />
-              </mesh>
-            </group>
-          ))}
         </>
       )}
-      <group position={[0, hideBody ? 0.05 : 0.32, 0.38]}>
+      <mesh position={[0, 0.08, 0]} castShadow>
+        <boxGeometry args={[0.58, 0.22, 0.92]} />
+        <meshStandardMaterial color="#16181d" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0.2, 0.02]}>
+        <boxGeometry args={[0.5, 0.08, 0.72]} />
+        <meshStandardMaterial color="#9d2235" metalness={0.3} roughness={0.45} />
+      </mesh>
+      <mesh position={[0, 0.22, -0.18]}>
+        <boxGeometry args={[0.42, 0.04, 0.18]} />
+        <meshStandardMaterial color="#ffcc00" emissive="#ffcc00" emissiveIntensity={0.7} />
+      </mesh>
+      {LEGS.map((leg, i) => (
+        <group
+          key={i}
+          ref={(el) => {
+            legs.current[i] = el
+          }}
+          position={leg.hip}
+        >
+          <mesh position={[0, -0.22, 0]}>
+            <boxGeometry args={[0.12, 0.38, 0.14]} />
+            <meshStandardMaterial color="#1a1d22" metalness={0.55} roughness={0.4} />
+          </mesh>
+          <mesh position={[0, -0.5, 0.02]}>
+            <boxGeometry args={[0.11, 0.32, 0.13]} />
+            <meshStandardMaterial color="#111318" metalness={0.5} roughness={0.45} />
+          </mesh>
+          <mesh position={[0, -0.68, 0.04]}>
+            <boxGeometry args={[0.16, 0.08, 0.22]} />
+            <meshStandardMaterial color="#0c0d10" metalness={0.4} roughness={0.5} />
+          </mesh>
+        </group>
+      ))}
+      <group position={[0, 0.32, 0.38]}>
         <mesh>
           <boxGeometry args={[0.18, 0.16, 0.22]} />
           <meshStandardMaterial color="#0e1014" metalness={0.7} roughness={0.25} />
@@ -105,10 +105,10 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
         position={[0, 0.4, 0.5]}
         angle={0.55}
         penumbra={0.45}
-        intensity={hideBody ? 18 : 10}
+        intensity={youPin ? 10 : 16}
         distance={22}
         color="#fff4d8"
-        castShadow={variant === 'world'}
+        castShadow={youPin}
       />
     </group>
   )
