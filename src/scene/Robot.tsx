@@ -39,7 +39,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
     <group ref={group}>
       {!youPin && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]} renderOrder={8}>
-          <ringGeometry args={[1.15, 1.85, 28]} />
+          <ringGeometry args={[1.6, 2.5, 28]} />
           <meshBasicMaterial color="#ffcc00" transparent opacity={0.88} depthTest={false} depthWrite={false} toneMapped={false} />
         </mesh>
       )}
@@ -63,7 +63,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
           </mesh>
         </>
       )}
-      <group scale={youPin ? 1 : 5.2}>
+      <group scale={youPin ? 1 : 2.4}>
       <mesh position={[0, 0.08, 0]} castShadow>
         <boxGeometry args={[0.58, 0.22, 0.92]} />
         <meshStandardMaterial color="#16181d" metalness={0.6} roughness={0.35} />
