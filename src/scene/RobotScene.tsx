@@ -16,8 +16,8 @@ export function RobotScene() {
     <>
       <PerspectiveCamera
         makeDefault
-        position={[DEPLOY.x - 6, 18, DEPLOY.z + 11]}
-        fov={50}
+        position={[DEPLOY.x - 8, 14, DEPLOY.z + 18]}
+        fov={56}
         near={0.8}
         far={1100}
       />

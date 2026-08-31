@@ -52,20 +52,20 @@ export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   return null
 }
 
-/** South-west 3/4, above tents and plaza overlays. Runs before View scissors. */
+/** South-west 3/4, looking past the unit toward Doheny so sky and facades stay in frame. */
 export function MastRig() {
   useFrame((state) => {
     const { robot } = useGame.getState()
     const fx = Math.sin(robot.yaw)
     const fz = -Math.cos(robot.yaw)
-    state.camera.position.set(robot.x - 6, robot.y + 16, robot.z + 11)
-    state.camera.lookAt(robot.x + fx * 4, robot.y + 0.35, robot.z + fz * 4)
-    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 50) {
-      state.camera.fov = 50
+    state.camera.position.set(robot.x - 8, robot.y + 12, robot.z + 18)
+    state.camera.lookAt(robot.x + fx * 22, robot.y + 2.6, robot.z + fz * 22)
+    if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 56) {
+      state.camera.fov = 56
       state.camera.updateProjectionMatrix()
     }
     state.camera.updateMatrixWorld()
-  }, -1)
+  })
 
   return null
 }
