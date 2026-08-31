@@ -2,7 +2,7 @@ export type EvacPt = [number, number]
 
 /** West walk deploy → Tommy → Bovard lawn. Matches store DEPLOY xz. */
 export const EVAC_PATH: EvacPt[] = [
-  [82, 36],
+  [94, 52],
   [90, 42],
   [50, 22],
   [18, 10],
