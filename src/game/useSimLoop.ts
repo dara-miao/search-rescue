@@ -35,6 +35,8 @@ export function useSimLoop(active: boolean) {
 
     input.attach()
     input.resetLook(DEPLOY.yaw, 0.16)
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    window.focus()
     const spawn = useGame.getState().robot
     body.current = { x: spawn.x, y: spawn.y, z: spawn.z, vx: 0, vy: 0, vz: 0 }
 
@@ -59,7 +61,7 @@ export function useSimLoop(active: boolean) {
           const wish = stickWish('drive', pad.stickX, pad.stickY)
           input.turn(wish.turn * dt * TURN_RATE)
           input.nod(wish.nod * dt * NOD_RATE)
-          forward = wish.forward
+          if (Math.abs(wish.forward) > 0.04) forward = wish.forward
         }
 
         const aimed = input.consume()

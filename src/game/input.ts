@@ -28,14 +28,14 @@ export function createInput() {
   }
 
   const attach = () => {
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('keydown', onKeyDown, true)
+    window.addEventListener('keyup', onKeyUp, true)
     if (document.pointerLockElement) document.exitPointerLock()
   }
 
   const detach = () => {
-    window.removeEventListener('keydown', onKeyDown)
-    window.removeEventListener('keyup', onKeyUp)
+    window.removeEventListener('keydown', onKeyDown, true)
+    window.removeEventListener('keyup', onKeyUp, true)
     keys.clear()
     edges.clear()
   }

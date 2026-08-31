@@ -19,6 +19,8 @@ const EYES = [0.38, 1.05, 1.72, 2.55]
 
 /** A hit this far above the DEM is a roof or canopy, not the walk. Tents sit under 3 m. */
 export const ROOF_ABOVE_DEM = 1.55
+/** Tree canopies and building roofs sit above this. Walk the DEM under them. */
+export const CANOPY_ABOVE_DEM = 4.2
 
 let live = false
 
@@ -61,13 +63,34 @@ export function probeTileGround(x: number, z: number) {
   return hit ? hit.point.y : null
 }
 
-/** Walk height on photoreal ground. Null means this XZ is a roof — do not stand there. */
+function probeTileHits(x: number, z: number) {
+  if (!live || roots.length === 0) return []
+  origin.set(x, 160, z)
+  dir.set(0, -1, 0)
+  ray.set(origin, dir)
+  ray.near = 0.04
+  ray.far = 220
+  ray.firstHitOnly = false
+  return ray.intersectObjects(roots, true).map((hit) => hit.point.y)
+}
+
+/**
+ * Ground / stoop → that Y. Tent-height roof → null (blocked).
+ * High first-hits (palms, building roofs) → DEM so you can walk under the canopy.
+ */
+export function pickWalkY(dem: number, hits: number[]) {
+  if (!hits.length) return dem
+  const groundish = hits.filter((y) => y <= dem + ROOF_ABOVE_DEM && y >= dem - 1.2)
+  if (groundish.length) return Math.max(...groundish)
+  if (hits.some((y) => y > dem + ROOF_ABOVE_DEM && y < dem + CANOPY_ABOVE_DEM)) return null
+  return dem
+}
+
+/** Walk height on photoreal ground. Null means this XZ is a low roof — do not stand there. */
 export function walkableTileY(x: number, z: number) {
   const dem = heightAt(x, z)
-  const tileY = probeTileGround(x, z)
-  if (tileY == null) return dem
-  if (isRoofHit(tileY, dem)) return null
-  return tileY
+  if (!live) return dem
+  return pickWalkY(dem, probeTileHits(x, z))
 }
 
 export function measureRoofCentroid(cx: number, cz: number, half = 48, step = 6) {

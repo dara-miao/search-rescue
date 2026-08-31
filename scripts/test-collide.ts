@@ -1,6 +1,7 @@
 import { keepOut, keepOutFrom, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
 import { keepOffProps, PROP_CIRCLES } from '../src/game/props'
 import { stepBody, type Body } from '../src/game/motion'
+import { isRoofHit, pickWalkY, ROOF_ABOVE_DEM, walkableTileY } from '../src/game/tilesCollide'
 import { BUILDINGS } from '../src/game/world'
 
 function assert(ok: boolean, msg: string) {
@@ -94,6 +95,16 @@ if (nearPalm) {
   const off = keepOut(nearPalm.x, nearPalm.z)
   assert(Math.hypot(off.x - nearPalm.x, off.z - nearPalm.z) >= nearPalm.r - 0.08, 'palms are solid')
 }
+
+assert(isRoofHit(12, 1) === true, 'a 11 m rise is a roof')
+assert(isRoofHit(2.2, 1) === false, 'a 1.2 m rise is still the walk')
+assert(ROOF_ABOVE_DEM > 1.2 && ROOF_ABOVE_DEM < 2.2, 'roof threshold sits between stoops and tents')
+assert(walkableTileY(82, 36) !== null, 'deploy stays walkable without tiles')
+assert(walkableTileY(94, 52) !== null, 'plaza deploy stays walkable without tiles')
+assert(pickWalkY(1, [12]) === 1, 'a palm canopy is not a roof — walk the DEM')
+assert(pickWalkY(1, [3.2]) === null, 'a tent-height hit stays blocked')
+assert(pickWalkY(1, [12, 1.1]) === 1.1, 'ground under a canopy wins')
+assert(pickWalkY(1, []) === 1, 'no hits fall back to the DEM')
 
 if (process.exitCode) {
   console.error('collide tests failed')
