@@ -171,6 +171,7 @@ export const useGame = create<GameStore>((set, get) => ({
       ...syncFromSim(sim, robot, 0),
       phase: 'playing',
     })
+    void get().hydrateGoogle()
   },
 
   reset: () => {

@@ -1,4 +1,5 @@
 import { TilesPlugin, TilesRenderer, TilesAttributionOverlay } from '3d-tiles-renderer/r3f'
+import type { TilesRenderer as TilesImpl } from '3d-tiles-renderer/three'
 import { ReorientationPlugin, TilesFadePlugin, UpdateOnChangePlugin } from '3d-tiles-renderer/plugins'
 import { useRef } from 'react'
 import type { Group, Object3D } from 'three'
@@ -146,20 +147,26 @@ export function GoogleTiles({
   const key = GOOGLE_MAPS_KEY
   const setTilesReady = useGame((s) => s.setTilesReady)
   const align = useRef<Group>(null)
+  const tuneQueues = (tiles: TilesImpl | null) => {
+    if (!tiles) return
+    tiles.downloadQueue.maxJobsPerOrigin = 10
+    tiles.parseQueue.maxJobs = 8
+  }
   if (!key) return null
 
   return (
     <group ref={align}>
       <group rotation={[0, Math.PI, 0]}>
       <TilesRenderer
+        ref={tuneQueues}
         url={`${GOOGLE_ROOT}?key=${key}`}
-        errorTarget={variant === 'robot' ? 6 : 10}
+        errorTarget={variant === 'robot' ? 8 : 16}
         onLoadModel={(payload: unknown) => {
           setTilesReady(true)
           const scene = sceneFromLoad(payload)
           if (scene) registerTileScene(scene)
           window.clearTimeout(alignTimer)
-          alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 480)
+          alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 160)
         }}
         onDisposeModel={(payload: unknown) => {
           const scene = sceneFromLoad(payload)
@@ -179,7 +186,7 @@ export function GoogleTiles({
           ]}
         />
         <TilesPlugin plugin={UpdateOnChangePlugin} />
-        <TilesPlugin plugin={TilesFadePlugin} />
+        <TilesPlugin plugin={TilesFadePlugin} args={[{ fadeDuration: 0.12, fadeRootTiles: false }]} />
         {variant === 'world' && (
           <TilesAttributionOverlay
             style={{
