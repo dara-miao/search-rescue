@@ -29,6 +29,12 @@
   background: transparent;
 }
 
+.view-fill {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .robot-boot {
   background: #2a6eab;
 }
