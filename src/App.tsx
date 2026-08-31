@@ -1,67 +1,56 @@
 import { Canvas } from '@react-three/fiber'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { ACESFilmicToneMapping } from 'three'
-import { useSimLoop } from './game/useSimLoop'
 import { useGame } from './game/store'
-import { MissionScene } from './scene/MissionScene'
+import { WorldView } from './scene/WorldView'
 import { Briefing, EndCard } from './ui/Overlays'
-import { AnalogKnob } from './ui/AnalogKnob'
-import { MastHud, WorldChrome } from './ui/Hud'
-import { OpticalFeed } from './ui/OpticalFeed'
+import { WorldChrome } from './ui/Hud'
+
+const PlayPane = lazy(() => import('./ui/PlayPane').then((m) => ({ default: m.PlayPane })))
+
+function idle(work: () => void) {
+  const ric = window.requestIdleCallback
+  if (ric) return ric(work, { timeout: 1200 })
+  return window.setTimeout(work, 280)
+}
 
 export default function App() {
   const phase = useGame((s) => s.phase)
-  const thermal = useGame((s) => s.thermal)
   const start = useGame((s) => s.start)
-  const tryMark = useGame((s) => s.tryMark)
-  const hydrateGoogle = useGame((s) => s.hydrateGoogle)
   const briefing = phase === 'briefing'
-  const playing = phase === 'playing'
-  const input = useSimLoop(playing)
 
   useEffect(() => {
-    void hydrateGoogle()
-  }, [hydrateGoogle])
+    const id = idle(() => {
+      void import('./ui/PlayPane')
+    })
+    return () => {
+      window.clearTimeout(id as number)
+      window.cancelIdleCallback?.(id as number)
+    }
+  }, [])
 
   useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
-  }, [playing])
+  }, [phase])
 
   return (
     <div className="app">
-      <main className={`split${briefing ? ' solo' : ''}${thermal ? ' thermal' : ''}`}>
+      <main className={`split${briefing ? ' solo' : ''}`}>
         <section className="pane">
           <Canvas
             camera={{ position: [200, 96, 90], fov: 46, near: 0.4, far: 1600 }}
-            shadows
-            dpr={[1, 1.7]}
-            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
+            dpr={[1, 1.35]}
+            gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
           >
-            <MissionScene variant="world" cinematic={briefing} />
+            <WorldView cinematic={briefing} />
           </Canvas>
           {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
 
         {!briefing && (
-          <>
-            <div className="gutter" aria-hidden="true" />
-            <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
-              <Canvas
-                camera={{ position: [0, 1.2, 18], fov: 64, near: 0.08, far: 1100 }}
-                dpr={[1, 1.6]}
-                gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
-              >
-                <MissionScene variant="robot" />
-              </Canvas>
-              {playing && <OpticalFeed />}
-              {playing && (
-                <MastHud
-                  onMark={tryMark}
-                  drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
-                />
-              )}
-            </section>
-          </>
+          <Suspense fallback={null}>
+            <PlayPane />
+          </Suspense>
         )}
       </main>
 

@@ -3,6 +3,9 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['three', '@react-three/fiber', '3d-tiles-renderer/r3f', '3d-tiles-renderer/plugins'],
+  },
   server: {
     host: '0.0.0.0',
     port: 43147,
