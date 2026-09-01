@@ -99,9 +99,14 @@ export function MastRig() {
     }
 
     const tight = dist < 9
+    const aim = useGame.getState().autoTarget
     _desired.set(cleared.x, robot.y + (tight ? 12 : 8.4), cleared.z)
     if (tight) _look.set(robot.x, robot.y + 0.4, robot.z)
-    else _look.set(robot.x + 6, robot.y + 0.5, robot.z - 3)
+    else if (aim) {
+      _look.set(robot.x + (aim.x - robot.x) * 0.38, robot.y + 0.45, robot.z + (aim.z - robot.z) * 0.38)
+    } else {
+      _look.set(robot.x + 6, robot.y + 0.5, robot.z - 3)
+    }
 
     const k = 1 - Math.exp(-5.4 * dt)
     if (!booted.current) {
