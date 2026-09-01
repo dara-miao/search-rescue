@@ -1,17 +1,15 @@
 import { useEffect, useRef } from 'react'
+import { createAuto, stepAuto } from './auto'
 import { heightAt } from './ground'
-import { createInput, type InputApi } from './input'
 import { stepBody, type Body } from './motion'
-import { stickWish } from './steer'
 import { DEPLOY, useGame } from './store'
-import { wishScale } from '../sim/robot'
 import { SIM_DT } from '../sim/step'
 
-const TURN_RATE = 1.55
-const NOD_RATE = 1.15
+const TRAIL_GAP = 0.55
+const TRAIL_MAX = 90
 
 export function useSimLoop(active: boolean) {
-  const api = useRef<InputApi | null>(null)
+  const auto = useRef(createAuto(DEPLOY.x, DEPLOY.z))
   const body = useRef<Body>({
     x: DEPLOY.x,
     y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
@@ -20,29 +18,19 @@ export function useSimLoop(active: boolean) {
     vy: 0,
     vz: 0,
   })
-  if (!api.current || typeof api.current.setYaw !== 'function') {
-    api.current = createInput()
-  }
 
   useEffect(() => {
-    const input = api.current
-    if (!input) return
+    if (!active) return
 
-    if (!active) {
-      input.detach()
-      return
-    }
-
-    input.attach()
-    input.resetLook(DEPLOY.yaw, 0.16)
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
-    window.focus()
     const spawn = useGame.getState().robot
+    auto.current = createAuto(spawn.x, spawn.z)
     body.current = { x: spawn.x, y: spawn.y, z: spawn.z, vx: 0, vy: 0, vz: 0 }
 
     let last = performance.now()
     let raf = 0
     let acc = 0
+    let trailWait = 0
+    const crumbs: Array<[number, number]> = [[spawn.x, spawn.z]]
 
     const frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000)
@@ -50,49 +38,45 @@ export function useSimLoop(active: boolean) {
       const store = useGame.getState()
 
       if (store.phase === 'playing') {
-        const left = input.pressed('KeyA') || input.pressed('ArrowLeft')
-        const right = input.pressed('KeyD') || input.pressed('ArrowRight')
-        if (left || right) input.turn(((right ? 1 : 0) - (left ? 1 : 0)) * dt * TURN_RATE)
-
-        const pad = input.consume()
-        let forward = pad.forward
-        const leaning = pad.stickActive && Math.hypot(pad.stickX, pad.stickY) > 0.12
-        if (leaning) {
-          const wish = stickWish('drive', pad.stickX, pad.stickY)
-          input.turn(wish.turn * dt * TURN_RATE)
-          input.nod(wish.nod * dt * NOD_RATE)
-          if (Math.abs(wish.forward) > 0.04) forward = wish.forward
-        }
-
-        const aimed = input.consume()
-        const cap = wishScale(store.sim.robot.zone, store.sim.robot.noGoTime)
-        const sprint = aimed.sprint && cap.sprint
-        const sin = Math.sin(aimed.yaw)
-        const cos = Math.cos(aimed.yaw)
-        const wishX = (sin * forward + cos * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
-        const wishZ = (-cos * forward + sin * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
-        const next = stepBody(body.current, wishX, wishZ, sprint, dt)
+        const cmd = stepAuto(auto.current, store.robot, store.sim, dt)
+        const next = stepBody(body.current, cmd.wishX, cmd.wishZ, false, dt)
         body.current = next
         const speed = Math.hypot(next.vx, next.vz)
+
+        if (store.thermal !== cmd.thermal) store.toggleThermal()
+        if (cmd.mark) store.tryMark()
 
         store.applyRobot({
           x: next.x,
           y: next.y,
           z: next.z,
-          yaw: aimed.yaw,
-          pitch: aimed.pitch,
+          yaw: cmd.yaw,
+          pitch: cmd.pitch,
           speed,
           moving: speed > 0.15,
         })
 
-        if (input.pressed('KeyQ')) store.setWorldOrbit(store.worldOrbit + dt * 0.9)
-        if (input.pressed('KeyE')) store.setWorldOrbit(store.worldOrbit - dt * 0.9)
-
-        if (input.consumeEdge('KeyF') || input.consumeEdge('Space')) {
-          store.tryMark()
+        trailWait += dt
+        let trailDirty = false
+        if (trailWait >= TRAIL_GAP) {
+          trailWait = 0
+          const prev = crumbs[crumbs.length - 1]
+          if (!prev || Math.hypot(next.x - prev[0], next.z - prev[1]) > 0.8) {
+            crumbs.push([next.x, next.z])
+            if (crumbs.length > TRAIL_MAX) crumbs.shift()
+            trailDirty = true
+          }
         }
-        if (input.consumeEdge('KeyT')) {
-          store.toggleThermal()
+
+        const sameLine = store.narration === cmd.line
+        const aim = store.autoTarget
+        const sameAim = Boolean(aim && Math.abs(aim.x - cmd.targetX) < 0.15 && Math.abs(aim.z - cmd.targetZ) < 0.15)
+        if (!sameLine || !sameAim || trailDirty) {
+          store.setWatch({
+            narration: cmd.line,
+            autoTarget: { x: cmd.targetX, z: cmd.targetZ },
+            trail: trailDirty ? crumbs.slice() : undefined,
+          })
         }
 
         acc += dt
@@ -106,11 +90,6 @@ export function useSimLoop(active: boolean) {
     }
 
     raf = requestAnimationFrame(frame)
-    return () => {
-      cancelAnimationFrame(raf)
-      input.detach()
-    }
+    return () => cancelAnimationFrame(raf)
   }, [active])
-
-  return api
 }

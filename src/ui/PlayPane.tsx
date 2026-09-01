@@ -1,40 +1,19 @@
-import type { MutableRefObject } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
-import type { InputApi } from '../game/input'
 import { DEPLOY, useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
-import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
-function isHud(target: EventTarget | null) {
-  return target instanceof HTMLElement && Boolean(target.closest('.knob, .console, .mast-top, .optical, button'))
-}
-
-export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
+export function PlayPane() {
   const thermal = useGame((s) => s.thermal)
   const playing = useGame((s) => s.phase === 'playing')
-  const tryMark = useGame((s) => s.tryMark)
 
   return (
     <>
       <div className="gutter" aria-hidden="true" />
-      <section
-        className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}
-        onPointerDown={(e) => {
-          if (!playing || isHud(e.target)) return
-          try {
-            e.currentTarget.setPointerCapture(e.pointerId)
-          } catch {
-            /* window pointerup still clears the hold */
-          }
-          input.current?.setHold(true)
-        }}
-        onPointerUp={() => input.current?.setHold(false)}
-        onPointerCancel={() => input.current?.setHold(false)}
-        onLostPointerCapture={() => input.current?.setHold(false)}
-      >
+      <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
+        <span className="pane-tag">ROBOT</span>
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
@@ -50,12 +29,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing && (
-          <MastHud
-            onMark={tryMark}
-            drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
-          />
-        )}
+        {playing && <MastHud />}
       </section>
     </>
   )
