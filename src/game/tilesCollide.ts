@@ -7,19 +7,38 @@ const origin = new Vector3()
 const dir = new Vector3()
 const worldN = new Vector3()
 const normalMat = new Matrix3()
-const DIRS: Array<[number, number]> = Array.from({ length: 16 }, (_, i) => {
-  const a = (i / 16) * Math.PI * 2
-  return [Math.cos(a), Math.sin(a)]
-})
-const EYES = [0.32, 0.78, 1.2, 1.72, 2.35]
-const SWEEP_EYES = [0.42, 1.05, 1.68]
+const DIRS: Array<[number, number]> = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+  [0.707, 0.707],
+  [-0.707, 0.707],
+  [0.707, -0.707],
+  [-0.707, -0.707],
+]
+/** Curb / planter lip, pole, bench, facade. */
+const SWEEP_EYES = [0.16, 0.38, 0.95, 1.55]
+const SCAN_EYES = [0.22, 1.05]
+const CARDINALS: Array<[number, number]> = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+]
 
 /** A hit this far above the DEM is a roof or canopy, not the walk. Tents sit under 3 m. */
 export const ROOF_ABOVE_DEM = 1.55
 /** Tree canopies and building roofs sit above this. Walk the DEM under them. */
 export const CANOPY_ABOVE_DEM = 4.2
 
+const CELL = 1.6
+const BLOCK = 1.1
+const walkCache = new Map<string, number | null>()
+const clutter = new Map<string, { x: number; z: number; r: number }>()
+
 let live = false
+let lastScan = 0
 
 export function tilesLive() {
   return live
@@ -28,6 +47,7 @@ export function tilesLive() {
 export function registerTileScene(scene: Object3D) {
   if (roots.includes(scene)) return
   roots.push(scene)
+  while (roots.length > 10) roots.shift()
   live = true
 }
 
@@ -61,15 +81,17 @@ export function probeTileGround(x: number, z: number) {
   return hit ? hit.point.y : null
 }
 
-const CELL = 1.6
-const walkCache = new Map<string, number | null>()
-
 function cellKey(x: number, z: number) {
   return `${Math.round(x / CELL)}:${Math.round(z / CELL)}`
 }
 
+function blockKey(x: number, z: number) {
+  return `${Math.round(x / BLOCK)}:${Math.round(z / BLOCK)}`
+}
+
 function clearWalkCache() {
   walkCache.clear()
+  clutter.clear()
 }
 
 /**
@@ -94,7 +116,7 @@ export function walkableTileY(x: number, z: number) {
   const y = probeTileGround(x, z)
   const picked = y == null ? dem : pickWalkY(dem, [y])
   walkCache.set(key, picked)
-  if (walkCache.size > 360) {
+  if (walkCache.size > 220) {
     const oldest = walkCache.keys().next().value
     if (oldest !== undefined) walkCache.delete(oldest)
   }
@@ -131,38 +153,83 @@ function worldUp(hit: Intersection) {
   return worldN.y / L
 }
 
-/** Horizontal rays that scrape the walk or a roof slab are not poles / walls. */
-export function isSolidUpright(hit: Intersection, bodyY: number) {
-  if (hit.point.y < bodyY + 0.16) return false
+/** Vertical faces — poles, planters, benches, walls. Floors and roofs are not. */
+export function isSolidUpright(hit: Intersection, _bodyY: number) {
   return Math.abs(worldUp(hit)) < 0.72
 }
 
-function keepOffAtEye(x: number, y: number, z: number, radius: number, bodyY: number) {
+function rememberAt(x: number, z: number, radius: number) {
+  const r = Math.max(0.62, Math.min(1.2, radius * 0.58))
+  const key = blockKey(x, z)
+  const prev = clutter.get(key)
+  if (!prev || prev.r < r) clutter.set(key, { x, z, r })
+  if (clutter.size > 220) {
+    const oldest = clutter.keys().next().value
+    if (oldest !== undefined) clutter.delete(oldest)
+  }
+}
+
+function rememberHit(hit: Intersection, radius: number) {
+  rememberAt(hit.point.x, hit.point.z, radius)
+}
+
+/** Planter lids and bench seats are floors to the normal test — height above DEM is the tell. */
+function scanDown(x: number, z: number, radius: number) {
+  const dem = heightAt(x, z)
+  const hit = hitAlong(x, dem + 1.65, z, 0, -1, 0, 2.05)
+  if (!hit) return
+  const rise = hit.point.y - dem
+  if (rise > 0.16 && rise < 1.35) rememberAt(hit.point.x, hit.point.z, radius)
+}
+
+function keepOffClutter(x: number, z: number, pad: number) {
   let nx = x
   let nz = z
-  for (const [dx, dz] of DIRS) {
-    const hit = hitAlong(nx, y, nz, dx, 0, dz, radius)
-    if (!hit || !isSolidUpright(hit, bodyY)) continue
-    const push = radius - hit.distance + 0.1
-    if (push > 0) {
-      nx -= dx * push
-      nz -= dz * push
+  const ix = Math.round(x / BLOCK)
+  const iz = Math.round(z / BLOCK)
+  for (let gx = ix - 2; gx <= ix + 2; gx++) {
+    for (let gz = iz - 2; gz <= iz + 2; gz++) {
+      const p = clutter.get(`${gx}:${gz}`)
+      if (!p) continue
+      const need = p.r + pad
+      const dx = nx - p.x
+      const dz = nz - p.z
+      const d = Math.hypot(dx, dz)
+      if (d < 1e-4) {
+        nx = p.x + need
+        continue
+      }
+      if (d < need) {
+        nx = p.x + (dx / d) * need
+        nz = p.z + (dz / d) * need
+      }
     }
   }
   return { x: nx, z: nz }
 }
 
-/** Push the mast off photoreal facades and poles loaded in WORLD. No-op until tiles exist. */
+function scanAround(x: number, y: number, z: number, radius: number) {
+  const now = performance.now()
+  if (now - lastScan < 260) return
+  lastScan = now
+  for (const eye of SCAN_EYES) {
+    for (const [dx, dz] of DIRS) {
+      const hit = hitAlong(x, y + eye, z, dx, 0, dz, radius + 0.4)
+      if (!hit || !isSolidUpright(hit, y)) continue
+      rememberHit(hit, radius)
+    }
+  }
+  scanDown(x, z, radius)
+  for (const [dx, dz] of CARDINALS) {
+    scanDown(x + dx * (radius + 0.35), z + dz * (radius + 0.35), radius)
+  }
+}
+
+/** Push the mast off photoreal poles, planters, and facades. Cheap after the first hit. */
 export function keepOffTiles(x: number, y: number, z: number, radius: number) {
   if (!live) return { x, z }
-  let nx = x
-  let nz = z
-  for (const eye of EYES) {
-    const next = keepOffAtEye(nx, y + eye, nz, radius, y)
-    nx = next.x
-    nz = next.z
-  }
-  return { x: nx, z: nz }
+  scanAround(x, y, z, radius)
+  return keepOffClutter(x, z, radius)
 }
 
 export function sweepTiles(
@@ -177,17 +244,28 @@ export function sweepTiles(
   const dx = x - px
   const dz = z - pz
   const travel = Math.hypot(dx, dz)
-  if (travel < 1e-4) return { x, z }
-  let best = Infinity
-  for (const eye of SWEEP_EYES) {
-    const hit = hitAlong(px, py + eye, pz, dx, 0, dz, travel + radius)
-    if (!hit || hit.distance >= travel + radius) continue
-    if (!isSolidUpright(hit, py)) continue
-    if (hit.distance < best) best = hit.distance
-  }
-  if (!Number.isFinite(best)) return { x, z }
-  const stop = Math.max(0, best - radius)
+  if (travel < 1e-4) return keepOffClutter(x, z, radius)
+  const reach = travel + radius
   const ux = dx / travel
   const uz = dz / travel
-  return { x: px + ux * stop, z: pz + uz * stop }
+  const pxp = -uz * 0.7
+  const pzp = ux * 0.7
+  let best = Infinity
+  for (const eye of SWEEP_EYES) {
+    const hit = hitAlong(px, py + eye, pz, dx, 0, dz, reach)
+    if (hit && hit.distance < reach && isSolidUpright(hit, py)) {
+      rememberHit(hit, radius)
+      if (hit.distance < best) best = hit.distance
+    }
+    if (eye > 0.25) continue
+    for (const side of [-1, 1] as const) {
+      const sideHit = hitAlong(px + pxp * side, py + eye, pz + pzp * side, dx, 0, dz, reach)
+      if (!sideHit || sideHit.distance >= reach || !isSolidUpright(sideHit, py)) continue
+      rememberHit(sideHit, radius)
+      if (sideHit.distance < best) best = sideHit.distance
+    }
+  }
+  if (!Number.isFinite(best)) return keepOffClutter(x, z, radius)
+  const stop = Math.max(0, best - radius)
+  return keepOffClutter(px + ux * stop, pz + uz * stop, radius)
 }
