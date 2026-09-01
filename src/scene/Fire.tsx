@@ -7,7 +7,7 @@ import type { HotCell } from '../sim/types'
 
 const dummy = new Object3D()
 const flameColor = new Color()
-const MAX = 160
+const MAX = 48
 
 function FlameField({ thermal }: { thermal: boolean }) {
   const mesh = useRef<InstancedMesh>(null)

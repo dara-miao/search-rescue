@@ -38,6 +38,7 @@ export function disposeTileScene(scene: Object3D) {
   const i = roots.indexOf(scene)
   if (i >= 0) roots.splice(i, 1)
   live = roots.length > 0
+  clearWalkCache()
 }
 
 export function isRoofHit(hitY: number, demY: number) {
@@ -63,15 +64,15 @@ export function probeTileGround(x: number, z: number) {
   return hit ? hit.point.y : null
 }
 
-function probeTileHits(x: number, z: number) {
-  if (!live || roots.length === 0) return []
-  origin.set(x, 160, z)
-  dir.set(0, -1, 0)
-  ray.set(origin, dir)
-  ray.near = 0.04
-  ray.far = 220
-  ray.firstHitOnly = false
-  return ray.intersectObjects(roots, true).map((hit) => hit.point.y)
+const CELL = 1.6
+const walkCache = new Map<string, number | null>()
+
+function cellKey(x: number, z: number) {
+  return `${Math.round(x / CELL)}:${Math.round(z / CELL)}`
+}
+
+function clearWalkCache() {
+  walkCache.clear()
 }
 
 /**
@@ -90,10 +91,20 @@ export function pickWalkY(dem: number, hits: number[]) {
 export function walkableTileY(x: number, z: number) {
   const dem = heightAt(x, z)
   if (!live) return dem
-  return pickWalkY(dem, probeTileHits(x, z))
+  const key = cellKey(x, z)
+  const cached = walkCache.get(key)
+  if (cached !== undefined) return cached
+  const y = probeTileGround(x, z)
+  const picked = y == null ? dem : pickWalkY(dem, [y])
+  walkCache.set(key, picked)
+  if (walkCache.size > 360) {
+    const oldest = walkCache.keys().next().value
+    if (oldest !== undefined) walkCache.delete(oldest)
+  }
+  return picked
 }
 
-export function measureRoofCentroid(cx: number, cz: number, half = 48, step = 6) {
+export function measureRoofCentroid(cx: number, cz: number, half = 30, step = 12) {
   if (!live) return null
   let sx = 0
   let sz = 0
@@ -152,17 +163,11 @@ export function sweepTiles(
   const dx = x - px
   const dz = z - pz
   const travel = Math.hypot(dx, dz)
-  if (travel < 1e-4) return keepOffTiles(x, py, z, radius)
-  let stop = travel
-  for (const eye of EYES) {
-    const hit = hitAlong(px, py + eye, pz, dx, 0, dz, travel + radius)
-    if (hit && hit.distance < stop + radius) {
-      stop = Math.max(0, hit.distance - radius)
-    }
-  }
+  if (travel < 1e-4) return { x, z }
+  const hit = hitAlong(px, py + 1.05, pz, dx, 0, dz, travel + radius)
+  if (!hit || hit.distance >= travel + radius) return { x, z }
+  const stop = Math.max(0, hit.distance - radius)
   const ux = dx / travel
   const uz = dz / travel
-  const sx = px + ux * Math.min(travel, stop)
-  const sz = pz + uz * Math.min(travel, stop)
-  return keepOffTiles(sx, py, sz, radius)
+  return { x: px + ux * stop, z: pz + uz * stop }
 }

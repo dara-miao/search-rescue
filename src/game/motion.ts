@@ -81,9 +81,11 @@ export function stepBody(
     cz = sealed.z
   }
   let cleared = { x: cx, z: cz }
-  if (walkableTileY(cleared.x, cleared.z) == null) {
+  let tileY = walkableTileY(cleared.x, cleared.z)
+  if (tileY == null) {
     const ejected = keepOut(cleared.x, cleared.z)
-    cleared = walkableTileY(ejected.x, ejected.z) == null ? { x, z } : ejected
+    tileY = walkableTileY(ejected.x, ejected.z)
+    cleared = tileY == null ? { x, z } : ejected
     if (cleared.x === x && cleared.z === z) {
       vx = 0
       vz = 0
@@ -94,7 +96,6 @@ export function stepBody(
     vz = (cleared.z - z) / dt
   }
 
-  const tileY = walkableTileY(cleared.x, cleared.z)
   const ground = (tileY ?? heightAt(cleared.x, cleared.z)) + STEP
   if (y > ground + 0.12) {
     vy -= GRAVITY * dt

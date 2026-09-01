@@ -37,7 +37,7 @@ function BlueDome() {
 
   return (
     <mesh renderOrder={-10} frustumCulled={false}>
-      <sphereGeometry args={[680, 32, 24]} />
+      <sphereGeometry args={[680, 16, 12]} />
       <meshBasicMaterial
         map={map ?? undefined}
         color={map ? '#ffffff' : '#2f86d0'}
@@ -96,13 +96,6 @@ export function Lights({
           position={[SUN[0] * 90, SUN[1] * 90, SUN[2] * 90]}
           intensity={1.45}
           color="#fff6e4"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-          shadow-camera-far={220}
-          shadow-camera-left={-120}
-          shadow-camera-right={120}
-          shadow-camera-top={120}
-          shadow-camera-bottom={-120}
         />
         <directionalLight position={[36, 16, -18]} intensity={0.28} color="#ff8a4a" />
       </>
@@ -117,7 +110,7 @@ export function Lights({
       <hemisphereLight args={['#134050', '#020406', 0.5]} />
       <directionalLight position={[-80, 70, 40]} intensity={0.3} color="#88ccee" />
       <directionalLight position={[40, 18, -20]} intensity={0.05} color="#ff8a4a" />
-      <Stars radius={280} depth={60} count={500} factor={4} fade speed={0.35} />
+      <Stars radius={280} depth={60} count={160} factor={4} fade speed={0.35} />
     </>
   )
 }

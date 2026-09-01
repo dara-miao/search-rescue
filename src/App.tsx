@@ -47,8 +47,8 @@ export default function App() {
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
             camera={{ position: [200, 96, 90], fov: 46, near: 0.4, far: 1600 }}
-            dpr={[1, 1.25]}
-            gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
+            dpr={[1, 1]}
+            gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
             onCreated={({ gl }) => holdContext(gl.domElement)}
           >
             <WorldView cinematic={briefing} />
