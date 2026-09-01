@@ -3,41 +3,35 @@ import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { insideSolid, keepOut } from '../game/collide'
 import { useGame } from '../game/store'
-import { DOHENY } from '../game/world'
 
 const _target = new Vector3()
 const _desired = new Vector3()
 const _look = new Vector3()
 
-const BRIEFING_SHOTS = [
-  { r: 72, y: 96, lookY: 2, speed: 0.05 },
-  { r: 88, y: 48, lookY: 5, speed: 0.04 },
-  { r: 118, y: 82, lookY: 2, speed: 0.035 },
-] as const
+const PICK_SHOT = { cx: 20, cz: 8, r: 148, y: 118, lookY: 4, speed: 0.032 }
 
 export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   const orbit = useRef(0.55)
   const lookY = useRef(2)
 
   useFrame((state, dt) => {
-    const { robot, worldOrbit, phase, briefingStep } = useGame.getState()
-    const hero = cinematic || phase === 'briefing'
+    const { robot, worldOrbit, phase } = useGame.getState()
+    const hero = cinematic || phase === 'pick'
     if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
       state.camera.fov = 46
       state.camera.updateProjectionMatrix()
     }
 
     if (hero) {
-      const shot = BRIEFING_SHOTS[Math.min(briefingStep, BRIEFING_SHOTS.length - 1)]
-      orbit.current += dt * shot.speed
-      lookY.current += (shot.lookY - lookY.current) * 0.06
+      orbit.current += dt * PICK_SHOT.speed
+      lookY.current += (PICK_SHOT.lookY - lookY.current) * 0.06
       _desired.set(
-        DOHENY.cx + Math.sin(orbit.current) * shot.r,
-        shot.y,
-        DOHENY.cz + Math.cos(orbit.current) * shot.r,
+        PICK_SHOT.cx + Math.sin(orbit.current) * PICK_SHOT.r,
+        PICK_SHOT.y,
+        PICK_SHOT.cz + Math.cos(orbit.current) * PICK_SHOT.r,
       )
       state.camera.position.lerp(_desired, 0.055)
-      _look.set(DOHENY.cx, lookY.current, DOHENY.cz)
+      _look.set(PICK_SHOT.cx, lookY.current, PICK_SHOT.cz)
       state.camera.lookAt(_look)
       return
     }
