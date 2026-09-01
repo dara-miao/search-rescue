@@ -4,7 +4,7 @@ import { ACESFilmicToneMapping } from 'three'
 import { useSimLoop } from './game/useSimLoop'
 import { useGame } from './game/store'
 import { WorldView } from './scene/WorldView'
-import { Briefing, EndCard } from './ui/Overlays'
+import { ScenarioPick, EndCard } from './ui/Overlays'
 import { PlayPane } from './ui/PlayPane'
 import { WorldChrome } from './ui/Hud'
 
@@ -18,18 +18,18 @@ function holdContext(el: HTMLElement | null) {
 export default function App() {
   const phase = useGame((s) => s.phase)
   const start = useGame((s) => s.start)
-  const briefingStep = useGame((s) => s.briefingStep)
-  const briefing = phase === 'briefing'
+  const picking = phase === 'pick'
   useSimLoop(phase === 'playing')
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (document.pointerLockElement) document.exitPointerLock()
-  }, [phase])
+    void import('./scene/RobotScene')
+    void useGame.getState().hydrateGoogle()
+  }, [])
 
   useEffect(() => {
-    if (briefingStep >= 1 || !briefing) void import('./scene/RobotScene')
-  }, [briefing, briefingStep])
+    if (document.pointerLockElement) document.exitPointerLock()
+  }, [phase])
 
   useEffect(() => holdContext(root.current), [])
 
@@ -41,9 +41,9 @@ export default function App() {
 
   return (
     <div className="app" ref={root} tabIndex={-1}>
-      <main className={`split${briefing ? ' solo' : ''}`}>
+      <main className="split">
         <section className="pane">
-          {!briefing && <span className="pane-tag">WORLD</span>}
+          <span className="pane-tag">WORLD</span>
           <Canvas
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
@@ -57,11 +57,11 @@ export default function App() {
             }}
             onCreated={({ gl }) => holdContext(gl.domElement)}
           >
-            <WorldView cinematic={briefing} />
+            <WorldView cinematic={picking} />
           </Canvas>
-          {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
+          {picking ? <ScenarioPick onPick={start} /> : <WorldChrome />}
         </section>
-        {!briefing && <PlayPane />}
+        <PlayPane />
       </main>
 
       <EndCard />

@@ -65,6 +65,7 @@ export type SimState = {
   fail: FailCode | null
   failNote: string
   complete: boolean
+  failTommy: boolean
 }
 
 export type Pose = {
