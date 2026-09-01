@@ -1,27 +1,21 @@
-# Search Rescue
+# Doheny Rescue
 
-Search-and-rescue robot simulation on the real University Park campus.
+Browser search-and-rescue sim around Doheny Memorial Library at USC. The interior is closed — every rescue happens from the perimeter.
 
-Doheny is on fire. You drive the outdoor mast: walk to the four people still outside and mark them before the heat makes the rest of the ground too dangerous. You cannot go inside the library.
+This repo is on **Stage 0**: the real OSM footprint, projected to local metres and extruded untextured. Confirm the outline (1960s wing + courtyard) before movement or fire go in.
 
-- **WORLD** — Google photoreal 3D tiles, birdseye over the real campus
-- **ROBOT** — chase camera on the OpenStreetMap reconstruct, Street View inset when metadata is OK
+## Stage 0 — footprint
 
-## Play
+The default view is an overhead orbit of the untextured extrude.
 
-The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space, then **Start**.
+- Building mesh comes from OpenStreetMap relation `6095470` (Edward L Doheny Junior Memorial Library).
+- Local frame: **+X east, +Y up, +Z south**, metres about `34.0201, −118.2838`.
+- Roof tiles: orange = south facade (Alumni Park), blue = north, dark = core. Cells whose centre falls outside the polygon are discarded.
+- Height is the OSM `height` tag (22.8 m). `building:levels` is missing, so floors fall back to 4.
 
-You drive the robot:
+Drag to orbit, scroll to zoom.
 
-- After **Start** the mast begins the outdoor sweep. Tap **Stop** to halt, **Walk** to send it again. **W** / click-hold the robot pane also walks.
-- **Knob** — analog drive on the mast console. Lean to walk and turn. Palms, poles, planters, and photoreal walls are solid — the hull cannot walk through them. WORLD tiles stay a lighter load so the split view stays smooth.
-- **A** / **D** — turn by hand
-- In range they mark automatically. **F** / **Space** / **Mark** still works.
-- **T** — thermal
-- **Q** / **E** — orbit WORLD
-- **Shift** — sprint (off in HOT / NO GO)
-
-After the run: **Go again** respawns on the west walk. **Briefing** goes back to the opening beats.
+The older dual-POV briefing still lives at `?play=1`.
 
 ## Run it
 
@@ -30,28 +24,38 @@ npm install
 npm run dev
 ```
 
-Then open the printed local URL (this project binds to port `43147`).
+Opens on port `43147`.
+
+```bash
+node tools/extract-footprint.mjs                    # live Overpass
+node tools/extract-footprint.mjs overpass-raw.json  # replay the committed dump
+npm run test:site
+```
+
+`overpass-raw.json` is committed so the footprint stays reproducible if OSM or the mirrors change.
+
+## Later stages (not built yet)
+
+1. Movement — kinematic robot, chase camera, nothing else
+2. Victims and rescue — carry / deliver
+3. Fire grid, venting, extraction points
+4. Thermal / scan / hidden attributes
+5. Debrief
+6. Night lighting, battery, audio
+
+Spec: `docs/doheny-rescue-sim-spec.md`.
 
 ## Data
 
-Put a Google Maps Platform key in `.env.local` (gitignored):
+© OpenStreetMap contributors (ODbL). The license string is stored on `site-data.json`.
+
+A Google Maps key is only needed for the legacy `?play=1` photoreal WORLD view. Put it in `.env.local` (gitignored):
 
 ```
 VITE_GOOGLE_MAPS_KEY=AIza...
 ```
 
-Enable these APIs on that key:
-
-- Map Tiles API
-- Street View Static API
-- Places API (legacy Nearby Search)
-- Directions API
-
-Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Photoreal tiles load from the Map Tiles API for WORLD. Without a key, the reconstruct still runs.
-
-If Street View metadata is not OK, the optical inset stays hidden.
-
-Google requires on-screen attribution when tiles are visible.
+Without a key, Stage 0 still runs.
 
 ## Stack
 
