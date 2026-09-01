@@ -11,7 +11,7 @@ const BEATS = [
   },
   {
     h1: 'Four people are still outside.',
-    lede: 'Walk to each one and mark them before the heat makes the rest of the ground too dangerous.',
+    lede: 'The robot will find them. You watch.',
   },
 ] as const
 
@@ -53,7 +53,7 @@ export function Briefing({ onDeploy }: { onDeploy: () => void }) {
           ))}
         </ol>
         <button type="button" className="deploy" autoFocus key={step} onClick={advance}>
-          {last ? 'Start' : 'Next'}
+          {last ? 'Watch' : 'Next'}
         </button>
       </div>
     </div>
@@ -89,13 +89,13 @@ export function EndCard() {
     <div className="overlay dim">
       <div className="overlay-card short">
         <p className="eyebrow">{win ? 'Clear' : 'Failed'}</p>
-        <h1>{win ? 'All four marked.' : failNote || 'Time ran out.'}</h1>
+        <h1>{win ? 'The robot marked all four.' : failNote || 'The run failed.'}</h1>
         <p className="lede">
           {found} of {survivors.length} · {Math.floor(elapsed)}s
         </p>
         <div className="row">
           <button type="button" className="deploy" autoFocus onClick={start}>
-            Go again
+            Watch again
           </button>
           <button type="button" className="ghost" onClick={reset}>
             Briefing

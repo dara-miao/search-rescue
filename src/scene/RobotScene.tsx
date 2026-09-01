@@ -6,6 +6,7 @@ import { Lights } from './Lights'
 import { People } from './People'
 import { Robot } from './Robot'
 import { MastRig } from './Rigs'
+import { Trail } from './Trail'
 
 export function RobotScene() {
   const thermal = useGame((s) => s.thermal)
@@ -17,6 +18,7 @@ export function RobotScene() {
       <Fire thermal={thermal} />
       <People thermal={thermal} />
       <Robot variant="robot" />
+      <Trail />
       <MastRig />
       {thermal && (
         <EffectComposer enableNormalPass={false}>

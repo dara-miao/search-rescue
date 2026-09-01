@@ -20,7 +20,7 @@ export default function App() {
   const start = useGame((s) => s.start)
   const briefingStep = useGame((s) => s.briefingStep)
   const briefing = phase === 'briefing'
-  const input = useSimLoop(phase === 'playing')
+  useSimLoop(phase === 'playing')
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export default function App() {
     <div className="app" ref={root} tabIndex={-1}>
       <main className={`split${briefing ? ' solo' : ''}`}>
         <section className="pane">
+          {!briefing && <span className="pane-tag">WORLD</span>}
           <Canvas
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
@@ -55,7 +56,7 @@ export default function App() {
           </Canvas>
           {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
-        {!briefing && <PlayPane input={input} />}
+        {!briefing && <PlayPane />}
       </main>
 
       <EndCard />
