@@ -42,7 +42,11 @@ type GameStore = {
   googleFeeds: 'idle' | 'loading' | 'live' | 'error'
   padMode: PadMode
   briefingStep: number
+  narration: string
+  autoTarget: { x: number; z: number } | null
+  trail: Array<[number, number]>
   setBriefingStep: (step: number) => void
+  setWatch: (patch: { narration?: string; autoTarget?: { x: number; z: number } | null; trail?: Array<[number, number]> }) => void
   start: () => void
   reset: () => void
   hydrateGoogle: () => Promise<void>
@@ -136,8 +140,13 @@ export const useGame = create<GameStore>((set, get) => ({
   googleFeeds: 'idle',
   padMode: 'drive',
   briefingStep: 0,
+  narration: '',
+  autoTarget: null,
+  trail: [],
 
   setBriefingStep: (step) => set({ briefingStep: Math.max(0, step) }),
+
+  setWatch: (patch) => set(patch),
 
   hydrateGoogle: async () => {
     if (!hasGoogleKey()) {
@@ -168,6 +177,9 @@ export const useGame = create<GameStore>((set, get) => ({
       robot,
       lastMarked: null,
       briefingStep: 0,
+      narration: 'Leaving the plaza. Heading for the west door.',
+      autoTarget: { x: 104, z: 50 },
+      trail: [[robot.x, robot.z]],
       ...syncFromSim(sim, robot, 0),
       phase: 'playing',
     })
@@ -183,6 +195,9 @@ export const useGame = create<GameStore>((set, get) => ({
       robot,
       lastMarked: null,
       briefingStep: 0,
+      narration: '',
+      autoTarget: null,
+      trail: [],
       ...syncFromSim(sim, robot, 0),
       phase: 'briefing',
     })
