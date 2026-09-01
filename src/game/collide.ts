@@ -170,7 +170,7 @@ export function keepOut(x: number, z: number, radius = bodyRadius()) {
       nz = next.z
     }
   }
-  const props = keepOffProps(nx, nz)
+  const props = keepOffProps(nx, nz, radius)
   return clampCampus(props.x, props.z)
 }
 

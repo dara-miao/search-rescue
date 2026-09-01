@@ -166,6 +166,12 @@ export function sweepTiles(
   if (travel < 1e-4) return { x, z }
   const hit = hitAlong(px, py + 1.05, pz, dx, 0, dz, travel + radius)
   if (!hit || hit.distance >= travel + radius) return { x, z }
+  const dem = heightAt(hit.point.x, hit.point.z)
+  const rise = hit.point.y - dem
+  // Ground / stoop / high canopy — not a wall. Keep walking.
+  if (rise < 0.35 || rise > CANOPY_ABOVE_DEM) return { x, z }
+  const n = hit.face?.normal
+  if (n && Math.abs(n.y) > 0.62) return { x, z }
   const stop = Math.max(0, hit.distance - radius)
   const ux = dx / travel
   const uz = dz / travel
