@@ -1,21 +1,18 @@
-import { Raycaster, Vector3, type Object3D } from 'three'
+import { Matrix3, Raycaster, Vector3, type Intersection, type Object3D } from 'three'
 import { heightAt } from './ground'
 
 const roots: Object3D[] = []
 const ray = new Raycaster()
 const origin = new Vector3()
 const dir = new Vector3()
-const DIRS: Array<[number, number]> = [
-  [1, 0],
-  [-1, 0],
-  [0, 1],
-  [0, -1],
-  [0.707, 0.707],
-  [-0.707, 0.707],
-  [0.707, -0.707],
-  [-0.707, -0.707],
-]
-const EYES = [0.38, 1.05, 1.72, 2.55]
+const worldN = new Vector3()
+const normalMat = new Matrix3()
+const DIRS: Array<[number, number]> = Array.from({ length: 16 }, (_, i) => {
+  const a = (i / 16) * Math.PI * 2
+  return [Math.cos(a), Math.sin(a)]
+})
+const EYES = [0.32, 0.78, 1.2, 1.72, 2.35]
+const SWEEP_EYES = [0.42, 1.05, 1.68]
 
 /** A hit this far above the DEM is a roof or canopy, not the walk. Tents sit under 3 m. */
 export const ROOF_ABOVE_DEM = 1.55
@@ -123,13 +120,30 @@ export function measureRoofCentroid(cx: number, cz: number, half = 30, step = 12
   return { x: sx / n, z: sz / n, n }
 }
 
-function keepOffAtEye(x: number, y: number, z: number, radius: number) {
+/** Face.normal is mesh-local (ECEF on Google tiles). World Y is the only "floor" test. */
+function worldUp(hit: Intersection) {
+  if (!hit.face) return 0
+  worldN.copy(hit.face.normal)
+  normalMat.getNormalMatrix(hit.object.matrixWorld)
+  worldN.applyMatrix3(normalMat)
+  const L = worldN.length()
+  if (L < 1e-6) return 0
+  return worldN.y / L
+}
+
+/** Horizontal rays that scrape the walk or a roof slab are not poles / walls. */
+export function isSolidUpright(hit: Intersection, bodyY: number) {
+  if (hit.point.y < bodyY + 0.16) return false
+  return Math.abs(worldUp(hit)) < 0.72
+}
+
+function keepOffAtEye(x: number, y: number, z: number, radius: number, bodyY: number) {
   let nx = x
   let nz = z
   for (const [dx, dz] of DIRS) {
     const hit = hitAlong(nx, y, nz, dx, 0, dz, radius)
-    if (!hit) continue
-    const push = radius - hit.distance + 0.04
+    if (!hit || !isSolidUpright(hit, bodyY)) continue
+    const push = radius - hit.distance + 0.1
     if (push > 0) {
       nx -= dx * push
       nz -= dz * push
@@ -138,13 +152,13 @@ function keepOffAtEye(x: number, y: number, z: number, radius: number) {
   return { x: nx, z: nz }
 }
 
-/** Push the mast off photoreal facades loaded in WORLD. No-op until tiles exist. */
+/** Push the mast off photoreal facades and poles loaded in WORLD. No-op until tiles exist. */
 export function keepOffTiles(x: number, y: number, z: number, radius: number) {
   if (!live) return { x, z }
   let nx = x
   let nz = z
   for (const eye of EYES) {
-    const next = keepOffAtEye(nx, y + eye, nz, radius)
+    const next = keepOffAtEye(nx, y + eye, nz, radius, y)
     nx = next.x
     nz = next.z
   }
@@ -164,15 +178,15 @@ export function sweepTiles(
   const dz = z - pz
   const travel = Math.hypot(dx, dz)
   if (travel < 1e-4) return { x, z }
-  const hit = hitAlong(px, py + 1.05, pz, dx, 0, dz, travel + radius)
-  if (!hit || hit.distance >= travel + radius) return { x, z }
-  const dem = heightAt(hit.point.x, hit.point.z)
-  const rise = hit.point.y - dem
-  // Ground / stoop / high canopy — not a wall. Keep walking.
-  if (rise < 0.35 || rise > CANOPY_ABOVE_DEM) return { x, z }
-  const n = hit.face?.normal
-  if (n && Math.abs(n.y) > 0.62) return { x, z }
-  const stop = Math.max(0, hit.distance - radius)
+  let best = Infinity
+  for (const eye of SWEEP_EYES) {
+    const hit = hitAlong(px, py + eye, pz, dx, 0, dz, travel + radius)
+    if (!hit || hit.distance >= travel + radius) continue
+    if (!isSolidUpright(hit, py)) continue
+    if (hit.distance < best) best = hit.distance
+  }
+  if (!Number.isFinite(best)) return { x, z }
+  const stop = Math.max(0, best - radius)
   const ux = dx / travel
   const uz = dz / travel
   return { x: px + ux * stop, z: pz + uz * stop }

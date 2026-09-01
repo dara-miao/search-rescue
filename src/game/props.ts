@@ -54,8 +54,8 @@ function uniqueCircles(list: PropCircle[]) {
 
 /** Trunks, planters, Tommy, and the Alumni Park fountain. */
 export const PROP_CIRCLES: PropCircle[] = uniqueCircles([
-  ...TREES.map(([x, z]) => ({ x, z, r: 1.55 })),
-  ...extraPalms().map(([x, z]) => ({ x, z, r: 1.2 })),
+  ...TREES.map(([x, z]) => ({ x, z, r: 1.85 })),
+  ...extraPalms().map(([x, z]) => ({ x, z, r: 1.45 })),
   ...LANDMARKS.map((mark) => ({
     x: mark.x,
     z: mark.z,
