@@ -8,8 +8,8 @@ const EXPOSE_FAR = EXPOSE_NEAR * (0.22 / 0.55)
 const CRAWL = 0.35
 const CRAWL_STOP_X = 98
 
-export function freshVictims(): VictimSim[] {
-  return SURVIVORS.map((s) => ({
+export function freshVictims(people = SURVIVORS): VictimSim[] {
+  return people.map((s) => ({
     id: s.id,
     name: s.name,
     role: s.role,

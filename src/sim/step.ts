@@ -1,3 +1,4 @@
+import { DEFAULT_SCENARIO, type Scenario } from '../game/scenarios'
 import { CAMPUS } from '../game/world'
 import { createField, heatAt, seedField, spreadField, TOMMY } from './field'
 import { detectVictims } from './sensors'
@@ -7,17 +8,33 @@ import type { Pose, SimState } from './types'
 
 export const SIM_DT = 1 / 20
 
-export function createSim(): SimState {
+export function createSim(scenario: Scenario = DEFAULT_SCENARIO): SimState {
   const field = createField()
-  seedField(field)
+  seedField(field, scenario.seed)
   return {
     elapsed: 0,
     field,
-    victims: freshVictims(),
+    victims: freshVictims(scenario.victims),
     robot: { hull: 0, noGoTime: 0, zone: 'safe', onEvac: true },
     fail: null,
     failNote: '',
     complete: false,
+    failTommy: scenario.failTommy,
+  }
+}
+
+export function createIdleSim(): SimState {
+  const field = createField()
+  seedField(field, 'none')
+  return {
+    elapsed: 0,
+    field,
+    victims: [],
+    robot: { hull: 0, noGoTime: 0, zone: 'safe', onEvac: true },
+    fail: null,
+    failNote: '',
+    complete: false,
+    failTommy: false,
   }
 }
 
@@ -40,7 +57,7 @@ export function stepSim(sim: SimState, pose: Pose, thermalOn: boolean, dt: numbe
     fail(sim, 'LOST', `${lost.name} lost at ${lost.note.toLowerCase()}`)
     return
   }
-  if (heatAt(sim.field, TOMMY.x, TOMMY.z) >= 0.45) {
+  if (sim.failTommy && heatAt(sim.field, TOMMY.x, TOMMY.z) >= 0.45) {
     fail(sim, 'FRONT', 'Fire reached Tommy')
     return
   }

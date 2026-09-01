@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
-import { DEPLOY, useGame } from '../game/store'
+import { IDLE } from '../game/scenarios'
+import { useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
@@ -17,7 +18,7 @@ export function PlayPane() {
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
-          camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.4, far: 420 }}
+          camera={{ position: [IDLE.x - 7, 9, IDLE.z + 13], fov: 46, near: 0.4, far: 420 }}
           shadows={false}
           dpr={[0.85, 1]}
           gl={{
@@ -34,7 +35,14 @@ export function PlayPane() {
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing && <MastHud />}
+        {playing ? (
+          <MastHud />
+        ) : (
+          <div className="console watch pick-wait">
+            <p className="watch-kicker">Robot</p>
+            <p className="watch-line">Waiting on a scenario.</p>
+          </div>
+        )}
       </section>
     </>
   )

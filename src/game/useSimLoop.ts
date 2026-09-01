@@ -1,19 +1,19 @@
 import { useEffect, useRef } from 'react'
 import { createAuto, stepAuto } from './auto'
-import { heightAt } from './ground'
 import { stepBody, type Body } from './motion'
-import { DEPLOY, useGame } from './store'
+import { scenarioById } from './scenarios'
+import { useGame } from './store'
 import { SIM_DT } from '../sim/step'
 
 const TRAIL_GAP = 0.55
 const TRAIL_MAX = 90
 
 export function useSimLoop(active: boolean) {
-  const auto = useRef(createAuto(DEPLOY.x, DEPLOY.z))
+  const auto = useRef(createAuto(0, 0))
   const body = useRef<Body>({
-    x: DEPLOY.x,
-    y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
-    z: DEPLOY.z,
+    x: 0,
+    y: 0,
+    z: 0,
     vx: 0,
     vy: 0,
     vz: 0,
@@ -23,7 +23,8 @@ export function useSimLoop(active: boolean) {
     if (!active) return
 
     const spawn = useGame.getState().robot
-    auto.current = createAuto(spawn.x, spawn.z)
+    const run = scenarioById(useGame.getState().scenarioId).run
+    auto.current = createAuto(spawn.x, spawn.z, run)
     body.current = { x: spawn.x, y: spawn.y, z: spawn.z, vx: 0, vy: 0, vz: 0 }
 
     let last = performance.now()
