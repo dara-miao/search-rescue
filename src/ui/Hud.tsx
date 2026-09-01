@@ -1,3 +1,4 @@
+import { useState, type PointerEvent } from 'react'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 import type { HeatZone, VictimSim } from '../sim/types'
@@ -51,7 +52,46 @@ export function WorldChrome() {
   )
 }
 
-export function MastHud({ onMark }: { onMark: () => void }) {
+function WalkHold({ onWalk }: { onWalk: (on: boolean) => void }) {
+  const [down, setDown] = useState(false)
+
+  const press = (e: PointerEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {
+      /* window pointerup still clears the hold */
+    }
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    window.focus()
+    setDown(true)
+    onWalk(true)
+  }
+
+  const release = (e: PointerEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDown(false)
+    onWalk(false)
+  }
+
+  return (
+    <button
+      type="button"
+      className={`walk-hold${down ? ' is-down' : ''}`}
+      aria-pressed={down}
+      onPointerDown={press}
+      onPointerUp={release}
+      onPointerCancel={release}
+      onLostPointerCapture={release}
+    >
+      Walk
+    </button>
+  )
+}
+
+export function MastHud({ onMark, onWalk }: { onMark: () => void; onWalk: (on: boolean) => void }) {
   const thermal = useGame((s) => s.thermal)
   const elapsed = useGame((s) => s.elapsed)
   const survivors = useGame((s) => s.survivors)
@@ -125,12 +165,13 @@ export function MastHud({ onMark }: { onMark: () => void }) {
                       ? 'Turn back'
                       : ''}
               </span>
-              <em className="walk-hint">Hold W or click this pane · A D turn</em>
+              <em className="walk-hint">Hold Walk · W · or this pane</em>
             </div>
           </div>
         </div>
 
         <div className="console-actions">
+          <WalkHold onWalk={onWalk} />
           <button type="button" className={canMark ? 'mark-go' : 'mark-wait'} disabled={!canMark} onClick={onMark}>
             Mark
           </button>
