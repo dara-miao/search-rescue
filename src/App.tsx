@@ -47,9 +47,14 @@ export default function App() {
           <Canvas
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
-            camera={{ position: [200, 96, 90], fov: 46, near: 0.4, far: 1600 }}
-            dpr={[1, 1]}
-            gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping }}
+            camera={{ position: [200, 96, 90], fov: 46, near: 0.8, far: 720 }}
+            dpr={[0.85, 1]}
+            gl={{
+              antialias: false,
+              stencil: false,
+              powerPreference: 'high-performance',
+              toneMapping: ACESFilmicToneMapping,
+            }}
             onCreated={({ gl }) => holdContext(gl.domElement)}
           >
             <WorldView cinematic={briefing} />

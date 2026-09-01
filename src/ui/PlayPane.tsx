@@ -17,10 +17,15 @@ export function PlayPane() {
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
-          camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.35, far: 1600 }}
+          camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.4, far: 420 }}
           shadows={false}
-          dpr={[1, 1]}
-          gl={{ antialias: false, powerPreference: 'default', toneMapping: ACESFilmicToneMapping }}
+          dpr={[0.85, 1]}
+          gl={{
+            antialias: false,
+            stencil: false,
+            powerPreference: 'high-performance',
+            toneMapping: ACESFilmicToneMapping,
+          }}
           onCreated={({ gl }) => {
             const onLost = (e: Event) => e.preventDefault()
             gl.domElement.addEventListener('webglcontextlost', onLost)

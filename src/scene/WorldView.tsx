@@ -22,7 +22,7 @@ export function WorldView({ cinematic }: { cinematic: boolean }) {
   const playing = useGame((s) => s.phase === 'playing')
   return (
     <>
-      <PerspectiveCamera makeDefault position={[200, 96, 90]} fov={46} near={0.4, far: 1600} />
+      <PerspectiveCamera makeDefault position={[200, 96, 90]} fov={46} near={0.8} far={720} />
       <Sky />
       {hasGoogleTiles() && <GoogleTiles variant="world" />}
       {playing && <Robot variant="world" />}
