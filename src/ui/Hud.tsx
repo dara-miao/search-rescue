@@ -162,7 +162,10 @@ export function MastHud({
           </div>
         </div>
 
-        <div className="console-drive">{drive}</div>
+        <div className="console-drive">
+          {drive}
+          <em className="drive-label">Drive</em>
+        </div>
 
         <div className="console-actions">
           <WalkHold onToggle={onToggleWalk} />

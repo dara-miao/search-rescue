@@ -2,8 +2,8 @@ import { keepOffProps } from './props'
 import { BUILDINGS, CAMPUS, type CampusBuilding } from './world'
 
 export const DOOR_GAP = 4.6
-/** Body radius plus wall half-thickness (0.35) and mast camera lead. */
-const SKIN = 0.72
+/** Body radius plus wall half-thickness so photoreal facades sit inside the hull. */
+const SKIN = 1.15
 
 type Hit = { px: number; pz: number; dist: number; t: number }
 
