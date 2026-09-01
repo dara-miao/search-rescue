@@ -2,20 +2,25 @@
 
 Search-and-rescue robot simulation on the real University Park campus.
 
-You pick an emergency. Then you watch two feeds at once:
+Doheny is on fire. You drive the outdoor mast: walk to the four people still outside and mark them before the heat makes the rest of the ground too dangerous. You cannot go inside the library.
 
 - **WORLD** — Google photoreal 3D tiles, birdseye over the real campus
 - **ROBOT** — chase camera on the OpenStreetMap reconstruct, Street View inset when metadata is OK
 
-This is a **watch**, not a game. The mast runs the outdoor sweep on its own and marks people it can reach. It does not go inside.
+## Play
 
-## Emergencies
+The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space, then **Start**.
 
-1. **Doheny is on fire** — structure fire. Four people still outside. Stay off the library.
-2. **Aftershock at Bovard** — earthquake debris on the west lawn. Three people in the open.
-3. **Missing on the quad** — night search. Two people never made it back. The robot sweeps on thermal.
+You drive the robot:
 
-Keys `1` `2` `3` pick a scenario from the first screen.
+- **W** / click-hold the robot pane / analog knob — walk
+- **A** / **D** — turn
+- **F** / **Space** / **Mark** — mark someone in range
+- **T** — thermal
+- **Q** / **E** — orbit WORLD
+- **Shift** — sprint (off in HOT / NO GO)
+
+After the run: **Go again** respawns on the west walk. **Briefing** goes back to the opening beats.
 
 ## Run it
 
@@ -25,12 +30,6 @@ npm run dev
 ```
 
 Then open the printed local URL (this project binds to port `43147`).
-
-## What you see
-
-WORLD is the map. ROBOT is how the mast sees the reconstruct. The gold line is the path it already walked.
-
-After the run: **Watch again** repeats that emergency. **Scenarios** goes back to the picker.
 
 ## Data
 
