@@ -13,7 +13,7 @@ The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space,
 
 You drive the robot:
 
-- **Walk** (hold the button) / **W** / click-hold the robot pane — walk. The mast turns toward the next person while you hold walk.
+- After **Start** the mast begins the outdoor sweep. Tap **Stop** to halt, **Walk** to send it again. **W** / click-hold the robot pane also walks.
 - **A** / **D** — turn by hand
 - In range they mark automatically. **F** / **Space** / **Mark** still works.
 - **T** — thermal

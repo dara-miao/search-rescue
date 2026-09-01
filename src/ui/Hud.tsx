@@ -1,4 +1,4 @@
-import { useState, type PointerEvent } from 'react'
+import { useEffect, useState, type PointerEvent } from 'react'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 import type { HeatZone, VictimSim } from '../sim/types'
@@ -52,46 +52,30 @@ export function WorldChrome() {
   )
 }
 
-function WalkHold({ onWalk }: { onWalk: (on: boolean) => void }) {
-  const [down, setDown] = useState(false)
+function WalkHold({ onToggle }: { onToggle: () => boolean }) {
+  const [on, setOn] = useState(false)
+  const boot = useGame((s) => s.boot)
 
-  const press = (e: PointerEvent<HTMLButtonElement>) => {
+  useEffect(() => {
+    setOn(true)
+  }, [boot])
+
+  const tap = (e: PointerEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {
-      /* window pointerup still clears the hold */
-    }
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     window.focus()
-    setDown(true)
-    onWalk(true)
-  }
-
-  const release = (e: PointerEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDown(false)
-    onWalk(false)
+    setOn(onToggle())
   }
 
   return (
-    <button
-      type="button"
-      className={`walk-hold${down ? ' is-down' : ''}`}
-      aria-pressed={down}
-      onPointerDown={press}
-      onPointerUp={release}
-      onPointerCancel={release}
-      onLostPointerCapture={release}
-    >
-      Walk
+    <button type="button" className={`walk-hold${on ? ' is-down' : ''}`} aria-pressed={on} onPointerDown={tap}>
+      {on ? 'Stop' : 'Walk'}
     </button>
   )
 }
 
-export function MastHud({ onMark, onWalk }: { onMark: () => void; onWalk: (on: boolean) => void }) {
+export function MastHud({ onMark, onToggleWalk }: { onMark: () => void; onToggleWalk: () => boolean }) {
   const thermal = useGame((s) => s.thermal)
   const elapsed = useGame((s) => s.elapsed)
   const survivors = useGame((s) => s.survivors)
@@ -165,13 +149,13 @@ export function MastHud({ onMark, onWalk }: { onMark: () => void; onWalk: (on: b
                       ? 'Turn back'
                       : ''}
               </span>
-              <em className="walk-hint">Hold Walk · W · or this pane</em>
+              <em className="walk-hint">Sweep is on · Stop to halt · A / D to turn</em>
             </div>
           </div>
         </div>
 
         <div className="console-actions">
-          <WalkHold onWalk={onWalk} />
+          <WalkHold onToggle={onToggleWalk} />
           <button type="button" className={canMark ? 'mark-go' : 'mark-wait'} disabled={!canMark} onClick={onMark}>
             Mark
           </button>

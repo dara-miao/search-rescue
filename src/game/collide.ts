@@ -1,12 +1,9 @@
 import { keepOffProps } from './props'
-import { tilesLive } from './tilesCollide'
 import { BUILDINGS, CAMPUS, type CampusBuilding } from './world'
 
 export const DOOR_GAP = 4.6
 /** Body radius plus wall half-thickness (0.35) and mast camera lead. */
 const SKIN = 0.72
-/** Extra keep-out once Google facades are in the WORLD canvas. */
-const TILE_SKIN = 1.25
 
 type Hit = { px: number; pz: number; dist: number; t: number }
 
@@ -152,7 +149,7 @@ function keepOffBuilding(x: number, z: number, building: CampusBuilding, radius:
 }
 
 export function bodyRadius() {
-  return CAMPUS.robotRadius + SKIN + (tilesLive() ? TILE_SKIN : 0)
+  return CAMPUS.robotRadius + SKIN
 }
 
 function clampCampus(x: number, z: number) {

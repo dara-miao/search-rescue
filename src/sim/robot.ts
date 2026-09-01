@@ -2,9 +2,10 @@ import { onEvac } from './evac'
 import { heatAt, zoneAt } from './field'
 import type { HeatZone, Pose, SimState } from './types'
 
-export function wishScale(zone: HeatZone, noGoTime: number) {
-  if (zone === 'nogo' && noGoTime >= 1.2) return { scale: 0, sprint: false }
-  if (zone === 'hot' || zone === 'nogo') return { scale: 0.55, sprint: false }
+export function wishScale(zone: HeatZone, _noGoTime: number) {
+  // Never freeze — production tiles used to pin the mast in NO GO until hull fail.
+  if (zone === 'nogo') return { scale: 0.42, sprint: false }
+  if (zone === 'hot') return { scale: 0.55, sprint: false }
   return { scale: 1, sprint: true }
 }
 

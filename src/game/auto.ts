@@ -36,7 +36,7 @@ const STANDOFF = 5.2
 const WALK = 5.4
 const CREEP = 3.1
 const TURN = 2.2
-const SCAN = 1.15
+const SCAN = 0.28
 const STUCK_MOVE = 0.18
 
 export type AutoState = {
@@ -206,9 +206,18 @@ export function stepAuto(
     markReady = dist <= CAMPUS.markRange - 0.35
   }
 
+  if (sim.robot.zone === 'nogo' && !(beat.kind === 'mark' && markReady)) {
+    goalX = pose.x - 14
+    goalZ = pose.z
+    lookX = goalX
+    lookZ = goalZ
+    arrive = 0.8
+    auto.line = 'Heat. Backing off the apron.'
+  }
+
   auto.targetX = lookX
   auto.targetZ = lookZ
-  auto.line = beat.line
+  if (sim.robot.zone !== 'nogo' || (beat.kind === 'mark' && markReady)) auto.line = beat.line
 
   const dx = goalX - pose.x
   const dz = goalZ - pose.z

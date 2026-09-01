@@ -76,9 +76,18 @@ export function stepBody(
   let cz = z
   for (let i = 0; i < parts; i++) {
     const slid = keepOutFrom(cx, cz, cx + vx * sdt, cz + vz * sdt, radius)
+    // Photoreal WORLD tiles are visual only. Sweeping them as walls pins the
+    // mast on the Doheny apron and cooks the run.
     const sealed = sweepTiles(cx, y, cz, slid.x, slid.z, radius)
-    cx = sealed.x
-    cz = sealed.z
+    const want = Math.hypot(slid.x - cx, slid.z - cz)
+    const got = Math.hypot(sealed.x - cx, sealed.z - cz)
+    if (want > 0.01 && got < want * 0.35) {
+      cx = slid.x
+      cz = slid.z
+    } else {
+      cx = sealed.x
+      cz = sealed.z
+    }
   }
   let cleared = { x: cx, z: cz }
   let tileY = walkableTileY(cleared.x, cleared.z)

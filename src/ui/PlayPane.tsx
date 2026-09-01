@@ -60,7 +60,12 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing && <MastHud onMark={tryMark} onWalk={hold} />}
+        {playing && (
+          <MastHud
+            onMark={tryMark}
+            onToggleWalk={() => input.current?.toggleLatch() ?? false}
+          />
+        )}
       </section>
     </>
   )
