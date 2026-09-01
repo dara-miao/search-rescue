@@ -1,4 +1,3 @@
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { useGame } from '../game/store'
 import { Campus } from './Campus'
 import { Fire } from './Fire'
@@ -20,12 +19,6 @@ export function RobotScene() {
       <Robot variant="robot" />
       <Trail />
       <MastRig />
-      {thermal && (
-        <EffectComposer enableNormalPass={false}>
-          <Bloom intensity={1.4} luminanceThreshold={0.2} luminanceSmoothing={0.4} mipmapBlur />
-          <Vignette eskil={false} offset={0.18} darkness={0.85} />
-        </EffectComposer>
-      )}
     </>
   )
 }

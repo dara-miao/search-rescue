@@ -5,31 +5,30 @@ import { useGame } from '../game/store'
 
 export function Trail({ world = false }: { world?: boolean }) {
   const trail = useGame((s) => s.trail) ?? []
-  const robot = useGame((s) => s.robot)
   const target = useGame((s) => s.autoTarget)
   const lift = world ? 1.4 : 0.14
 
   const walked = useMemo(() => {
-    const pts = trail.map(([x, z]) => [x, heightAt(x, z) + lift, z] as [number, number, number])
-    pts.push([robot.x, (world ? heightAt(robot.x, robot.z) : robot.y) + (world ? 0.2 : 0), robot.z])
-    return pts
-  }, [trail, robot.x, robot.y, robot.z, lift, world])
+    if (trail.length < 2) return null
+    return trail.map(([x, z]) => [x, heightAt(x, z) + lift, z] as [number, number, number])
+  }, [trail, lift])
 
   const aim = useMemo(() => {
-    if (!target) return null
+    if (!target || trail.length < 1) return null
+    const last = trail[trail.length - 1]
     return [
-      [robot.x, heightAt(robot.x, robot.z) + lift, robot.z],
+      [last[0], heightAt(last[0], last[1]) + lift, last[1]],
       [target.x, heightAt(target.x, target.z) + lift, target.z],
     ] as Array<[number, number, number]>
-  }, [robot.x, robot.z, target, lift])
+  }, [trail, target, lift])
 
   return (
     <group>
-      {walked.length >= 2 && (
-        <Line points={walked} color="#ffcc00" lineWidth={world ? 2.6 : 1.4} transparent opacity={world ? 0.9 : 0.55} />
+      {walked && (
+        <Line points={walked} color="#ffcc00" lineWidth={world ? 2.2 : 1.2} transparent opacity={world ? 0.85 : 0.5} />
       )}
       {aim && (
-        <Line points={aim} color="#ffe38a" lineWidth={world ? 1.6 : 1} dashed dashSize={1.4} gapSize={0.8} transparent opacity={0.7} />
+        <Line points={aim} color="#ffe38a" lineWidth={1} transparent opacity={0.55} />
       )}
     </group>
   )
