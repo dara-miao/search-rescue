@@ -1,20 +1,21 @@
 # Search Rescue
 
-Search and rescue on the real University Park campus. Dual feed through a fire at Edward L. Doheny Jr. Memorial Library.
+Search-and-rescue robot simulation on the real University Park campus.
 
-This is a **watch**, not a game. After three short beats you sit on the WORLD / ROBOT split and the mast runs the outdoor sweep on its own — door, steps, Tommy, Bovard — marking four people before the heat closes the lawn.
+You pick an emergency. Then you watch two feeds at once:
 
-- **World** — Google photoreal 3D tiles from a birdseye, the real University Park map, gold trail of the run
-- **Robot** — chase camera on the OpenStreetMap reconstruct, Street View inset when metadata is OK
+- **WORLD** — Google photoreal 3D tiles, birdseye over the real campus
+- **ROBOT** — chase camera on the OpenStreetMap reconstruct, Street View inset when metadata is OK
 
-The campus is a reconstruct of the real layout:
+This is a **watch**, not a game. The mast runs the outdoor sweep on its own and marks people it can reach. It does not go inside.
 
-- **OpenStreetMap** building rings for collision and extrusions
-- **Open-Meteo / Copernicus DEM** for the 14m campus relief
-- **Street View Static** on the robot as the optical inset
-- **Places Nearby** for real University Park names
+## Emergencies
 
-The mission stays outdoors. We do not reconstruct Doheny interiors.
+1. **Doheny is on fire** — structure fire. Four people still outside. Stay off the library.
+2. **Aftershock at Bovard** — earthquake debris on the west lawn. Three people in the open.
+3. **Missing on the quad** — night search. Two people never made it back. The robot sweeps on thermal.
+
+Keys `1` `2` `3` pick a scenario from the first screen.
 
 ## Run it
 
@@ -25,16 +26,11 @@ npm run dev
 
 Then open the printed local URL (this project binds to port `43147`).
 
-## What you do
-
-Nothing with the stick. Click **Watch**. The robot:
-
-1. Leaves the west plaza for Doheny’s west door
-2. Marks the person on the apron, then the person on the steps
-3. Sweeps west to Tommy Trojan
-4. Finishes on the lawn west of Bovard
+## What you see
 
 WORLD is the map. ROBOT is how the mast sees the reconstruct. The gold line is the path it already walked.
+
+After the run: **Watch again** repeats that emergency. **Scenarios** goes back to the picker.
 
 ## Data
 
@@ -51,9 +47,9 @@ Enable these APIs on that key:
 - Places API (legacy Nearby Search)
 - Directions API
 
-Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Photoreal tiles load from the Map Tiles API for WORLD. Without a key, the reconstruct still runs. Restrict the key to Map Tiles, Street View, Places, and Directions if you can — it is a client-side Vite env var.
+Street View, Places, and Directions hydrate through the Vite `/maps/api` proxy. Photoreal tiles load from the Map Tiles API for WORLD. Without a key, the reconstruct still runs.
 
-If Street View metadata is not OK, the optical inset stays hidden. We do not show a still of the interior.
+If Street View metadata is not OK, the optical inset stays hidden.
 
 Google requires on-screen attribution when tiles are visible.
 
