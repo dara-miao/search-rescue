@@ -1,21 +1,13 @@
 import { TilesPlugin, TilesRenderer, TilesAttributionOverlay } from '3d-tiles-renderer/r3f'
 import type { TilesRenderer as TilesImpl } from '3d-tiles-renderer/three'
 import { ReorientationPlugin, UpdateOnChangePlugin } from '3d-tiles-renderer/plugins'
-import { useRef } from 'react'
-import type { Group, Object3D } from 'three'
+import { useEffect, useRef } from 'react'
+import type { Group } from 'three'
 import { heightAt } from '../game/ground'
 import { GOOGLE_MAPS_KEY, TOMMY_GEO } from '../game/maps'
 import { DEPLOY, useGame } from '../game/store'
 import { disposeTileScene, isRoofHit, measureRoofCentroid, probeTileGround, registerTileScene } from '../game/tilesCollide'
 import { DOHENY } from '../game/world'
-
-function sceneFromLoad(payload: unknown): Object3D | null {
-  if (!payload || typeof payload !== 'object') return null
-  const rec = payload as { scene?: Object3D; isObject3D?: boolean }
-  if (rec.scene) return rec.scene
-  if (rec.isObject3D) return payload as Object3D
-  return null
-}
 
 const LAT = (TOMMY_GEO.lat * Math.PI) / 180
 const LON = (TOMMY_GEO.lon * Math.PI) / 180
@@ -149,16 +141,22 @@ export function GoogleTiles({
   const align = useRef<Group>(null)
   const tuneQueues = (tiles: TilesImpl | null) => {
     if (!tiles) return
-    tiles.downloadQueue.maxJobsPerOrigin = 2
+    tiles.downloadQueue.maxJobsPerOrigin = 1
     tiles.parseQueue.maxJobs = 1
     tiles.loadSiblings = false
-    tiles.errorTarget = variant === 'robot' ? 16 : 34
-    tiles.lruCache.minSize = 80
-    tiles.lruCache.maxSize = 160
-    tiles.lruCache.minBytesSize = 48 * 1024 * 1024
-    tiles.lruCache.maxBytesSize = 96 * 1024 * 1024
-    tiles.lruCache.unloadPercent = 0.25
+    tiles.errorTarget = variant === 'robot' ? 28 : 52
+    tiles.lruCache.minSize = 36
+    tiles.lruCache.maxSize = 64
+    tiles.lruCache.minBytesSize = 20 * 1024 * 1024
+    tiles.lruCache.maxBytesSize = 36 * 1024 * 1024
+    tiles.lruCache.unloadPercent = 0.35
   }
+  useEffect(() => {
+    return () => {
+      const g = align.current
+      if (g) disposeTileScene(g)
+    }
+  }, [])
   if (!key) return null
 
   return (
@@ -167,17 +165,12 @@ export function GoogleTiles({
       <TilesRenderer
         ref={tuneQueues}
         url={`${GOOGLE_ROOT}?key=${key}`}
-        errorTarget={variant === 'robot' ? 16 : 34}
-        onLoadModel={(payload: unknown) => {
+        errorTarget={variant === 'robot' ? 28 : 52}
+        onLoadModel={() => {
           setTilesReady(true)
-          const scene = sceneFromLoad(payload)
-          if (scene) registerTileScene(scene)
+          if (align.current) registerTileScene(align.current)
           window.clearTimeout(alignTimer)
           alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 1200)
-        }}
-        onDisposeModel={(payload: unknown) => {
-          const scene = sceneFromLoad(payload)
-          if (scene) disposeTileScene(scene)
         }}
       >
         <TilesPlugin plugin={GooglePhotorealTiles} args={[{ apiToken: key }]} />

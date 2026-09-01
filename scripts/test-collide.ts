@@ -1,7 +1,8 @@
-import { keepOut, keepOutFrom, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
+import { Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from 'three'
+import { bodyRadius, keepOut, keepOutFrom, insideSolid, inDoorGap, doorMid, doorOf, DOOR_GAP } from '../src/game/collide'
 import { keepOffProps, PROP_CIRCLES } from '../src/game/props'
 import { stepBody, type Body } from '../src/game/motion'
-import { isRoofHit, pickWalkY, ROOF_ABOVE_DEM, walkableTileY } from '../src/game/tilesCollide'
+import { isRoofHit, isSolidUpright, pickWalkY, ROOF_ABOVE_DEM, walkableTileY } from '../src/game/tilesCollide'
 import { BUILDINGS } from '../src/game/world'
 
 function assert(ok: boolean, msg: string) {
@@ -90,11 +91,51 @@ if (tommy) {
   const off = keepOffProps(tommy.x, tommy.z)
   assert(Math.hypot(off.x - tommy.x, off.z - tommy.z) >= tommy.r - 0.05, 'Tommy plinth is solid')
 }
-const nearPalm = PROP_CIRCLES.find((p) => p.r < 1.4 && Math.hypot(p.x - 82, p.z - 36) > 8)
+const nearPalm = PROP_CIRCLES.find((p) => p.r < 1.7 && Math.hypot(p.x - 82, p.z - 36) > 8)
 if (nearPalm) {
   const off = keepOut(nearPalm.x, nearPalm.z)
-  assert(Math.hypot(off.x - nearPalm.x, off.z - nearPalm.z) >= nearPalm.r - 0.08, 'palms are solid')
+  assert(Math.hypot(off.x - nearPalm.x, off.z - nearPalm.z) >= nearPalm.r + bodyRadius() - 0.08, 'palms are solid')
+  const intoPalm = walk(nearPalm.x - 10, nearPalm.z, 11, 0, 80)
+  assert(
+    Math.hypot(intoPalm.x - nearPalm.x, intoPalm.z - nearPalm.z) >= nearPalm.r + bodyRadius() - 0.35,
+    'sprint into a palm stops short of the trunk',
+  )
 }
+
+const pole = PROP_CIRCLES.find((p) => p.r < 0.85 && p.r > 0.5 && Math.hypot(p.x - 94, p.z - 52) > 6)
+if (pole) {
+  const off = keepOut(pole.x, pole.z)
+  assert(Math.hypot(off.x - pole.x, off.z - pole.z) >= pole.r + bodyRadius() - 0.08, 'street poles are solid')
+  const intoPole = walk(pole.x - 8, pole.z, 11, 0, 70)
+  assert(
+    Math.hypot(intoPole.x - pole.x, intoPole.z - pole.z) >= pole.r + bodyRadius() - 0.4,
+    'sprint into a pole stops short',
+  )
+}
+
+const floorMesh = new Mesh(new PlaneGeometry(4, 4), new MeshBasicMaterial())
+floorMesh.rotation.x = -Math.PI / 2
+floorMesh.updateMatrixWorld(true)
+const wallMesh = new Mesh(new PlaneGeometry(4, 4), new MeshBasicMaterial())
+wallMesh.updateMatrixWorld(true)
+const floorHit = {
+  point: new Vector3(0, 1.2, 0),
+  face: { normal: new Vector3(0, 0, 1) },
+  object: floorMesh,
+} as unknown as Parameters<typeof isSolidUpright>[0]
+const wallHit = {
+  point: new Vector3(0, 1.2, 0),
+  face: { normal: new Vector3(0, 0, 1) },
+  object: wallMesh,
+} as unknown as Parameters<typeof isSolidUpright>[0]
+const scrapeHit = {
+  point: new Vector3(0, 0.4, 0),
+  face: { normal: new Vector3(1, 0, 0) },
+  object: wallMesh,
+} as unknown as Parameters<typeof isSolidUpright>[0]
+assert(!isSolidUpright(floorHit, 0.5), 'a floor slab is not a wall')
+assert(isSolidUpright(wallHit, 0.5), 'a standing face is a wall')
+assert(isSolidUpright(scrapeHit, 0.5), 'a low planter face is a wall')
 
 assert(isRoofHit(12, 1) === true, 'a 11 m rise is a roof')
 assert(isRoofHit(2.2, 1) === false, 'a 1.2 m rise is still the walk')

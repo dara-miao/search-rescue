@@ -14,7 +14,7 @@ The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space,
 You drive the robot:
 
 - After **Start** the mast begins the outdoor sweep. Tap **Stop** to halt, **Walk** to send it again. **W** / click-hold the robot pane also walks.
-- **Knob** — analog drive on the mast console. Lean to walk and turn.
+- **Knob** — analog drive on the mast console. Lean to walk and turn. Palms, poles, planters, and photoreal walls are solid — the hull cannot walk through them. WORLD tiles stay a lighter load so the split view stays smooth.
 - **A** / **D** — turn by hand
 - In range they mark automatically. **F** / **Space** / **Mark** still works.
 - **T** — thermal
