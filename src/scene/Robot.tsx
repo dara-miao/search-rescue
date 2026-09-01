@@ -46,19 +46,19 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
       {youPin && (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]} renderOrder={20}>
-            <ringGeometry args={[5.4, 9.2, 48]} />
+            <ringGeometry args={[3.6, 6.2, 40]} />
             <meshBasicMaterial color="#ffcc00" transparent opacity={0.95} depthTest={false} depthWrite={false} toneMapped={false} />
           </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]} renderOrder={20}>
-            <circleGeometry args={[4.2, 32]} />
+            <circleGeometry args={[3.0, 28]} />
             <meshBasicMaterial color="#ffcc00" transparent opacity={0.42} depthTest={false} depthWrite={false} toneMapped={false} />
           </mesh>
-          <mesh position={[0, 11, 0]} renderOrder={21}>
-            <cylinderGeometry args={[0.55, 0.55, 22, 10]} />
+          <mesh position={[0, 8, 0]} renderOrder={21}>
+            <cylinderGeometry args={[0.4, 0.4, 16, 10]} />
             <meshBasicMaterial color="#ffcc00" depthTest={false} toneMapped={false} />
           </mesh>
-          <mesh position={[0, 22.4, 0]} renderOrder={22}>
-            <sphereGeometry args={[1.7, 14, 14]} />
+          <mesh position={[0, 16.4, 0]} renderOrder={22}>
+            <sphereGeometry args={[1.25, 12, 12]} />
             <meshBasicMaterial color="#ffcc00" depthTest={false} toneMapped={false} />
           </mesh>
         </>
@@ -112,10 +112,10 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
         position={[0, 0.4, 0.5]}
         angle={0.55}
         penumbra={0.45}
-        intensity={youPin ? 10 : 16}
-        distance={22}
+        intensity={youPin ? 4 : 5}
+        distance={16}
         color="#fff4d8"
-        castShadow={youPin}
+        castShadow={false}
       />
       </group>
     </group>

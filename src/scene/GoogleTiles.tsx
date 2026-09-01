@@ -149,8 +149,8 @@ export function GoogleTiles({
   const align = useRef<Group>(null)
   const tuneQueues = (tiles: TilesImpl | null) => {
     if (!tiles) return
-    tiles.downloadQueue.maxJobsPerOrigin = 10
-    tiles.parseQueue.maxJobs = 8
+    tiles.downloadQueue.maxJobsPerOrigin = 3
+    tiles.parseQueue.maxJobs = 2
   }
   if (!key) return null
 
@@ -160,13 +160,13 @@ export function GoogleTiles({
       <TilesRenderer
         ref={tuneQueues}
         url={`${GOOGLE_ROOT}?key=${key}`}
-        errorTarget={variant === 'robot' ? 8 : 16}
+        errorTarget={variant === 'robot' ? 12 : 22}
         onLoadModel={(payload: unknown) => {
           setTilesReady(true)
           const scene = sceneFromLoad(payload)
           if (scene) registerTileScene(scene)
           window.clearTimeout(alignTimer)
-          alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 160)
+          alignTimer = window.setTimeout(() => snapTilesToCampus(align.current), 1200)
         }}
         onDisposeModel={(payload: unknown) => {
           const scene = sceneFromLoad(payload)

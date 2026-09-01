@@ -39,6 +39,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
           camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.35, far: 1600 }}
+          shadows={false}
           dpr={[1, 1]}
           gl={{ antialias: false, powerPreference: 'default', toneMapping: ACESFilmicToneMapping }}
           onCreated={({ gl }) => {

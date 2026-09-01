@@ -80,15 +80,39 @@ function chaseXZ(x: number, z: number) {
   return best
 }
 
-/** High SW 3/4 toward Doheny; orbit only if that pose sits in a hull. */
+/** High SW 3/4 toward Doheny. Holds one offset and lerps so the lens does not snap. */
 export function MastRig() {
-  useFrame((state) => {
+  const held = useRef({ ox: -7, oz: 13 })
+  const booted = useRef(false)
+
+  useFrame((state, dt) => {
     const { robot } = useGame.getState()
-    const cam = chaseXZ(robot.x, robot.z)
-    const tight = cam.d < 9
-    state.camera.position.set(cam.x, robot.y + (tight ? 12 : 8.4), cam.z)
-    if (tight) state.camera.lookAt(robot.x, robot.y + 0.4, robot.z)
-    else state.camera.lookAt(robot.x + 6, robot.y + 0.5, robot.z - 3)
+    let wx = robot.x + held.current.ox
+    let wz = robot.z + held.current.oz
+    let cleared = keepOut(wx, wz, 2.6)
+    let dist = Math.hypot(cleared.x - robot.x, cleared.z - robot.z)
+    if (insideSolid(cleared.x, cleared.z) || dist < 8) {
+      const next = chaseXZ(robot.x, robot.z)
+      held.current = { ox: next.x - robot.x, oz: next.z - robot.z }
+      cleared = { x: next.x, z: next.z }
+      dist = next.d
+    }
+
+    const tight = dist < 9
+    _desired.set(cleared.x, robot.y + (tight ? 12 : 8.4), cleared.z)
+    if (tight) _look.set(robot.x, robot.y + 0.4, robot.z)
+    else _look.set(robot.x + 6, robot.y + 0.5, robot.z - 3)
+
+    const k = 1 - Math.exp(-5.4 * dt)
+    if (!booted.current) {
+      _target.copy(_desired)
+      state.camera.position.copy(_desired)
+      booted.current = true
+    } else {
+      state.camera.position.lerp(_desired, k)
+    }
+    _target.lerp(_look, booted.current ? k : 1)
+    state.camera.lookAt(_target)
     if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
       state.camera.fov = 46
       state.camera.updateProjectionMatrix()
