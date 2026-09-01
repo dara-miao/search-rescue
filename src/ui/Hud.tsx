@@ -125,6 +125,7 @@ export function MastHud({ onMark }: { onMark: () => void }) {
                       ? 'Turn back'
                       : ''}
               </span>
+              <em className="walk-hint">Hold W or click this pane · A D turn</em>
             </div>
           </div>
         </div>
