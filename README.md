@@ -13,7 +13,7 @@ The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space,
 
 You drive the robot:
 
-- **W** / click-hold the robot pane / analog knob — walk
+- **W** / click-hold the robot pane — walk
 - **A** / **D** — turn
 - **F** / **Space** / **Mark** — mark someone in range
 - **T** — thermal
