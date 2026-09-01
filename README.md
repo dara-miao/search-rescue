@@ -13,9 +13,9 @@ The first screen is a three-beat briefing over Doheny. **Next** / Enter / Space,
 
 You drive the robot:
 
-- **W** / click-hold the robot pane — walk
-- **A** / **D** — turn
-- **F** / **Space** / **Mark** — mark someone in range
+- **Walk** (hold the button) / **W** / click-hold the robot pane — walk. The mast turns toward the next person while you hold walk.
+- **A** / **D** — turn by hand
+- In range they mark automatically. **F** / **Space** / **Mark** still works.
 - **T** — thermal
 - **Q** / **E** — orbit WORLD
 - **Shift** — sprint (off in HOT / NO GO)

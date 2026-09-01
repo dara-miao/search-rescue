@@ -9,7 +9,7 @@
     "predev": "node scripts/ensure-public-assets.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test:sim": "npx tsx scripts/test-sim.ts && npx tsx scripts/test-collide.ts && npx tsx scripts/test-auto.ts && npx tsx scripts/test-scenarios.ts",
+    "test:sim": "npx tsx scripts/test-sim.ts && npx tsx scripts/test-collide.ts && npx tsx scripts/test-auto.ts && npx tsx scripts/test-scenarios.ts && npx tsx scripts/test-play.ts",
     "preview": "vite preview"
   },
   "dependencies": {
