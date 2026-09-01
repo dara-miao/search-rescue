@@ -1,6 +1,8 @@
 import { PerspectiveCamera } from '@react-three/drei'
 import { hasGoogleTiles } from '../game/maps'
 import { useGame } from '../game/store'
+import { Campus } from './Campus'
+import { Fire } from './Fire'
 import { GoogleTiles } from './GoogleTiles'
 import { Robot } from './Robot'
 import { WorldRig } from './Rigs'
@@ -19,11 +21,16 @@ function Sky() {
 
 export function WorldView({ cinematic }: { cinematic: boolean }) {
   const playing = useGame((s) => s.phase === 'playing')
+  const tilesReady = useGame((s) => s.tilesReady)
+  const google = hasGoogleTiles()
+  const photoreal = google && tilesReady
   return (
     <>
       <PerspectiveCamera makeDefault position={[200, 96, 90]} fov={46} near={0.8} far={720} />
       <Sky />
-      {hasGoogleTiles() && <GoogleTiles variant="world" />}
+      {google && <GoogleTiles variant="world" />}
+      {!photoreal && <Campus thermal={false} photoreal={false} cutaway />}
+      {!photoreal && <Fire thermal={false} />}
       {playing && <Robot variant="world" />}
       <WorldRig cinematic={cinematic} />
     </>
