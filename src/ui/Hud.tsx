@@ -1,4 +1,4 @@
-import { useEffect, useState, type PointerEvent } from 'react'
+import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 import type { HeatZone, VictimSim } from '../sim/types'
@@ -75,7 +75,15 @@ function WalkHold({ onToggle }: { onToggle: () => boolean }) {
   )
 }
 
-export function MastHud({ onMark, onToggleWalk }: { onMark: () => void; onToggleWalk: () => boolean }) {
+export function MastHud({
+  onMark,
+  onToggleWalk,
+  drive,
+}: {
+  onMark: () => void
+  onToggleWalk: () => boolean
+  drive: ReactNode
+}) {
   const thermal = useGame((s) => s.thermal)
   const elapsed = useGame((s) => s.elapsed)
   const survivors = useGame((s) => s.survivors)
@@ -149,10 +157,12 @@ export function MastHud({ onMark, onToggleWalk }: { onMark: () => void; onToggle
                       ? 'Turn back'
                       : ''}
               </span>
-              <em className="walk-hint">Sweep is on · Stop to halt · A / D to turn</em>
+              <em className="walk-hint">Knob to drive · Stop to halt · A / D to turn</em>
             </div>
           </div>
         </div>
+
+        <div className="console-drive">{drive}</div>
 
         <div className="console-actions">
           <WalkHold onToggle={onToggleWalk} />
