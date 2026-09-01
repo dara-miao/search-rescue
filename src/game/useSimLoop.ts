@@ -1,14 +1,18 @@
 import { useEffect, useRef } from 'react'
+import { headingTo, wrapAngle } from './auto'
 import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
 import { stepBody, type Body } from './motion'
+import { nextAim } from './playGuide'
 import { stickWish } from './steer'
 import { DEPLOY, useGame } from './store'
+import { CAMPUS } from './world'
 import { wishScale } from '../sim/robot'
 import { SIM_DT } from '../sim/step'
 
 const TURN_RATE = 1.55
 const NOD_RATE = 1.15
+const ASSIST = 1.9
 
 export function useSimLoop(active: boolean) {
   const api = useRef<InputApi | null>(null)
@@ -64,13 +68,28 @@ export function useSimLoop(active: boolean) {
           if (Math.abs(wish.forward) > 0.04) forward = wish.forward
         }
 
+        const aim = nextAim(body.current.x, body.current.z, store.survivors)
+        if (forward > 0.12 && !left && !right && !leaning && aim) {
+          const want = headingTo(body.current.x, body.current.z, aim.x, aim.z)
+          const delta = wrapAngle(want - pad.yaw)
+          const max = ASSIST * dt
+          if (Math.abs(delta) > 0.03) input.turn(Math.max(-max, Math.min(max, delta)))
+        }
+
+        if (store.nearestDist <= CAMPUS.markRange) {
+          store.tryMark()
+          forward = 0
+        }
+
         const aimed = input.consume()
         const cap = wishScale(store.sim.robot.zone, store.sim.robot.noGoTime)
         const sprint = aimed.sprint && cap.sprint
+        const toAim = aim ? Math.hypot(body.current.x - aim.x, body.current.z - aim.z) : 99
+        const creep = toAim < 10 ? 0.5 : 1
         const sin = Math.sin(aimed.yaw)
         const cos = Math.cos(aimed.yaw)
-        const wishX = (sin * forward + cos * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
-        const wishZ = (-cos * forward + sin * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale
+        const wishX = (sin * forward + cos * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale * creep
+        const wishZ = (-cos * forward + sin * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale * creep
         const next = stepBody(body.current, wishX, wishZ, sprint, dt)
         body.current = next
         const speed = Math.hypot(next.vx, next.vz)

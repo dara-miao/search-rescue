@@ -25,6 +25,20 @@ const KEY_CODE: Record<string, string> = {
   arrowright: 'ArrowRight',
 }
 
+const BLOCK = new Set([
+  'Space',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'KeyW',
+  'KeyS',
+  'KeyA',
+  'KeyD',
+  'KeyF',
+  'KeyT',
+])
+
 function codeOf(e: KeyboardEvent) {
   const mapped = KEY_CODE[e.key.toLowerCase()]
   if (mapped) return mapped
@@ -40,29 +54,45 @@ export function createInput() {
   let hold = false
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.repeat) return
     const code = codeOf(e)
     if (!code) return
     if (!keys.has(code)) edges.add(code)
     keys.add(code)
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyF', 'KeyT'].includes(code)) {
-      e.preventDefault()
-    }
+    if (BLOCK.has(code)) e.preventDefault()
   }
   const onKeyUp = (e: KeyboardEvent) => {
     const code = codeOf(e)
     if (code) keys.delete(code)
   }
+  const onLostFocus = () => {
+    keys.clear()
+    edges.clear()
+  }
+  const onPointerUp = () => {
+    hold = false
+  }
 
   const attach = () => {
+    document.addEventListener('keydown', onKeyDown, true)
+    document.addEventListener('keyup', onKeyUp, true)
     window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('keyup', onKeyUp, true)
+    window.addEventListener('blur', onLostFocus)
+    document.addEventListener('visibilitychange', onLostFocus)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
     if (document.pointerLockElement) document.exitPointerLock()
   }
 
   const detach = () => {
+    document.removeEventListener('keydown', onKeyDown, true)
+    document.removeEventListener('keyup', onKeyUp, true)
     window.removeEventListener('keydown', onKeyDown, true)
     window.removeEventListener('keyup', onKeyUp, true)
+    window.removeEventListener('blur', onLostFocus)
+    document.removeEventListener('visibilitychange', onLostFocus)
+    window.removeEventListener('pointerup', onPointerUp)
+    window.removeEventListener('pointercancel', onPointerUp)
     keys.clear()
     edges.clear()
     hold = false

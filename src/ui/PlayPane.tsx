@@ -8,13 +8,17 @@ import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
 function isHud(target: EventTarget | null) {
-  return target instanceof HTMLElement && Boolean(target.closest('.knob, .console, .mast-top, .optical, button'))
+  return target instanceof HTMLElement && Boolean(target.closest('.mark-go, .mark-wait, .walk-hold, .optical'))
 }
 
 export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
   const thermal = useGame((s) => s.thermal)
   const playing = useGame((s) => s.phase === 'playing')
   const tryMark = useGame((s) => s.tryMark)
+
+  const hold = (on: boolean) => {
+    input.current?.setHold(on)
+  }
 
   return (
     <>
@@ -30,11 +34,11 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           }
           if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
           window.focus()
-          input.current?.setHold(true)
+          hold(true)
         }}
-        onPointerUp={() => input.current?.setHold(false)}
-        onPointerCancel={() => input.current?.setHold(false)}
-        onLostPointerCapture={() => input.current?.setHold(false)}
+        onPointerUp={() => hold(false)}
+        onPointerCancel={() => hold(false)}
+        onLostPointerCapture={() => hold(false)}
       >
         <Canvas
           eventPrefix="offset"
@@ -56,7 +60,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing && <MastHud onMark={tryMark} />}
+        {playing && <MastHud onMark={tryMark} onWalk={hold} />}
       </section>
     </>
   )
