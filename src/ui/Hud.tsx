@@ -1,3 +1,4 @@
+import { scenarioById } from '../game/scenarios'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 import type { HeatZone, VictimSim } from '../sim/types'
@@ -28,13 +29,16 @@ export function WorldChrome() {
   const phase = useGame((s) => s.phase)
   const tilesReady = useGame((s) => s.tilesReady)
   const zone = useGame((s) => s.sim.robot.zone)
+  const scenarioId = useGame((s) => s.scenarioId)
   const playing = phase === 'playing'
+  const scenario = scenarioById(scenarioId)
 
   if (!playing) return null
 
   return (
     <div className="world-chrome">
       <span className="chip">WORLD</span>
+      <span className="chip">{scenario.kicker}</span>
       {!tilesReady && <span className="chip">Loading map</span>}
       {(zone === 'hot' || zone === 'nogo') && (
         <span className={`chip ${zone === 'nogo' ? 'nogo' : 'hot'}`}>{zoneLabel(zone)}</span>
@@ -96,7 +100,7 @@ export function MastHud() {
 
       <div className="console watch">
         <p className="watch-kicker">{thermal ? 'Thermal' : 'Robot'}</p>
-        <p className="watch-line">{narration || 'The robot is on the west lawn.'}</p>
+        <p className="watch-line">{narration || 'The robot is waiting on the quad.'}</p>
       </div>
     </div>
   )

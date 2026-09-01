@@ -1,0 +1,101 @@
+.pick {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 28px 24px 36px;
+  background: linear-gradient(90deg, rgba(7, 8, 11, 0.78) 0%, rgba(7, 8, 11, 0.22) 46%, transparent 68%);
+  pointer-events: none;
+}
+
+.pick-card {
+  width: min(460px, 100%);
+  pointer-events: auto;
+}
+
+.pick-card h1 {
+  margin: 6px 0 8px;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.05;
+}
+
+.pick-card .lede {
+  max-width: 38ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.pick-list {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick-list button {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  color: inherit;
+  background: rgba(8, 10, 14, 0.78);
+  border: 1px solid rgba(255, 204, 0, 0.2);
+  cursor: pointer;
+}
+
+.pick-list button:hover,
+.pick-list button:focus-visible {
+  border-color: var(--gold);
+}
+
+.pick-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.pick-list strong {
+  font-size: 16px;
+}
+
+.pick-list button > span:not(.pick-kicker) {
+  color: #d8cbb8;
+  font-size: 13px;
+}
+
+.pick-list em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.console.pick-wait {
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .pick {
+    align-items: flex-end;
+    padding: 12px 12px 16px;
+    background: linear-gradient(180deg, transparent 18%, rgba(7, 8, 11, 0.86) 72%);
+  }
+
+  .pick-card {
+    max-height: 58vh;
+    overflow: auto;
+  }
+
+  .pick-card h1 {
+    font-size: 28px;
+  }
+
+  .pick-list button {
+    padding: 10px 12px;
+  }
+}
