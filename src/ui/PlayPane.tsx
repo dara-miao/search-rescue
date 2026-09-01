@@ -1,24 +1,44 @@
+import type { MutableRefObject } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
-import { IDLE } from '../game/scenarios'
-import { useGame } from '../game/store'
+import type { InputApi } from '../game/input'
+import { DEPLOY, useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
+import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
-export function PlayPane() {
+function isHud(target: EventTarget | null) {
+  return target instanceof HTMLElement && Boolean(target.closest('.knob, .console, .mast-top, .optical, button'))
+}
+
+export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
   const thermal = useGame((s) => s.thermal)
   const playing = useGame((s) => s.phase === 'playing')
+  const tryMark = useGame((s) => s.tryMark)
 
   return (
     <>
       <div className="gutter" aria-hidden="true" />
-      <section className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}>
-        <span className="pane-tag">ROBOT</span>
+      <section
+        className={`pane robot-pane ${thermal ? 'is-thermal' : ''}`}
+        onPointerDown={(e) => {
+          if (!playing || isHud(e.target)) return
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId)
+          } catch {
+            /* window pointerup still clears the hold */
+          }
+          input.current?.setHold(true)
+        }}
+        onPointerUp={() => input.current?.setHold(false)}
+        onPointerCancel={() => input.current?.setHold(false)}
+        onLostPointerCapture={() => input.current?.setHold(false)}
+      >
         <Canvas
           eventPrefix="offset"
           style={{ position: 'absolute', inset: 0 }}
-          camera={{ position: [IDLE.x - 7, 9, IDLE.z + 13], fov: 46, near: 0.4, far: 420 }}
+          camera={{ position: [DEPLOY.x - 7, 9, DEPLOY.z + 13], fov: 46, near: 0.4, far: 420 }}
           shadows={false}
           dpr={[0.85, 1]}
           gl={{
@@ -35,13 +55,11 @@ export function PlayPane() {
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing ? (
-          <MastHud />
-        ) : (
-          <div className="console watch pick-wait">
-            <p className="watch-kicker">Robot</p>
-            <p className="watch-line">Waiting on a scenario.</p>
-          </div>
+        {playing && (
+          <MastHud
+            onMark={tryMark}
+            drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
+          />
         )}
       </section>
     </>

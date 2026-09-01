@@ -3,35 +3,41 @@ import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { insideSolid, keepOut } from '../game/collide'
 import { useGame } from '../game/store'
+import { DOHENY } from '../game/world'
 
 const _target = new Vector3()
 const _desired = new Vector3()
 const _look = new Vector3()
 
-const PICK_SHOT = { cx: 20, cz: 8, r: 148, y: 118, lookY: 4, speed: 0.032 }
+const BRIEFING_SHOTS = [
+  { r: 72, y: 96, lookY: 2, speed: 0.05 },
+  { r: 88, y: 48, lookY: 5, speed: 0.04 },
+  { r: 118, y: 82, lookY: 2, speed: 0.035 },
+] as const
 
 export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {
   const orbit = useRef(0.55)
   const lookY = useRef(2)
 
   useFrame((state, dt) => {
-    const { robot, worldOrbit, phase } = useGame.getState()
-    const hero = cinematic || phase === 'pick'
+    const { robot, worldOrbit, phase, briefingStep } = useGame.getState()
+    const hero = cinematic || phase === 'briefing'
     if (state.camera.type === 'PerspectiveCamera' && 'fov' in state.camera && state.camera.fov !== 46) {
       state.camera.fov = 46
       state.camera.updateProjectionMatrix()
     }
 
     if (hero) {
-      orbit.current += dt * PICK_SHOT.speed
-      lookY.current += (PICK_SHOT.lookY - lookY.current) * 0.06
+      const shot = BRIEFING_SHOTS[Math.min(briefingStep, BRIEFING_SHOTS.length - 1)]
+      orbit.current += dt * shot.speed
+      lookY.current += (shot.lookY - lookY.current) * 0.06
       _desired.set(
-        PICK_SHOT.cx + Math.sin(orbit.current) * PICK_SHOT.r,
-        PICK_SHOT.y,
-        PICK_SHOT.cz + Math.cos(orbit.current) * PICK_SHOT.r,
+        DOHENY.cx + Math.sin(orbit.current) * shot.r,
+        shot.y,
+        DOHENY.cz + Math.cos(orbit.current) * shot.r,
       )
       state.camera.position.lerp(_desired, 0.055)
-      _look.set(PICK_SHOT.cx, lookY.current, PICK_SHOT.cz)
+      _look.set(DOHENY.cx, lookY.current, DOHENY.cz)
       state.camera.lookAt(_look)
       return
     }
@@ -93,14 +99,9 @@ export function MastRig() {
     }
 
     const tight = dist < 9
-    const aim = useGame.getState().autoTarget
     _desired.set(cleared.x, robot.y + (tight ? 12 : 8.4), cleared.z)
     if (tight) _look.set(robot.x, robot.y + 0.4, robot.z)
-    else if (aim) {
-      _look.set(robot.x + (aim.x - robot.x) * 0.38, robot.y + 0.45, robot.z + (aim.z - robot.z) * 0.38)
-    } else {
-      _look.set(robot.x + 6, robot.y + 0.5, robot.z - 3)
-    }
+    else _look.set(robot.x + 6, robot.y + 0.5, robot.z - 3)
 
     const k = 1 - Math.exp(-5.4 * dt)
     if (!booted.current) {
