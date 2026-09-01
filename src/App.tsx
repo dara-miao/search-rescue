@@ -4,7 +4,7 @@ import { ACESFilmicToneMapping } from 'three'
 import { useSimLoop } from './game/useSimLoop'
 import { useGame } from './game/store'
 import { WorldView } from './scene/WorldView'
-import { ScenarioPick, EndCard } from './ui/Overlays'
+import { Briefing, EndCard } from './ui/Overlays'
 import { PlayPane } from './ui/PlayPane'
 import { WorldChrome } from './ui/Hud'
 
@@ -18,18 +18,18 @@ function holdContext(el: HTMLElement | null) {
 export default function App() {
   const phase = useGame((s) => s.phase)
   const start = useGame((s) => s.start)
-  const picking = phase === 'pick'
-  useSimLoop(phase === 'playing')
+  const briefingStep = useGame((s) => s.briefingStep)
+  const briefing = phase === 'briefing'
+  const input = useSimLoop(phase === 'playing')
   const root = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    void import('./scene/RobotScene')
-    void useGame.getState().hydrateGoogle()
-  }, [])
 
   useEffect(() => {
     if (document.pointerLockElement) document.exitPointerLock()
   }, [phase])
+
+  useEffect(() => {
+    if (briefingStep >= 1 || !briefing) void import('./scene/RobotScene')
+  }, [briefing, briefingStep])
 
   useEffect(() => holdContext(root.current), [])
 
@@ -41,9 +41,8 @@ export default function App() {
 
   return (
     <div className="app" ref={root} tabIndex={-1}>
-      <main className="split">
+      <main className={`split${briefing ? ' solo' : ''}`}>
         <section className="pane">
-          <span className="pane-tag">WORLD</span>
           <Canvas
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
@@ -57,11 +56,11 @@ export default function App() {
             }}
             onCreated={({ gl }) => holdContext(gl.domElement)}
           >
-            <WorldView cinematic={picking} />
+            <WorldView cinematic={briefing} />
           </Canvas>
-          {picking ? <ScenarioPick onPick={start} /> : <WorldChrome />}
+          {briefing ? <Briefing onDeploy={start} /> : <WorldChrome />}
         </section>
-        <PlayPane />
+        {!briefing && <PlayPane input={input} />}
       </main>
 
       <EndCard />

@@ -4,7 +4,6 @@ import { useGame } from '../game/store'
 import { GoogleTiles } from './GoogleTiles'
 import { Robot } from './Robot'
 import { WorldRig } from './Rigs'
-import { Trail } from './Trail'
 
 function Sky() {
   return (
@@ -26,7 +25,6 @@ export function WorldView({ cinematic }: { cinematic: boolean }) {
       <Sky />
       {hasGoogleTiles() && <GoogleTiles variant="world" />}
       {playing && <Robot variant="world" />}
-      {playing && <Trail world />}
       <WorldRig cinematic={cinematic} />
     </>
   )

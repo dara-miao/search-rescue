@@ -2,13 +2,12 @@ import { create } from 'zustand'
 import { fetchCampusGoogle, type IngressMeta, type PlaceLabel } from './google'
 import { heightAt } from './ground'
 import { hasGoogleKey } from './maps'
-import { DEFAULT_SCENARIO, IDLE, scenarioById, type Scenario } from './scenarios'
 import type { PadMode } from './steer'
 import { dist2 } from './world'
-import { createIdleSim, createSim, markNearest, stepSim } from '../sim/step'
+import { createSim, markNearest, stepSim } from '../sim/step'
 import type { FailCode, SimState, VictimSim } from '../sim/types'
 
-export type Phase = 'pick' | 'playing' | 'complete' | 'failed'
+export type Phase = 'briefing' | 'playing' | 'complete' | 'failed'
 
 export type SurvivorState = VictimSim & { found: boolean; y: number }
 
@@ -42,12 +41,9 @@ type GameStore = {
   evacMeta: IngressMeta | null
   googleFeeds: 'idle' | 'loading' | 'live' | 'error'
   padMode: PadMode
-  scenarioId: string
-  narration: string
-  autoTarget: { x: number; z: number } | null
-  trail: Array<[number, number]>
-  setWatch: (patch: { narration?: string; autoTarget?: { x: number; z: number } | null; trail?: Array<[number, number]> }) => void
-  start: (id?: string) => void
+  briefingStep: number
+  setBriefingStep: (step: number) => void
+  start: () => void
   reset: () => void
   hydrateGoogle: () => Promise<void>
   setTilesReady: (ready: boolean) => void
@@ -102,37 +98,29 @@ function syncFromSim(sim: SimState, robot: RobotState, markFlash: number) {
   }
 }
 
-/** Fire-scenario deploy. Google tiles still snap near this walk. */
-export const DEPLOY = DEFAULT_SCENARIO.deploy
+/** On the walk west of Doheny, facing the fire — not inside the door. */
+export const DEPLOY = { x: 94, z: 52, yaw: 1.37 }
 
-function poseRobot(x: number, z: number, yaw: number): RobotState {
+function freshRobot(): RobotState {
   return {
-    x,
-    y: heightAt(x, z) + 0.52,
-    z,
-    yaw,
+    x: DEPLOY.x,
+    y: heightAt(DEPLOY.x, DEPLOY.z) + 0.52,
+    z: DEPLOY.z,
+    yaw: DEPLOY.yaw,
     pitch: 0.16,
     speed: 0,
     moving: false,
   }
 }
 
-function idleRobot(): RobotState {
-  return poseRobot(IDLE.x, IDLE.z, IDLE.yaw)
-}
-
-function deployRobot(scenario: Scenario): RobotState {
-  return poseRobot(scenario.deploy.x, scenario.deploy.z, scenario.deploy.yaw)
-}
-
-const boot = createIdleSim()
+const boot = createSim()
 
 export const useGame = create<GameStore>((set, get) => ({
-  phase: 'pick',
+  phase: 'briefing',
   thermal: false,
   tilesReady: false,
   elapsed: 0,
-  robot: idleRobot(),
+  robot: freshRobot(),
   sim: boot,
   survivors: viewSurvivors(boot),
   nearestId: null,
@@ -147,15 +135,9 @@ export const useGame = create<GameStore>((set, get) => ({
   evacMeta: null,
   googleFeeds: 'idle',
   padMode: 'drive',
-  scenarioId: DEFAULT_SCENARIO.id,
-  narration: '',
-  autoTarget: null,
-  trail: [],
+  briefingStep: 0,
 
-  setWatch: (patch) =>
-    set(
-      Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) as typeof patch,
-    ),
+  setBriefingStep: (step) => set({ briefingStep: Math.max(0, step) }),
 
   hydrateGoogle: async () => {
     if (!hasGoogleKey()) {
@@ -177,20 +159,15 @@ export const useGame = create<GameStore>((set, get) => ({
     }
   },
 
-  start: (id) => {
-    const scenario = scenarioById(id ?? get().scenarioId)
-    const sim = createSim(scenario)
-    const robot = deployRobot(scenario)
-    const first = scenario.run[0]
+  start: () => {
+    const sim = createSim()
+    const robot = freshRobot()
     set({
-      thermal: scenario.hazard === 'search',
+      thermal: false,
       padMode: 'drive',
-      scenarioId: scenario.id,
       robot,
       lastMarked: null,
-      narration: scenario.opening,
-      autoTarget: first && first.kind === 'goto' ? { x: first.x, z: first.z } : { x: robot.x, z: robot.z },
-      trail: [[robot.x, robot.z]],
+      briefingStep: 0,
       ...syncFromSim(sim, robot, 0),
       phase: 'playing',
     })
@@ -198,19 +175,16 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   reset: () => {
-    const sim = createIdleSim()
-    const robot = idleRobot()
+    const sim = createSim()
+    const robot = freshRobot()
     set({
       thermal: false,
       padMode: 'drive',
-      scenarioId: DEFAULT_SCENARIO.id,
       robot,
       lastMarked: null,
-      narration: '',
-      autoTarget: null,
-      trail: [],
+      briefingStep: 0,
       ...syncFromSim(sim, robot, 0),
-      phase: 'pick',
+      phase: 'briefing',
     })
   },
 
