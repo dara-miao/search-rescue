@@ -1,6 +1,9 @@
+import type { FieldSeed } from '../game/scenarios'
 import { coverAt, type Cover } from '../game/ground'
 import { BUILDINGS, DOHENY } from '../game/world'
 import type { Field, HeatZone, HotCell } from './types'
+
+const BOVARD = { x: -9.1, z: -47.5 }
 
 export const SECTOR = { minX: -70, maxX: 220, minZ: -40, maxZ: 90 }
 export const CELL = 4
@@ -85,7 +88,11 @@ export function createField(): Field {
   return field
 }
 
-export function seedField(field: Field) {
+export function seedField(field: Field, seed: FieldSeed = 'doheny') {
+  if (seed === 'none') {
+    collectHot(field)
+    return
+  }
   const { width, height, step, originX, originZ } = field
   for (let iz = 0; iz < height; iz++) {
     for (let ix = 0; ix < width; ix++) {
@@ -93,6 +100,15 @@ export function seedField(field: Field) {
       if (field.blocked[i]) continue
       const x = originX + (ix + 0.5) * step
       const z = originZ + (iz + 0.5) * step
+      if (seed === 'bovard') {
+        const d = Math.hypot(x - BOVARD.x, z - BOVARD.z)
+        if (d < 22 && z > -58 && x < 10) {
+          field.heat[i] = d < 12 ? 0.42 : 0.28
+          field.fuel[i] = 0.16
+          field.smoke[i] = 0.14
+        }
+        continue
+      }
       if (inDoheny(x, z)) {
         const inner = Math.hypot(x - DOHENY.cx, z - DOHENY.cz)
         field.heat[i] = inner < 12 ? 0.96 : 0.92
@@ -162,6 +178,8 @@ export function zoneAt(heat: number): HeatZone {
   return 'safe'
 }
 
+let hotClock = 0
+
 /** One-way: hotter neighbors ignite this cell. Heat does not average away. */
 function igniteFromNeighbors(field: Field, ix: number, iz: number, dt: number) {
   const { width, height, heat, blocked, conduct } = field
@@ -216,7 +234,8 @@ export function spreadField(field: Field, dt: number) {
   }
   heat.set(nextHeat.subarray(0, n))
   smoke.set(nextSmoke.subarray(0, n))
-  collectHot(field)
+  hotClock += 1
+  if (hotClock % 3 === 0) collectHot(field)
 }
 
 function collectHot(field: Field) {
