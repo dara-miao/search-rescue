@@ -4,7 +4,7 @@ import { LANDMARKS, TREES } from './world'
 export function extraPalms(): Array<[number, number]> {
   const pts: Array<[number, number]> = []
   for (const path of GROUND.paths) {
-    for (let i = 0; i < path.length; i++) {
+    for (let i = 0; i < path.length; i += 3) {
       const [x, z] = path[i]
       const prev = path[Math.max(0, i - 1)]
       const next = path[Math.min(path.length - 1, i + 1)]
@@ -27,7 +27,7 @@ export function extraPalms(): Array<[number, number]> {
     [30, -28],
   ]
   for (const [cx, cz] of seeds) {
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < 2; k++) {
       const a = k * 1.37 + cx * 0.01
       const r = 8 + (k % 3) * 5
       const x = cx + Math.cos(a) * r
@@ -63,21 +63,22 @@ export const PROP_CIRCLES: PropCircle[] = uniqueCircles([
   })),
 ])
 
-export function keepOffProps(x: number, z: number) {
+export function keepOffProps(x: number, z: number, pad = 0) {
   let nx = x
   let nz = z
   for (let pass = 0; pass < 2; pass++) {
     for (const p of PROP_CIRCLES) {
+      const need = p.r + pad
       const dx = nx - p.x
       const dz = nz - p.z
       const d = Math.hypot(dx, dz)
       if (d < 1e-4) {
-        nx = p.x + p.r
+        nx = p.x + need
         continue
       }
-      if (d < p.r) {
-        nx = p.x + (dx / d) * p.r
-        nz = p.z + (dz / d) * p.r
+      if (d < need) {
+        nx = p.x + (dx / d) * need
+        nz = p.z + (dz / d) * need
       }
     }
   }

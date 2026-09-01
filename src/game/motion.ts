@@ -1,6 +1,6 @@
 import { bodyRadius, keepOut, keepOutFrom } from './collide'
 import { heightAt } from './ground'
-import { sweepTiles, walkableTileY } from './tilesCollide'
+import { keepOffTiles, sweepTiles, walkableTileY } from './tilesCollide'
 
 export type Body = {
   x: number
@@ -76,18 +76,10 @@ export function stepBody(
   let cz = z
   for (let i = 0; i < parts; i++) {
     const slid = keepOutFrom(cx, cz, cx + vx * sdt, cz + vz * sdt, radius)
-    // Photoreal WORLD tiles are visual only. Sweeping them as walls pins the
-    // mast on the Doheny apron and cooks the run.
-    const sealed = sweepTiles(cx, y, cz, slid.x, slid.z, radius)
-    const want = Math.hypot(slid.x - cx, slid.z - cz)
-    const got = Math.hypot(sealed.x - cx, sealed.z - cz)
-    if (want > 0.01 && got < want * 0.35) {
-      cx = slid.x
-      cz = slid.z
-    } else {
-      cx = sealed.x
-      cz = sealed.z
-    }
+    const off = keepOffTiles(slid.x, y, slid.z, radius)
+    const sealed = sweepTiles(cx, y, cz, off.x, off.z, radius)
+    cx = sealed.x
+    cz = sealed.z
   }
   let cleared = { x: cx, z: cz }
   let tileY = walkableTileY(cleared.x, cleared.z)
