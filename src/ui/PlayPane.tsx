@@ -4,11 +4,12 @@ import { ACESFilmicToneMapping } from 'three'
 import type { InputApi } from '../game/input'
 import { DEPLOY, useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
+import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
 function isHud(target: EventTarget | null) {
-  return target instanceof HTMLElement && Boolean(target.closest('.mark-go, .mark-wait, .walk-hold, .optical'))
+  return target instanceof HTMLElement && Boolean(target.closest('.knob, .mark-go, .mark-wait, .walk-hold, .optical'))
 }
 
 export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }) {
@@ -64,6 +65,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           <MastHud
             onMark={tryMark}
             onToggleWalk={() => input.current?.toggleLatch() ?? false}
+            drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
           />
         )}
       </section>
