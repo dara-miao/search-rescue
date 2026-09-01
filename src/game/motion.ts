@@ -78,8 +78,9 @@ export function stepBody(
     const slid = keepOutFrom(cx, cz, cx + vx * sdt, cz + vz * sdt, radius)
     const off = keepOffTiles(slid.x, y, slid.z, radius)
     const sealed = sweepTiles(cx, y, cz, off.x, off.z, radius)
-    cx = sealed.x
-    cz = sealed.z
+    const locked = keepOut(sealed.x, sealed.z, radius)
+    cx = locked.x
+    cz = locked.z
   }
   let cleared = { x: cx, z: cz }
   let tileY = walkableTileY(cleared.x, cleared.z)

@@ -20,7 +20,7 @@ export function AnalogKnob({
     const el = well.current
     if (!el) return
     const r = el.getBoundingClientRect()
-    const travel = Math.min(r.width, r.height) * 0.34
+    const travel = Math.min(r.width, r.height) * 0.42
     let dx = clientX - (r.left + r.width / 2)
     let dy = clientY - (r.top + r.height / 2)
     const mag = Math.hypot(dx, dy)

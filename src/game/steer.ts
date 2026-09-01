@@ -9,9 +9,13 @@ export function stickAxis(v: number, dead = DEAD) {
   return Math.sign(v) * t * t
 }
 
+/** Linear so a small Drive lean still walks. */
+export function stickAxisLin(v: number, dead = 0.08) {
+  if (Math.abs(v) < dead) return 0
+  return Math.sign(v) * ((Math.abs(v) - dead) / (1 - dead))
+}
+
 export function stickWish(mode: PadMode, x: number, y: number) {
-  const turn = stickAxis(x)
-  const lift = stickAxis(y)
-  if (mode === 'look') return { turn, forward: 0, nod: lift }
-  return { turn, forward: lift, nod: 0 }
+  if (mode === 'look') return { turn: stickAxis(x), forward: 0, nod: stickAxis(y) }
+  return { turn: stickAxisLin(x), forward: stickAxisLin(y), nod: 0 }
 }

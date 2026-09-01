@@ -63,15 +63,17 @@ export function useSimLoop(active: boolean) {
 
         const pad = input.consume()
         let forward = pad.forward
-        const leaning = pad.stickActive && Math.hypot(pad.stickX, pad.stickY) > 0.12
+        const stickMag = Math.hypot(pad.stickX, pad.stickY)
+        const leaning = pad.stickActive && stickMag > 0.08
         if (leaning) {
           const wish = stickWish('drive', pad.stickX, pad.stickY)
-          input.turn(wish.turn * dt * TURN_RATE)
+          input.turn((Math.abs(wish.turn) > 0.02 ? wish.turn : pad.stickX) * dt * TURN_RATE)
           input.nod(wish.nod * dt * NOD_RATE)
-          if (Math.abs(wish.forward) > 0.04) forward = wish.forward
+          if (pad.stickY < -0.2) forward = Math.min(wish.forward, -stickMag)
+          else forward = Math.max(0.55, wish.forward, stickMag)
         }
 
-        const walking = forward > 0.12
+        const walking = forward > 0.08
         const cmd = walking
           ? stepAuto(auto.current, { x: body.current.x, z: body.current.z, yaw: pad.yaw }, store.sim, dt)
           : null
