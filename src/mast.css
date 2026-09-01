@@ -59,26 +59,32 @@
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  padding: 36px 32px 44px;
+  padding: 28px 32px 32px;
   background:
     linear-gradient(90deg, rgba(7, 8, 11, 0.78) 0%, rgba(7, 8, 11, 0.32) 38%, transparent 62%),
-    linear-gradient(180deg, transparent 36%, rgba(7, 8, 11, 0.5) 100%);
+    linear-gradient(180deg, transparent 52%, rgba(7, 8, 11, 0.55) 100%);
   pointer-events: none;
 }
 
 .onboard-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   width: min(420px, 100%);
   pointer-events: auto;
 }
 
 .onboard-card h1 {
+  margin: 0 0 8px;
   font-size: clamp(36px, 7vw, 58px);
 }
 
 .onboard-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   overflow: hidden;
-  min-height: 8.5rem;
+  min-height: 0;
 }
 
 .onboard-beat {
@@ -99,12 +105,13 @@
 
 .onboard-card .lede {
   max-width: 32ch;
+  margin: 0 0 10px;
 }
 
 .onboard-dots {
   display: flex;
   gap: 8px;
-  margin: 8px 0 0;
+  margin: 0 0 12px;
   padding: 0;
   list-style: none;
 }
@@ -125,7 +132,7 @@
 }
 
 .onboard-card .deploy {
-  margin-top: 22px;
+  margin-top: 0;
 }
 
 .pick {
@@ -212,6 +219,15 @@
 .console-readout {
   display: flex;
   align-items: center;
+}
+
+.drive-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
 
 
@@ -337,6 +353,12 @@
   background: var(--gold);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   pointer-events: none;
+}
+
+.knob-thumb {
+  background: radial-gradient(circle at 35% 30%, #fff6c8, #ffcc00 52%, #c9a227);
+  border: 1px solid #ffcc00;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(255, 204, 0, 0.22);
 }
 
 .knob-look .knob-fwd {
