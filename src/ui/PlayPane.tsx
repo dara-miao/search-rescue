@@ -28,6 +28,8 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           } catch {
             /* window pointerup still clears the hold */
           }
+          if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+          window.focus()
           input.current?.setHold(true)
         }}
         onPointerUp={() => input.current?.setHold(false)}
