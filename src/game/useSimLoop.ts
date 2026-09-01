@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { headingTo, wrapAngle } from './auto'
+import { createAuto, stepAuto } from './auto'
 import { heightAt } from './ground'
 import { createInput, type InputApi } from './input'
 import { stepBody, type Body } from './motion'
-import { nextAim } from './playGuide'
 import { stickWish } from './steer'
 import { DEPLOY, useGame } from './store'
 import { CAMPUS } from './world'
@@ -12,9 +11,9 @@ import { SIM_DT } from '../sim/step'
 
 const TURN_RATE = 1.55
 const NOD_RATE = 1.15
-const ASSIST = 1.9
 
 export function useSimLoop(active: boolean) {
+  const boot = useGame((s) => s.boot)
   const api = useRef<InputApi | null>(null)
   const body = useRef<Body>({
     x: DEPLOY.x,
@@ -24,6 +23,7 @@ export function useSimLoop(active: boolean) {
     vy: 0,
     vz: 0,
   })
+  const auto = useRef(createAuto(DEPLOY.x, DEPLOY.z))
   if (!api.current || typeof api.current.setYaw !== 'function') {
     api.current = createInput()
   }
@@ -39,10 +39,13 @@ export function useSimLoop(active: boolean) {
 
     input.attach()
     input.resetLook(DEPLOY.yaw, 0.16)
+    input.setLatch(true)
+    input.setHold(false)
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     window.focus()
     const spawn = useGame.getState().robot
     body.current = { x: spawn.x, y: spawn.y, z: spawn.z, vx: 0, vy: 0, vz: 0 }
+    auto.current = createAuto(spawn.x, spawn.z)
 
     let last = performance.now()
     let raf = 0
@@ -68,28 +71,25 @@ export function useSimLoop(active: boolean) {
           if (Math.abs(wish.forward) > 0.04) forward = wish.forward
         }
 
-        const aim = nextAim(body.current.x, body.current.z, store.survivors)
-        if (forward > 0.12 && !left && !right && !leaning && aim) {
-          const want = headingTo(body.current.x, body.current.z, aim.x, aim.z)
-          const delta = wrapAngle(want - pad.yaw)
-          const max = ASSIST * dt
-          if (Math.abs(delta) > 0.03) input.turn(Math.max(-max, Math.min(max, delta)))
-        }
-
-        if (store.nearestDist <= CAMPUS.markRange) {
-          store.tryMark()
-          forward = 0
-        }
+        const walking = forward > 0.12
+        const cmd = walking
+          ? stepAuto(auto.current, { x: body.current.x, z: body.current.z, yaw: pad.yaw }, store.sim, dt)
+          : null
+        if (cmd && !left && !right && !leaning) input.setYaw(cmd.yaw)
 
         const aimed = input.consume()
         const cap = wishScale(store.sim.robot.zone, store.sim.robot.noGoTime)
         const sprint = aimed.sprint && cap.sprint
-        const toAim = aim ? Math.hypot(body.current.x - aim.x, body.current.z - aim.z) : 99
-        const creep = toAim < 10 ? 0.5 : 1
-        const sin = Math.sin(aimed.yaw)
-        const cos = Math.cos(aimed.yaw)
-        const wishX = (sin * forward + cos * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale * creep
-        const wishZ = (-cos * forward + sin * aimed.strafe) * (sprint ? 11.2 : 6.6) * cap.scale * creep
+        let wishX = 0
+        let wishZ = 0
+        if (walking && cmd && !left && !right && !leaning) {
+          wishX = cmd.wishX * cap.scale
+          wishZ = cmd.wishZ * cap.scale
+        } else if (walking) {
+          const speed = (sprint ? 11.2 : 6.6) * cap.scale
+          wishX = Math.sin(aimed.yaw) * speed
+          wishZ = -Math.cos(aimed.yaw) * speed
+        }
         const next = stepBody(body.current, wishX, wishZ, sprint, dt)
         body.current = next
         const speed = Math.hypot(next.vx, next.vz)
@@ -107,7 +107,7 @@ export function useSimLoop(active: boolean) {
         if (input.pressed('KeyQ')) store.setWorldOrbit(store.worldOrbit + dt * 0.9)
         if (input.pressed('KeyE')) store.setWorldOrbit(store.worldOrbit - dt * 0.9)
 
-        if (input.consumeEdge('KeyF') || input.consumeEdge('Space')) {
+        if (input.consumeEdge('KeyF') || input.consumeEdge('Space') || cmd?.mark || store.nearestDist <= CAMPUS.markRange) {
           store.tryMark()
         }
         if (input.consumeEdge('KeyT')) {
@@ -129,7 +129,7 @@ export function useSimLoop(active: boolean) {
       cancelAnimationFrame(raf)
       input.detach()
     }
-  }, [active])
+  }, [active, boot])
 
   return api
 }

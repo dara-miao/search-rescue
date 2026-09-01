@@ -52,6 +52,7 @@ export function createInput() {
   const look = { yaw: 0, pitch: 0 }
   const stick = { x: 0, y: 0, active: false }
   let hold = false
+  let latch = false
 
   const onKeyDown = (e: KeyboardEvent) => {
     const code = codeOf(e)
@@ -68,9 +69,6 @@ export function createInput() {
     keys.clear()
     edges.clear()
   }
-  const onPointerUp = () => {
-    hold = false
-  }
 
   const attach = () => {
     document.addEventListener('keydown', onKeyDown, true)
@@ -79,8 +77,6 @@ export function createInput() {
     window.addEventListener('keyup', onKeyUp, true)
     window.addEventListener('blur', onLostFocus)
     document.addEventListener('visibilitychange', onLostFocus)
-    window.addEventListener('pointerup', onPointerUp)
-    window.addEventListener('pointercancel', onPointerUp)
     if (document.pointerLockElement) document.exitPointerLock()
   }
 
@@ -91,15 +87,14 @@ export function createInput() {
     window.removeEventListener('keyup', onKeyUp, true)
     window.removeEventListener('blur', onLostFocus)
     document.removeEventListener('visibilitychange', onLostFocus)
-    window.removeEventListener('pointerup', onPointerUp)
-    window.removeEventListener('pointercancel', onPointerUp)
     keys.clear()
     edges.clear()
     hold = false
+    latch = false
   }
 
   const consume = (): InputState => {
-    const up = hold || keys.has('KeyW') || keys.has('ArrowUp')
+    const up = latch || hold || keys.has('KeyW') || keys.has('ArrowUp')
     const down = keys.has('KeyS') || keys.has('ArrowDown')
 
     const forward = Math.max(-1, Math.min(1, (up ? 1 : 0) - (down ? 1 : 0)))
@@ -124,6 +119,15 @@ export function createInput() {
 
   const setHold = (on: boolean) => {
     hold = on
+  }
+
+  const toggleLatch = () => {
+    latch = !latch
+    return latch
+  }
+
+  const setLatch = (on: boolean) => {
+    latch = on
   }
 
   const nod = (pitchDelta: number) => {
@@ -151,7 +155,21 @@ export function createInput() {
     return true
   }
 
-  return { attach, detach, consume, setStick, setHold, nod, turn, setYaw, resetLook, pressed, consumeEdge }
+  return {
+    attach,
+    detach,
+    consume,
+    setStick,
+    setHold,
+    toggleLatch,
+    setLatch,
+    nod,
+    turn,
+    setYaw,
+    resetLook,
+    pressed,
+    consumeEdge,
+  }
 }
 
 export type InputApi = ReturnType<typeof createInput>

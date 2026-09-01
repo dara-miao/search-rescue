@@ -85,11 +85,8 @@ export function stepBody(
   if (tileY == null) {
     const ejected = keepOut(cleared.x, cleared.z)
     tileY = walkableTileY(ejected.x, ejected.z)
-    cleared = tileY == null ? { x, z } : ejected
-    if (cleared.x === x && cleared.z === z) {
-      vx = 0
-      vz = 0
-    }
+    cleared = ejected
+    if (tileY == null) tileY = heightAt(cleared.x, cleared.z)
   }
   if (dt > 1e-5) {
     vx = (cleared.x - x) / dt

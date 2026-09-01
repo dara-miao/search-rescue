@@ -42,6 +42,7 @@ type GameStore = {
   googleFeeds: 'idle' | 'loading' | 'live' | 'error'
   padMode: PadMode
   briefingStep: number
+  boot: number
   setBriefingStep: (step: number) => void
   start: () => void
   reset: () => void
@@ -136,6 +137,7 @@ export const useGame = create<GameStore>((set, get) => ({
   googleFeeds: 'idle',
   padMode: 'drive',
   briefingStep: 0,
+  boot: 0,
 
   setBriefingStep: (step) => set({ briefingStep: Math.max(0, step) }),
 
@@ -168,6 +170,7 @@ export const useGame = create<GameStore>((set, get) => ({
       robot,
       lastMarked: null,
       briefingStep: 0,
+      boot: get().boot + 1,
       ...syncFromSim(sim, robot, 0),
       phase: 'playing',
     })
