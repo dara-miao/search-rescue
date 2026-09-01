@@ -300,9 +300,6 @@
 }
 
 .pad-mode,
-.knob,
-.knob span,
-.console-drive,
 .heat {
   display: none !important;
 }
