@@ -53,6 +53,7 @@ export type AutoState = {
   targetZ: number
   thermal: boolean
   done: boolean
+  run: AutoBeat[]
 }
 
 export type AutoCommand = {
@@ -67,10 +68,10 @@ export type AutoCommand = {
   targetZ: number
 }
 
-export function createAuto(x: number, z: number): AutoState {
-  const first = RUN[0]
-  const tx = first.kind === 'goto' ? first.x : x
-  const tz = first.kind === 'goto' ? first.z : z
+export function createAuto(x: number, z: number, run: AutoBeat[] = RUN): AutoState {
+  const first = run[0]
+  const tx = first && first.kind === 'goto' ? first.x : x
+  const tz = first && first.kind === 'goto' ? first.z : z
   return {
     i: 0,
     dwell: 0,
@@ -80,11 +81,12 @@ export function createAuto(x: number, z: number): AutoState {
     watch: 0,
     slide: 0,
     slideA: 0,
-    line: first.line,
+    line: first?.line ?? '',
     targetX: tx,
     targetZ: tz,
     thermal: false,
     done: false,
+    run,
   }
 }
 
@@ -113,8 +115,8 @@ function victimOf(sim: SimState, id: string) {
 }
 
 function skipFinished(auto: AutoState, sim: SimState) {
-  while (auto.i < RUN.length) {
-    const beat = RUN[auto.i]
+  while (auto.i < auto.run.length) {
+    const beat = auto.run[auto.i]
     if (beat.kind === 'mark') {
       const v = victimOf(sim, beat.id)
       if (!v || v.status === 'marked' || v.status === 'lost') {
@@ -127,9 +129,9 @@ function skipFinished(auto: AutoState, sim: SimState) {
     }
     break
   }
-  if (auto.i >= RUN.length) {
+  if (auto.i >= auto.run.length) {
     auto.done = true
-    auto.line = 'All four marked.'
+    auto.line = 'Sweep complete.'
     auto.thermal = false
   }
 }
@@ -142,8 +144,8 @@ function aimYaw(yaw: number, want: number, dt: number) {
 
 export function routeAhead(auto: AutoState, sim: SimState, x: number, z: number): Array<[number, number]> {
   const pts: Array<[number, number]> = [[x, z]]
-  for (let i = auto.i; i < RUN.length; i++) {
-    const beat = RUN[i]
+  for (let i = auto.i; i < auto.run.length; i++) {
+    const beat = auto.run[i]
     if (beat.kind === 'goto') pts.push([beat.x, beat.z])
     else {
       const v = victimOf(sim, beat.id)
@@ -174,7 +176,7 @@ export function stepAuto(
     }
   }
 
-  const beat = RUN[auto.i]
+  const beat = auto.run[auto.i]
   let goalX = pose.x
   let goalZ = pose.z
   let lookX = pose.x
