@@ -4,7 +4,6 @@ import { ACESFilmicToneMapping } from 'three'
 import type { InputApi } from '../game/input'
 import { DEPLOY, useGame } from '../game/store'
 import { RobotScene } from '../scene/RobotScene'
-import { AnalogKnob } from './AnalogKnob'
 import { MastHud } from './Hud'
 import { OpticalFeed } from './OpticalFeed'
 
@@ -55,12 +54,7 @@ export function PlayPane({ input }: { input: MutableRefObject<InputApi | null> }
           <RobotScene />
         </Canvas>
         {playing && <OpticalFeed />}
-        {playing && (
-          <MastHud
-            onMark={tryMark}
-            drive={<AnalogKnob onVector={(x, y, active) => input.current?.setStick(x, y, active)} />}
-          />
-        )}
+        {playing && <MastHud onMark={tryMark} />}
       </section>
     </>
   )

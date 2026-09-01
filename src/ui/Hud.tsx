@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { CAMPUS } from '../game/world'
 import { useGame } from '../game/store'
 import type { HeatZone, VictimSim } from '../sim/types'
@@ -52,13 +51,7 @@ export function WorldChrome() {
   )
 }
 
-export function MastHud({
-  onMark,
-  drive,
-}: {
-  onMark: () => void
-  drive: ReactNode
-}) {
+export function MastHud({ onMark }: { onMark: () => void }) {
   const thermal = useGame((s) => s.thermal)
   const elapsed = useGame((s) => s.elapsed)
   const survivors = useGame((s) => s.survivors)
@@ -135,8 +128,6 @@ export function MastHud({
             </div>
           </div>
         </div>
-
-        <div className="console-drive">{drive}</div>
 
         <div className="console-actions">
           <button type="button" className={canMark ? 'mark-go' : 'mark-wait'} disabled={!canMark} onClick={onMark}>
