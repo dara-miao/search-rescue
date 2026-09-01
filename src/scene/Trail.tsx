@@ -4,7 +4,7 @@ import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
 
 export function Trail({ world = false }: { world?: boolean }) {
-  const trail = useGame((s) => s.trail)
+  const trail = useGame((s) => s.trail) ?? []
   const robot = useGame((s) => s.robot)
   const target = useGame((s) => s.autoTarget)
   const lift = world ? 1.4 : 0.14

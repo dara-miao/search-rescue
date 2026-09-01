@@ -146,7 +146,10 @@ export const useGame = create<GameStore>((set, get) => ({
 
   setBriefingStep: (step) => set({ briefingStep: Math.max(0, step) }),
 
-  setWatch: (patch) => set(patch),
+  setWatch: (patch) =>
+    set(
+      Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) as typeof patch,
+    ),
 
   hydrateGoogle: async () => {
     if (!hasGoogleKey()) {

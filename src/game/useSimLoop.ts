@@ -75,7 +75,7 @@ export function useSimLoop(active: boolean) {
           store.setWatch({
             narration: cmd.line,
             autoTarget: { x: cmd.targetX, z: cmd.targetZ },
-            trail: trailDirty ? crumbs.slice() : undefined,
+            ...(trailDirty ? { trail: crumbs.slice() } : {}),
           })
         }
 
