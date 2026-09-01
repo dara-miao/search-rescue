@@ -251,6 +251,46 @@
   color: var(--gold);
 }
 
+.mast-top {
+  pointer-events: none;
+}
+
+.walk-hint {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 196, 0.55);
+}
+
+.walk-hold {
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  width: 100%;
+  min-height: 48px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #efe6d6;
+  background: rgba(255, 204, 0, 0.12);
+  touch-action: none;
+  user-select: none;
+}
+
+.walk-hold:hover {
+  background: rgba(255, 204, 0, 0.2);
+}
+
+.walk-hold.is-down,
+.walk-hold:active {
+  background: rgba(255, 204, 0, 0.32);
+  color: var(--gold);
+}
+
 .watch-line {
   margin: 0;
   font-size: 16px;
@@ -260,7 +300,9 @@
 }
 
 .pad-mode,
+.knob,
 .knob span,
+.console-drive,
 .heat {
   display: none !important;
 }
@@ -400,7 +442,12 @@
   }
 
   .console-actions {
-    flex: 0 0 58px;
+    flex: 0 0 72px;
+  }
+
+  .walk-hold {
+    min-height: 40px;
+    font-size: 10px;
   }
 
   .knob {
