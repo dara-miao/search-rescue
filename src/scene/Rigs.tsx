@@ -10,9 +10,9 @@ const _desired = new Vector3()
 const _look = new Vector3()
 
 const BRIEFING_SHOTS = [
-  { r: 72, y: 96, lookY: 2, speed: 0.05 },
-  { r: 88, y: 48, lookY: 5, speed: 0.04 },
-  { r: 118, y: 82, lookY: 2, speed: 0.035 },
+  { r: 112, y: 88, lookY: 12, speed: 0.045 },
+  { r: 128, y: 56, lookY: 14, speed: 0.038 },
+  { r: 152, y: 78, lookY: 10, speed: 0.032 },
 ] as const
 
 export function WorldRig({ cinematic = false }: { cinematic?: boolean }) {

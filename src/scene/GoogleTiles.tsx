@@ -141,15 +141,15 @@ export function GoogleTiles({
   const align = useRef<Group>(null)
   const tuneQueues = (tiles: TilesImpl | null) => {
     if (!tiles) return
-    tiles.downloadQueue.maxJobsPerOrigin = 1
+    tiles.downloadQueue.maxJobsPerOrigin = 2
     tiles.parseQueue.maxJobs = 1
     tiles.loadSiblings = false
-    tiles.errorTarget = variant === 'robot' ? 28 : 52
-    tiles.lruCache.minSize = 36
-    tiles.lruCache.maxSize = 64
-    tiles.lruCache.minBytesSize = 20 * 1024 * 1024
-    tiles.lruCache.maxBytesSize = 36 * 1024 * 1024
-    tiles.lruCache.unloadPercent = 0.35
+    tiles.errorTarget = variant === 'robot' ? 22 : 36
+    tiles.lruCache.minSize = 48
+    tiles.lruCache.maxSize = 88
+    tiles.lruCache.minBytesSize = 32 * 1024 * 1024
+    tiles.lruCache.maxBytesSize = 56 * 1024 * 1024
+    tiles.lruCache.unloadPercent = 0.3
   }
   useEffect(() => {
     return () => {
@@ -165,7 +165,7 @@ export function GoogleTiles({
       <TilesRenderer
         ref={tuneQueues}
         url={`${GOOGLE_ROOT}?key=${key}`}
-        errorTarget={variant === 'robot' ? 28 : 52}
+        errorTarget={variant === 'robot' ? 22 : 36}
         onLoadModel={() => {
           setTilesReady(true)
           if (align.current) registerTileScene(align.current)

@@ -46,7 +46,7 @@ export default function App() {
           <Canvas
             eventPrefix="offset"
             style={{ position: 'absolute', inset: 0 }}
-            camera={{ position: [200, 96, 90], fov: 46, near: 0.8, far: 520 }}
+            camera={{ position: [200, 96, 90], fov: 46, near: 0.8, far: 720 }}
             dpr={[0.7, 0.85]}
             gl={{
               antialias: false,
