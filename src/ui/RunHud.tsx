@@ -139,7 +139,7 @@ export function RunHud() {
           <p className="stage0-hint vent-line">Fire reached the {lastVent.roomName}</p>
         ) : lastReveal ? (
           <p className="stage0-hint">
-            {conditionLabel(lastReveal.condition)} · {typeLabel(lastReveal.type)} · {lastReveal.count} — clock stays hidden
+            {conditionLabel(lastReveal.condition)} · {typeLabel(lastReveal.type)} · {lastReveal.count}. Clock stays hidden.
           </p>
         ) : (
           <p className="stage0-note">
