@@ -3,8 +3,8 @@ import { attribution } from '../data/site'
 import { useDrive } from '../drive/store'
 import { isMuted, setMuted, unlockAudio } from '../run/audio'
 import { batteryBand } from '../run/battery'
-import { holdFrac } from '../run/hold'
-import { conditionLabel, nearestPlayOpening, revealLine, typeLabel } from '../run/opening'
+import { playIntent } from '../run/intent'
+import { conditionLabel, revealLine, typeLabel } from '../run/opening'
 import { useRun } from '../run/store'
 import { AnalogKnob } from './AnalogKnob'
 import { Compass } from './Compass'
@@ -16,151 +16,89 @@ function clock(t: number) {
   return `${m}:${String(s % 60).padStart(2, '0')}`
 }
 
-function holdLabel(kind: string) {
-  if (kind === 'scan') return 'Scanning'
-  if (kind === 'rescue') return 'Extracting'
-  if (kind === 'mark') return 'Marking'
-  return null
-}
-
 export function RunHud() {
-  const t = useRun((s) => s.t)
-  const battery = useRun((s) => s.battery)
-  const thermal = useRun((s) => s.thermal)
-  const hold = useRun((s) => s.hold)
-  const carriedId = useRun((s) => s.carriedId)
-  const vents = useRun((s) => s.vents)
-  const victims = useRun((s) => s.victims)
+  const run = useRun()
   const setHud = useRun((s) => s.setHud)
   const setStick = useDrive((s) => s.setStick)
-  const speed = useDrive((s) => s.speed)
-  const inHeat = useRun((s) => s.inHeat)
-  const waiting = victims.filter((v) => v.state === 'WAITING' || v.state === 'CARRIED').length
-  const marked = victims.filter((v) => v.state === 'MARKED').length
-  const lastVent = vents[vents.length - 1]
-  const cells = useRun((s) => s.cells)
-  const seed = useRun((s) => s.seed)
-  const action = holdLabel(hold.kind)
-  const carried = victims.find((v) => v.id === carriedId)
-  const telegraph = cells.find((c) => c.preVent && !c.vented)
-  const lastReveal = useRun((s) => s.lastReveal)
-  const extractions = useRun((s) => s.extractions)
   const x = useDrive((s) => s.x)
   const z = useDrive((s) => s.z)
   const [mute, setMute] = useState(() => isMuted())
-  const band = batteryBand(battery)
-  const near = nearestPlayOpening(x, z, { cells, extractions, victims })
+  const band = batteryBand(run.battery)
+  const waiting = run.victims.filter((v) => v.state === 'WAITING' || v.state === 'CARRIED').length
+  const marked = run.victims.filter((v) => v.state === 'MARKED').length
+  const lastVent = run.vents[run.vents.length - 1]
+  const telegraph = run.cells.find((c) => c.preVent && !c.vented)
+  const intent = playIntent(run, x, z)
+  const scanReady = intent.hold === 'scan' || intent.hold === 'mark'
+  const extractReady = intent.hold === 'rescue'
 
   const replay = () => {
     useDrive.getState().reset()
     useRun.getState().replay()
   }
 
+  const event =
+    band === 'empty'
+      ? 'Battery empty · crawl to the red ring'
+      : band === 'limp'
+        ? 'Battery limp · charge at staging'
+        : run.inHeat
+          ? 'Heat · battery drains faster · thermal breaks up'
+          : telegraph
+            ? `Smoke thickening at the ${telegraph.roomName}`
+            : lastVent
+              ? `Fire reached the ${lastVent.roomName}`
+              : run.lastReveal
+                ? `${conditionLabel(run.lastReveal.condition)} · ${typeLabel(run.lastReveal.type)} · ${run.lastReveal.count}`
+                : null
+
   return (
     <>
       <Compass />
       <Objective />
+      {run.thermal ? <div className={`thermal-cast ${run.inHeat ? 'hot' : ''}`} aria-hidden="true" /> : null}
       <aside className="stage0 drive-hud run-hud">
-        <p className="stage0-kicker">Doheny · perimeter · seed {seed}</p>
-        <h1>{clock(t)}</h1>
+        <p className="stage0-kicker">Doheny · seed {run.seed}</p>
+        <h1>{clock(run.t)}</h1>
         <dl>
           <div>
             <dt>Battery</dt>
             <dd>
               <span className={`batt ${band}`}>
-                <i style={{ width: `${battery}%` }} />
+                <i style={{ width: `${run.battery}%` }} />
               </span>
-              {battery.toFixed(0)}
+              {run.battery.toFixed(0)}
               {band === 'limp' ? ' · limp' : band === 'empty' ? ' · crawl' : ''}
-            </dd>
-          </div>
-          <div>
-            <dt>Thermal</dt>
-            <dd>
-              {thermal
-                ? inHeat
-                  ? 'On · noisy in the heat'
-                  : 'On · signatures only'
-                : 'T toggles'}
-            </dd>
-          </div>
-          <div>
-            <dt>Action</dt>
-            <dd>
-              {action
-                ? `${action} ${(holdFrac(hold) * 100).toFixed(0)}%`
-                : carried
-                  ? `Carrying · return to staging`
-                  : 'Space scan · F extract · T thermal'}
-            </dd>
-          </div>
-          <div>
-            <dt>Opening</dt>
-            <dd>
-              {near
-                ? near.dist <= 4
-                  ? `${near.ext.opening} · in range${near.waiting ? ` · ${near.waiting} inside` : ''}`
-                  : `${near.ext.facade} · ${near.dist.toFixed(0)} m${near.waiting ? ` · ${near.waiting} inside` : ''}`
-                : 'None live'}
             </dd>
           </div>
           <div>
             <dt>Still in</dt>
             <dd>
-              {waiting} waiting · {marked} marked
+              {waiting} waiting{marked ? ` · ${marked} marked` : ''}
             </dd>
           </div>
-          {lastReveal ? (
+          {run.lastReveal ? (
             <div>
-              <dt>{lastReveal.kind === 'scan' ? 'Scanned' : lastReveal.kind === 'mark' ? 'Marked' : 'Extract'}</dt>
-              <dd>
-                {revealLine(lastReveal)}
-                {lastReveal.kind === 'scan' ? ` · ${lastReveal.opening}` : ''}
-              </dd>
+              <dt>{run.lastReveal.kind === 'scan' ? 'Last scan' : run.lastReveal.kind === 'mark' ? 'Marked' : 'Extract'}</dt>
+              <dd>{revealLine(run.lastReveal)}</dd>
             </div>
           ) : null}
-          <div>
-            <dt>Drive</dt>
-            <dd>
-              W/S throttle · A/D steer · {Math.abs(speed).toFixed(1)} m/s
-              {band === 'limp' ? ' · limp' : band === 'empty' ? ' · crawl home' : ''}
-            </dd>
-          </div>
         </dl>
-        {band === 'empty' ? (
-          <p className="stage0-hint vent-line">Battery empty · crawl to the red ring</p>
-        ) : band === 'limp' ? (
-          <p className="stage0-hint vent-line">Battery limp · charge at staging</p>
-        ) : inHeat ? (
-          <p className="stage0-hint vent-line">Heat · battery 2.5× · thermal breaks up</p>
-        ) : telegraph ? (
-          <p className="stage0-hint vent-line">Smoke thickening at the {telegraph.roomName}</p>
-        ) : lastVent ? (
-          <p className="stage0-hint vent-line">Fire reached the {lastVent.roomName}</p>
-        ) : lastReveal ? (
-          <p className="stage0-hint">
-            {conditionLabel(lastReveal.condition)} · {typeLabel(lastReveal.type)} · {lastReveal.count}. Clock stays hidden.
-          </p>
-        ) : (
-          <p className="stage0-note">
-            You cannot go inside. Cyan marks a live opening. Thermal shows heat through the walls. Scan
-            before you commit a carry.
-          </p>
-        )}
+        {event ? <p className="stage0-hint vent-line">{event}</p> : null}
         <p className="stage0-license">{attribution()}</p>
       </aside>
       <div className="drive-dock run-dock">
         <div className="run-actions">
           <button
             type="button"
-            className={thermal ? 'on' : ''}
+            className={run.thermal ? 'on' : ''}
             onClick={() => useRun.getState().toggleThermal()}
           >
-            Thermal
+            {run.thermal ? 'Thermal on' : 'Thermal'}
           </button>
           <button
             type="button"
-            className={hold.kind === 'scan' || hold.kind === 'mark' ? 'on' : ''}
+            className={`${run.hold.kind === 'scan' || run.hold.kind === 'mark' ? 'on' : ''} ${scanReady ? 'ready' : 'dim'}`}
             onPointerDown={(e) => {
               e.preventDefault()
               setHud({ hold: true })
@@ -169,6 +107,18 @@ export function RunHud() {
             onPointerLeave={() => setHud({ hold: false })}
           >
             Scan
+          </button>
+          <button
+            type="button"
+            className={`${run.hold.kind === 'rescue' ? 'on' : ''} ${extractReady ? 'ready' : 'dim'}`}
+            onPointerDown={(e) => {
+              e.preventDefault()
+              setHud({ rescue: true })
+            }}
+            onPointerUp={() => setHud({ rescue: false })}
+            onPointerLeave={() => setHud({ rescue: false })}
+          >
+            Extract
           </button>
           <button
             type="button"
@@ -182,25 +132,12 @@ export function RunHud() {
           >
             {mute ? 'Muted' : 'Audio'}
           </button>
-          <button
-            type="button"
-            className={hold.kind === 'rescue' ? 'on' : ''}
-            onPointerDown={(e) => {
-              e.preventDefault()
-              setHud({ rescue: true })
-            }}
-            onPointerUp={() => setHud({ rescue: false })}
-            onPointerLeave={() => setHud({ rescue: false })}
-          >
-            Extract
-          </button>
           <button type="button" onClick={replay}>
             Restart
           </button>
         </div>
         <AnalogKnob onVector={(x, y, on) => setStick(x, y, on)} />
       </div>
-      {thermal && inHeat ? <div className="heat-noise" aria-hidden="true" /> : null}
     </>
   )
 }
