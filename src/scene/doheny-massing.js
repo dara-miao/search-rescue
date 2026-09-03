@@ -92,16 +92,33 @@ export const MASSING_CONFIG = {
 
 // ---------------------------------------------------------------- materials
 
+function facadeMap(url, srgb) {
+  if (typeof document === 'undefined') return null
+  const tex = new THREE.TextureLoader().load(url)
+  if (srgb) tex.colorSpace = THREE.SRGBColorSpace
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(7, 4.5)
+  tex.anisotropy = 4
+  return tex
+}
+
 export function createMaterials() {
+  const brickAlbedo = facadeMap('/textures/doheny-brick-albedo.png', true)
+  const brickNormal = facadeMap('/textures/doheny-brick-normal.png', false)
+  const limeAlbedo = facadeMap('/textures/doheny-lime-albedo.png', true)
+  const limeNormal = facadeMap('/textures/doheny-lime-normal.png', false)
+  limeAlbedo?.repeat.set(4, 3)
+  limeNormal?.repeat.set(4, 3)
   return {
-    // Pale brick field. Warm, slightly desaturated.
+    // Pale brick field. Warm, slightly desaturated. Albedo + normal derived
+    // from the Wikimedia elevation photograph (Padsquad19, CC BY-SA 3.0).
     brick: new THREE.MeshStandardMaterial({
-      color: 0xc9b79a, roughness: 0.92, metalness: 0.0,
+      color: 0xf2e6d4, map: brickAlbedo, normalMap: brickNormal, roughness: 0.92, metalness: 0.0,
     }),
     // Limestone trim — base, cornice, surrounds, pilasters. Lighter and
     // smoother than the brick so the bands separate under firelight.
     limestone: new THREE.MeshStandardMaterial({
-      color: 0xded4c0, roughness: 0.78, metalness: 0.0,
+      color: 0xf4eee4, map: limeAlbedo, normalMap: limeNormal, roughness: 0.78, metalness: 0.0,
     }),
     roofTile: new THREE.MeshStandardMaterial({
       color: 0x8a4832, roughness: 0.88, metalness: 0.0,
@@ -422,12 +439,26 @@ export function buildMassing(siteData, cfg = MASSING_CONFIG) {
     depth: 0.6, bevelEnabled: false,
   });
   portalFrame.translate(0, 0, D / 2 + pv.projection);
-  trimGeos.push(portalFrame);
+  trimGeos.push(portalFrame.index ? portalFrame.toNonIndexed() : portalFrame);
 
   recessGeos.push(box(
     pv.portalWidth, pv.portalHeight, pv.portalRecess,
     0, pv.portalHeight / 2, D / 2 + pv.projection - pv.portalRecess / 2
   ));
+
+  // Entrance steps — the third silhouette break the spec names.
+  const stepGeos = [];
+  const stepFront = D / 2 + pv.projection;
+  for (let i = 0; i < 5; i++) {
+    const rise = 0.16;
+    const tread = 0.72;
+    const w = pv.portalWidth + 3.2 - i * 0.15;
+    stepGeos.push(box(
+      w, rise, tread,
+      0, rise * 0.5 + i * rise,
+      stepFront + 0.55 + i * tread,
+    ));
+  }
 
   // --- facades --------------------------------------------------------
   const facadeDefs = [
@@ -466,7 +497,8 @@ export function buildMassing(siteData, cfg = MASSING_CONFIG) {
   // --- merge and add --------------------------------------------------
   const addMerged = (geos, material, name) => {
     if (!geos.length) return;
-    const merged = mergeGeometries(geos, false);
+    const prepared = geos.map((g) => (g.index ? g.toNonIndexed() : g));
+    const merged = mergeGeometries(prepared, false);
     if (!merged) {
       console.warn(`Merge failed for ${name}; adding unmerged.`);
       for (const g of geos) group.add(new THREE.Mesh(g, material));
@@ -481,6 +513,7 @@ export function buildMassing(siteData, cfg = MASSING_CONFIG) {
 
   addMerged(brickGeos, materials.brick, 'brick');
   addMerged(trimGeos, materials.limestone, 'limestone');
+  addMerged(stepGeos, materials.limestone, 'entranceSteps');
   addMerged(recessGeos, materials.recess, 'recesses');
   addMerged(roofGeos, materials.roofTile, 'roof');
 
