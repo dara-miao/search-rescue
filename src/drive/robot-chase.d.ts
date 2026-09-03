@@ -63,7 +63,7 @@ export function createChaseCamera(cfg?: typeof CHASE_CONFIG): ChaseCamState
 
 export function stepChaseCamera(
   cam: ChaseCamState,
-  robot: { position: { x: number; z: number }; yaw: number; speed: number; yawRate?: number },
+  robot: { position: { x: number; z?: number; y?: number }; yaw: number; speed: number; yawRate?: number },
   camera: Camera & { fov: number; updateProjectionMatrix: () => void },
   dt: number,
   cfg?: typeof CHASE_CONFIG,

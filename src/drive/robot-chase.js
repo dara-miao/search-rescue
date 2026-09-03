@@ -254,9 +254,10 @@ export function stepChaseCamera(cam, robot, camera, dt, cfg = CHASE_CONFIG) {
 
   // --- position --------------------------------------------------------
   const camFwd = forwardVector(cam.yaw);
+  const groundY = robot.position.y || 0;
   const desired = new THREE.Vector3(
     robot.position.x - camFwd.x * c.distance,
-    c.height,
+    groundY + c.height,
     robot.position.z - camFwd.z * c.distance
   );
 
@@ -270,7 +271,7 @@ export function stepChaseCamera(cam, robot, camera, dt, cfg = CHASE_CONFIG) {
   const robotFwd = forwardVector(robot.yaw);
   camera.lookAt(
     robot.position.x + robotFwd.x * c.lookAhead,
-    c.lookHeight,
+    groundY + c.lookHeight,
     robot.position.z + robotFwd.z * c.lookAhead
   );
 
