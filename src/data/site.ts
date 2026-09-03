@@ -10,16 +10,22 @@ export type FireCell = {
   isCore: boolean
   facades: Array<'north' | 'south' | 'east' | 'west'>
   centre: Vec2
-  size: { x: number; z: number }
+  size: { w?: number; d?: number; x?: number; z?: number }
 }
 
 export type SiteData = {
+  source?: {
+    osm: string
+    name: string | null
+    license: string
+    retrieved: string
+  }
   origin: { lat: number; lon: number }
   projection: string
-  license: string
+  license?: string
   building: {
-    osmId: string
-    name: string
+    osmId?: string
+    name?: string
     footprint: Vec2[]
     holes: Vec2[][]
     centroid: Vec2
@@ -31,6 +37,7 @@ export type SiteData = {
       width: number
       depth: number
       angleRad: number
+      angleDeg?: number
       angleNormalizedDeg: number
       centre: Vec2
     }
@@ -45,6 +52,25 @@ export type SiteData = {
 }
 
 export const site = raw as SiteData
+
+export function cellSize(cell: FireCell) {
+  return {
+    x: cell.size.w ?? cell.size.x ?? 0,
+    z: cell.size.d ?? cell.size.z ?? 0,
+  }
+}
+
+export function buildingName() {
+  return site.source?.name || site.building.name || 'Doheny Memorial Library'
+}
+
+export function osmId() {
+  return site.source?.osm || site.building.osmId
+}
+
+export function attribution() {
+  return site.source?.license || site.license || '© OpenStreetMap contributors (ODbL)'
+}
 
 export function footprintBounds(pad = 0) {
   const pts = site.building.footprint

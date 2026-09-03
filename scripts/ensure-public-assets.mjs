@@ -13,6 +13,18 @@ const assets = [
     path: join(root, 'public/doheny-times-mirror.jpg'),
     url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Doheny_Library_interior.jpg/1280px-Doheny_Library_interior.jpg',
   },
+  {
+    path: join(root, 'public/doheny-lobby.jpg'),
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Usc_doheny_library_lobby_stained_glass_1.jpg/1280px-Usc_doheny_library_lobby_stained_glass_1.jpg',
+  },
+  {
+    path: join(root, 'public/doheny-treasure.jpg'),
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Armstrong_doheny_library_treasure_room_mural_and_bust.jpg/1280px-Armstrong_doheny_library_treasure_room_mural_and_bust.jpg',
+  },
+  {
+    path: join(root, 'public/bovard-auditorium.jpg'),
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Madilyn_Bailey_at_USC_Bovard_Auditorium.jpg/1280px-Madilyn_Bailey_at_USC_Bovard_Auditorium.jpg',
+  },
 ]
 
 const headers = {
