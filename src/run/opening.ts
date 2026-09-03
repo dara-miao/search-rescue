@@ -25,10 +25,28 @@ export function nearestLiveOpening(
   return best
 }
 
+/** Closest live opening that still has someone waiting. Falls back to any live opening. */
+export function nearestPlayOpening(
+  x: number,
+  z: number,
+  state: Pick<RunState, 'extractions' | 'cells' | 'victims'>,
+): LiveOpening | null {
+  let best: LiveOpening | null = null
+  for (const ext of state.extractions) {
+    const cell = state.cells.find((c) => c.id === ext.cellId)
+    if (!cell || cell.vented) continue
+    const waiting = state.victims.filter((v) => v.cellId === ext.cellId && v.state === 'WAITING').length
+    if (!waiting) continue
+    const d = dist(x, z, ext.x, ext.z)
+    if (!best || d < best.dist) best = { ext, cell, dist: d, waiting }
+  }
+  return best ?? nearestLiveOpening(x, z, state)
+}
+
 export function typeLabel(type: RescueType) {
   if (type === 'SELF_EXTRACT') return 'self-extract'
-  if (type === 'ASSISTED') return 'carry'
   if (type === 'GROUP') return 'group'
+  if (type === 'ASSISTED') return 'carry'
   return 'unreachable'
 }
 

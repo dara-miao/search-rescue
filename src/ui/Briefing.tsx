@@ -29,21 +29,21 @@ export function Briefing() {
         <p className="stage0-kicker">Doheny · perimeter · seed {seed}</p>
         <h1>The interior is closed</h1>
         <p>
-          Fire is already in the stacks. You stay on the lawn. Every rescue is from a window or
-          door — cyan marks a live opening. When a room vents, that opening dies.
+          Fire is already in the stacks. Drive to a cyan opening, scan, then pull people out.
+          When a room vents that opening dies.
         </p>
         <dl>
           <div>
             <dt>Drive</dt>
-            <dd>W / S throttle · A / D steer. The camera stays behind you.</dd>
+            <dd>W throttle · A / D steer. Follow the cyan pip.</dd>
           </div>
           <div>
             <dt>See</dt>
-            <dd>Hold T for thermal. Gold pip is the building. Cyan pip is the nearest live opening.</dd>
+            <dd>T toggles thermal. Gold pip is Doheny. People wait at the glass.</dd>
           </div>
           <div>
             <dt>Act</dt>
-            <dd>Space scan · F extract or mark. Engines and the red ring are staging — charge there.</dd>
+            <dd>Hold Space to scan. Hold F to extract. Red ring is staging.</dd>
           </div>
         </dl>
         <p className="stage0-note">

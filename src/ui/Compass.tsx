@@ -1,6 +1,6 @@
 import { useDrive } from '../drive/store'
 import { cardinal, dohenyOffset, headingDeg, offsetTo } from '../run/heading'
-import { nearestLiveOpening } from '../run/opening'
+import { nearestPlayOpening } from '../run/opening'
 import { useRun } from '../run/store'
 
 export function Compass() {
@@ -12,7 +12,7 @@ export function Compass() {
   const victims = useRun((s) => s.victims)
   const deg = headingDeg(yaw)
   const pip = (dohenyOffset(x, z, yaw) * 180) / Math.PI
-  const near = nearestLiveOpening(x, z, { cells, extractions, victims })
+  const near = nearestPlayOpening(x, z, { cells, extractions, victims })
   const open = near ? (offsetTo(x, z, yaw, near.ext.x, near.ext.z) * 180) / Math.PI : null
 
   return (
