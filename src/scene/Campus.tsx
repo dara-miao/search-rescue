@@ -1,47 +1,11 @@
 import { useMemo } from 'react'
 import { CanvasTexture, ExtrudeGeometry, Path, RepeatWrapping, Shape } from 'three'
 import { Billboard, Text } from '@react-three/drei'
-import { coverAt, GROUND, heightAt } from '../game/ground'
+import { heightAt } from '../game/ground'
+import { extraPalms } from '../game/props'
 import { BUILDINGS, LANDMARKS, TREES, type CampusBuilding } from '../game/world'
 import { C } from './colors'
 import { Ground } from './Ground'
-
-function extraPalms(): Array<[number, number]> {
-  const pts: Array<[number, number]> = []
-  for (const path of GROUND.paths) {
-    for (let i = 0; i < path.length; i++) {
-      const [x, z] = path[i]
-      const prev = path[Math.max(0, i - 1)]
-      const next = path[Math.min(path.length - 1, i + 1)]
-      const dx = next[0] - prev[0]
-      const dz = next[1] - prev[1]
-      const len = Math.hypot(dx, dz) || 1
-      const side = i % 2 === 0 ? 1 : -1
-      const ox = x + (-dz / len) * (7.2 + (i % 3)) * side
-      const oz = z + (dx / len) * (7.2 + (i % 3)) * side
-      if (coverAt(ox, oz) === 'lawn') pts.push([ox, oz])
-    }
-  }
-  const seeds: Array<[number, number]> = [
-    [-42, -16],
-    [18, 18],
-    [-18, -42],
-    [48, -8],
-    [70, 20],
-    [-60, -8],
-    [30, -28],
-  ]
-  for (const [cx, cz] of seeds) {
-    for (let k = 0; k < 5; k++) {
-      const a = k * 1.37 + cx * 0.01
-      const r = 8 + (k % 3) * 5
-      const x = cx + Math.cos(a) * r
-      const z = cz + Math.sin(a) * r
-      if (coverAt(x, z) === 'lawn') pts.push([x, z])
-    }
-  }
-  return pts
-}
 
 function doorOf(building: CampusBuilding) {
   const ring = building.outer
