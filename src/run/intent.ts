@@ -16,6 +16,21 @@ export type Intent = {
   dist: number | null
   inRange: boolean
   hold: 'scan' | 'rescue' | 'mark' | null
+  step: string
+}
+
+function withStep(intent: Omit<Intent, 'step'>): Intent {
+  const step =
+    intent.kind === 'deliver'
+      ? '4 · Staging'
+      : intent.kind === 'rescue'
+        ? '3 · Extract'
+        : intent.kind === 'scan' || intent.kind === 'mark'
+          ? '2 · Scan'
+          : intent.kind === 'wait'
+            ? 'Wait'
+            : '1 · Drive'
+  return { ...intent, step }
 }
 
 function extractionOf(state: RunState, victim: Victim): Extraction | null {
@@ -41,16 +56,16 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
 
   if (state.carriedId) {
     const carried = state.victims.find((v) => v.id === state.carriedId)
-    return {
+    return withStep({
       kind: 'deliver',
-      title: toStaging < 7 ? 'Drop at staging' : 'Carry to the red ring',
+      title: toStaging < 7 ? 'Drop them here' : 'Carry to the red ring',
       detail: carried
         ? `${carried.roomName} · ${carried.count} · ${toStaging.toFixed(0)} m`
         : `${toStaging.toFixed(0)} m to staging`,
       dist: toStaging,
       inRange: toStaging < 7,
       hold: null,
-    }
+    })
   }
 
   let scan: Victim | null = null
@@ -83,84 +98,119 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     const victim = state.victims.find((v) => v.id === state.hold.targetId)
     const pct = state.hold.need > 0 ? Math.round((state.hold.progress / state.hold.need) * 100) : 0
     const verb = state.hold.kind === 'scan' ? 'Scanning' : state.hold.kind === 'mark' ? 'Marking' : 'Extracting'
-    return {
+    return withStep({
       kind: state.hold.kind,
       title: `${verb} ${pct}%`,
       detail: victim ? `${victim.roomName} · hold still` : 'Hold still',
       dist: victim ? actDist(state, victim, x, z) : 0,
       inRange: true,
       hold: state.hold.kind,
-    }
+    })
   }
 
   if (scan) {
-    return {
+    return withStep({
       kind: 'scan',
       title: 'Hold Space to scan',
-      detail: `${scan.roomName} · 6 s · clock stays hidden`,
+      detail: `${scan.roomName} · stay still`,
       dist: scanD,
       inRange: true,
       hold: 'scan',
-    }
+    })
   }
 
   if (mark) {
-    return {
+    return withStep({
       kind: 'mark',
       title: 'Hold Space to mark',
-      detail: `${mark.roomName} · unreachable · 2 s for crews`,
+      detail: `${mark.roomName} · unreachable · crews will take this`,
       dist: markD,
       inRange: true,
       hold: 'mark',
-    }
+    })
   }
 
   if (rescue) {
     const ready = rescue.scanned
-    return {
+    return withStep({
       kind: 'rescue',
-      title: ready ? 'Hold F to extract' : 'Hold F to extract',
+      title: 'Hold F to extract',
       detail: ready
         ? `${conditionLabel(rescue.condition)} · ${typeLabel(rescue.type)} · ${rescue.count}`
-        : `${rescue.roomName} · you have not scanned`,
+        : `${rescue.roomName} · scan first if you can`,
       dist: rescueD,
       inRange: true,
       hold: 'rescue',
-    }
+    })
   }
 
   const near = nearestPlayOpening(x, z, state)
   if (near) {
-    const waiting = near.waiting
-    const close = near.dist <= 8
-    if (state.t < 7 && near.dist > 12) {
-      return {
-        kind: 'coach',
-        title: 'W drives · follow the cyan pip',
-        detail: `${near.ext.facade} opening · ${near.dist.toFixed(0)} m · ${near.ext.opening}`,
+    const meters = `${near.dist.toFixed(0)} m`
+    const who = near.waiting ? `${near.waiting} waiting` : 'no one waiting'
+    const scannedWait = state.victims.find(
+      (v) =>
+        v.cellId === near.ext.cellId &&
+        v.state === 'WAITING' &&
+        v.scanned &&
+        v.type !== 'UNREACHABLE',
+    )
+    if (scannedWait && near.dist > RESCUE_RANGE) {
+      return withStep({
+        kind: 'drive',
+        title: near.dist <= 8 ? 'Hold F at the ring' : `${meters} to extract`,
+        detail: `${near.ext.opening} · ${conditionLabel(scannedWait.condition)}`,
         dist: near.dist,
         inRange: false,
         hold: null,
-      }
+      })
     }
-    return {
+    if (state.t < 7 && near.dist > 12) {
+      return withStep({
+        kind: 'coach',
+        title: 'Follow the cyan pip',
+        detail: `${near.ext.opening} · ${meters}`,
+        dist: near.dist,
+        inRange: false,
+        hold: null,
+      })
+    }
+    if (near.dist > 16) {
+      return withStep({
+        kind: 'drive',
+        title: near.ext.opening,
+        detail: `Drive · ${meters} · ${who}`,
+        dist: near.dist,
+        inRange: false,
+        hold: null,
+      })
+    }
+    if (near.dist > 8) {
+      return withStep({
+        kind: 'drive',
+        title: `${meters} to the ring`,
+        detail: `${near.ext.opening} · keep coming`,
+        dist: near.dist,
+        inRange: false,
+        hold: null,
+      })
+    }
+    return withStep({
       kind: 'drive',
-      title: close ? `Opening · ${near.ext.opening}` : `Drive to the ${near.ext.facade} opening`,
-      detail: waiting
-        ? `${waiting} still inside · ${near.dist.toFixed(0)} m`
-        : `${near.ext.opening} · ${near.dist.toFixed(0)} m · no one waiting here`,
+      title: 'Stop on the cyan ring',
+      detail: `${near.ext.opening} · then hold Space`,
       dist: near.dist,
-      inRange: close,
+      inRange: false,
       hold: null,
-    }
+    })
   }
 
-  return {
+  return withStep({
     kind: 'wait',
     title: 'No live opening',
     detail: 'Rooms are venting. Keep clear of the heat.',
     dist: null,
     inRange: false,
     hold: null,
-  }
+  })
 }

@@ -10,14 +10,14 @@ export function Objective() {
   const run = useRun()
   const intent = playIntent(run, x, z)
   const frac = holdFrac(run.hold)
-  const title = intent.hold && moving && run.hold.kind === 'idle' ? 'Stop, then hold' : intent.title
+  const stopFirst = Boolean(intent.hold && moving && run.hold.kind === 'idle')
+  const title = stopFirst ? 'Stop, then hold' : intent.title
+  const kicker = stopFirst ? 'Stop first' : intent.step
 
   return (
     <>
       <div className={`objective ${intent.inRange ? 'ready' : ''} ${intent.kind}`}>
-        <p className="objective-kicker">
-          {intent.kind === 'coach' ? 'Go' : intent.inRange ? 'Now' : 'Next'}
-        </p>
+        <p className="objective-kicker">{kicker}</p>
         <h2>{title}</h2>
         <p>{intent.detail}</p>
       </div>

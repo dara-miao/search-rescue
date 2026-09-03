@@ -61,12 +61,12 @@ export function Debrief() {
               useRun.getState().begin()
             }}
           >
-            Replay seed
+            Replay this seed
           </button>
-          <button type="button" className="debrief-go" onClick={again}>
-            New run
+          <button type="button" className="debrief-go ghost" onClick={again}>
+            New seed
           </button>
-          <button type="button" className="debrief-go" onClick={() => useRun.getState().showCredits()}>
+          <button type="button" className="debrief-go ghost" onClick={() => useRun.getState().showCredits()}>
             Credits
           </button>
         </div>

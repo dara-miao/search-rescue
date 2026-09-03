@@ -28,27 +28,22 @@ export function Briefing() {
       <div className="briefing-card">
         <p className="stage0-kicker">Doheny · perimeter · seed {seed}</p>
         <h1>The interior is closed</h1>
-        <p>
-          Fire is already in the stacks. Drive to a cyan opening, scan, then pull people out.
-          When a room vents that opening dies.
-        </p>
-        <dl>
-          <div>
-            <dt>Drive</dt>
-            <dd>W throttle · A / D steer. Follow the cyan pip.</dd>
-          </div>
-          <div>
-            <dt>See</dt>
-            <dd>T toggles thermal. Gold pip is Doheny. People wait at the glass.</dd>
-          </div>
-          <div>
-            <dt>Act</dt>
-            <dd>Hold Space to scan. Hold F to extract. Red ring is staging.</dd>
-          </div>
-        </dl>
-        <p className="stage0-note">
-          You cannot go inside. You cannot die. Below 20% the robot limps. Empty still crawls home.
-        </p>
+        <p>Fire is already in the stacks. You work the glass from the lawn. Follow one job at a time.</p>
+        <ol className="briefing-steps">
+          <li>
+            <span>1</span>
+            Drive to the brightest cyan ring.
+          </li>
+          <li>
+            <span>2</span>
+            Stop. Hold Space to scan.
+          </li>
+          <li>
+            <span>3</span>
+            Hold F to extract. Carry to the red ring.
+          </li>
+        </ol>
+        <p className="stage0-note">W throttle · A / D steer · T thermal. You cannot go inside. You cannot die.</p>
         <button type="button" className="debrief-go" onClick={go}>
           Roll out
         </button>
