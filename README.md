@@ -1,21 +1,28 @@
 # Doheny Rescue
 
-Browser search-and-rescue sim around Doheny Memorial Library at USC. The interior is closed — every rescue happens from the perimeter.
+Browser search-and-rescue around Doheny Memorial Library at USC. The interior is closed. Every rescue happens from the perimeter. The run is about triage under incomplete information, not driving skill.
 
-This repo is on **Stage 0**: the real OSM footprint, projected to local metres and extruded untextured. Confirm the outline (1960s wing + courtyard) before movement or fire go in.
+You spawn on the Alumni Park lawn, ~30 m south of the entrance, at night. A short briefing holds the clock. Doheny is on fire. Windows glow as rooms vent. You cannot go inside. The gold compass pip is the building. The cyan pip is the nearest live opening.
 
-## Stage 0 — footprint
+## Play
 
-The default view is an overhead orbit of the untextured extrude.
+- **W / S** or knob up/down — throttle. Speed ramps to 6 m/s.
+- **A / D** or knob left/right — steer. Turn rate scales with speed: a held stick at rest pivots slowly (about 11 s per revolution), not a spin. At speed it holds a 3.6 m arc. Scroll zooms 8–25 m. The chase camera stays behind the robot.
+- **T** (or Thermal) — hold for thermal. Signatures show through the walls. Count, condition, and type stay hidden.
+- **Space / F** (or Hold) — scan (6 s within 6 m), rescue (hold at an open extraction), or mark an unreachable victim (2 s). Moving interrupts a hold.
+- Cyan shafts and outlines are extraction points — they stay readable across the lawn and vanish when that room vents. The ground semicircle is the 4 m rescue radius.
+- After a scan the HUD shows condition, type, and count. It never shows the clock.
+- The red ring on the lawn is staging: drop a carried victim, recharge battery. Two engines and a utility sit just south of the ring.
+- Hold Space or F and a ring fills at your feet and at the opening.
+- Below 20% battery the robot limps. Empty still crawls so you can reach the ring. Heat cannot kill you.
+- North lip is 60% speed. West landscaping is 70%.
+- Within 8 m of a vented facade, battery drain is 2.5× and thermal breaks into noise. You do not die.
 
-- Building mesh comes from OpenStreetMap relation `6095470` (Edward L Doheny Junior Memorial Library).
-- Local frame: **+X east, +Y up, +Z south**, metres about `34.0201, −118.2838`.
-- Roof tiles: orange = south facade (Alumni Park), blue = north, dark = core. Cells whose centre falls outside the polygon are discarded.
-- Height is the OSM `height` tag (22.8 m). `building:levels` is missing, so floors fall back to 4.
+The run ends when every cell has vented. The debrief lists each victim in encounter order: what you saw, what you did, what was true. No grade.
 
-Drag to orbit, scroll to zoom.
+`?seed=42` pins ignition and victim placement. Windows telegraph with smoke about three seconds before they vent. Audio (rumble / vent) starts after the first click; mute from the dock.
 
-The older dual-POV briefing still lives at `?play=1`.
+`?play=1` still hosts the older dual-POV briefing.
 
 ## Run it
 
@@ -34,14 +41,15 @@ npm run test:site
 
 `overpass-raw.json` is committed so the footprint stays reproducible if OSM or the mirrors change.
 
-## Later stages (not built yet)
+## Spec stages
 
-1. Movement — kinematic robot, chase camera, nothing else
-2. Victims and rescue — carry / deliver
-3. Fire grid, venting, extraction points
-4. Thermal / scan / hidden attributes
-5. Debrief
-6. Night lighting, battery, audio
+0. Footprint — real OSM outline, courtyard hole, fire grid
+1. Movement — kinematic robot, chase camera, OSM hull
+2. Victims and rescue — scan / extract / carry / mark / deliver
+3. Fire — 4 Hz spread, venting, extractions close, window glow
+4. Information — thermal, hidden attributes, signature inversion
+5. Debrief — encounter list and counterfactuals
+6. Battery, pre-vent smoke, audio, `?seed=`, staging engines, limp, hold rings
 
 Spec: `docs/doheny-rescue-sim-spec.md`.
 
@@ -55,8 +63,8 @@ A Google Maps key is only needed for the legacy `?play=1` photoreal WORLD view. 
 VITE_GOOGLE_MAPS_KEY=AIza...
 ```
 
-Without a key, Stage 0 still runs.
+Without a key, the perimeter run still works.
 
 ## Stack
 
-Vite, React, TypeScript, Three.js, React Three Fiber, Drei.
+Vite, React, TypeScript, Three.js, React Three Fiber, Drei, zustand.
