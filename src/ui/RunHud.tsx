@@ -4,10 +4,11 @@ import { useDrive } from '../drive/store'
 import { isMuted, setMuted, unlockAudio } from '../run/audio'
 import { batteryBand } from '../run/battery'
 import { holdFrac } from '../run/hold'
-import { conditionLabel, nearestLiveOpening, revealLine, typeLabel } from '../run/opening'
+import { conditionLabel, nearestPlayOpening, revealLine, typeLabel } from '../run/opening'
 import { useRun } from '../run/store'
 import { AnalogKnob } from './AnalogKnob'
 import { Compass } from './Compass'
+import { Objective } from './Objective'
 
 function clock(t: number) {
   const s = Math.max(0, Math.floor(t))
@@ -48,11 +49,17 @@ export function RunHud() {
   const z = useDrive((s) => s.z)
   const [mute, setMute] = useState(() => isMuted())
   const band = batteryBand(battery)
-  const near = nearestLiveOpening(x, z, { cells, extractions, victims })
+  const near = nearestPlayOpening(x, z, { cells, extractions, victims })
+
+  const replay = () => {
+    useDrive.getState().reset()
+    useRun.getState().replay()
+  }
 
   return (
     <>
       <Compass />
+      <Objective />
       <aside className="stage0 drive-hud run-hud">
         <p className="stage0-kicker">Doheny · perimeter · seed {seed}</p>
         <h1>{clock(t)}</h1>
@@ -74,7 +81,7 @@ export function RunHud() {
                 ? inHeat
                   ? 'On · noisy in the heat'
                   : 'On · signatures only'
-                : 'Hold T'}
+                : 'T toggles'}
             </dd>
           </div>
           <div>
@@ -92,8 +99,8 @@ export function RunHud() {
             <dd>
               {near
                 ? near.dist <= 4
-                  ? `${near.ext.opening} · in range`
-                  : `${near.ext.facade} · ${near.dist.toFixed(0)} m`
+                  ? `${near.ext.opening} · in range${near.waiting ? ` · ${near.waiting} inside` : ''}`
+                  : `${near.ext.facade} · ${near.dist.toFixed(0)} m${near.waiting ? ` · ${near.waiting} inside` : ''}`
                 : 'None live'}
             </dd>
           </div>
@@ -147,12 +154,7 @@ export function RunHud() {
           <button
             type="button"
             className={thermal ? 'on' : ''}
-            onPointerDown={(e) => {
-              e.preventDefault()
-              setHud({ thermal: true })
-            }}
-            onPointerUp={() => setHud({ thermal: false })}
-            onPointerLeave={() => setHud({ thermal: false })}
+            onClick={() => useRun.getState().toggleThermal()}
           >
             Thermal
           </button>
@@ -191,6 +193,9 @@ export function RunHud() {
             onPointerLeave={() => setHud({ rescue: false })}
           >
             Extract
+          </button>
+          <button type="button" onClick={replay}>
+            Restart
           </button>
         </div>
         <AnalogKnob onVector={(x, y, on) => setStick(x, y, on)} />
