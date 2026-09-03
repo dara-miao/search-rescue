@@ -1,4 +1,10 @@
 {
+  "source": {
+    "osm": "relation/6095470",
+    "name": "Edward L Doheny Junior Memorial Library",
+    "license": "© OpenStreetMap contributors (ODbL)",
+    "retrieved": "2026-09-01"
+  },
   "origin": {
     "lat": 34.0201,
     "lon": -118.2838
@@ -150,6 +156,7 @@
       "width": 75.71888355494684,
       "depth": 52.957206926993365,
       "angleRad": 0.48528835841005113,
+      "angleDeg": 27.80497478372796,
       "angleNormalizedDeg": 27.80497478372796,
       "centre": {
         "x": 8.381541769147034,
