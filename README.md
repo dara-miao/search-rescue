@@ -25,8 +25,6 @@ The run ends when every cell has vented. Debrief lists each person in encounter 
 
 Windows telegraph with smoke a few seconds before they vent. Audio (rumble / vent) starts after the first click. Mute from the dock.
 
-`?play=1` is an older dual-view briefing (photoreal tiles plus OSM). That path needs a Google Maps key. The perimeter run does not.
-
 ## Develop
 
 ```bash
@@ -53,14 +51,6 @@ The gameplay spec is in `docs/doheny-rescue-sim-spec.md`.
 ## Data
 
 © OpenStreetMap contributors (ODbL). The license string lives on `src/data/site-data.json` and on the Credits screen. Facade maps are derived from "Doheny Library" by Padsquad19, Wikimedia Commons, CC BY-SA 3.0. USC Digital Library photographs were modelling reference only. They are not used as textures.
-
-A Google Maps key is only needed for `?play=1`. Put it in `.env.local` (gitignored):
-
-```
-VITE_GOOGLE_MAPS_KEY=
-```
-
-Without a key, the perimeter run still works.
 
 ## Stack
 
