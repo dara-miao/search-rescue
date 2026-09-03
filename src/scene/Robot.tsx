@@ -1,12 +1,23 @@
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useLayoutEffect, useRef } from 'react'
 import type { Group } from 'three'
+import { attachHeadlight } from '../drive/robot-chase.js'
 import { useGame } from '../game/store'
 
+export type RobotPose = {
+  x: number
+  y: number
+  z: number
+  yaw: number
+  camYaw?: number
+  speed: number
+  moving: boolean
+}
+
 /**
- * Unitree Go2–style trot (see go2-convex-mpc): 3 Hz, 0.6 stance duty,
- * diagonal pairs. Mesh is authored with +Z as the nose. Walk wish is
- * (sin yaw, −cos yaw), which matches Three.js +Z after rotY(π − yaw).
+ * Unitree Go2–style trot. Mesh is authored +Z nose; a π child wrap makes
+ * the outer group −Z-forward so rotation.y = yaw and attachHeadlight aim
+ * down the chassis, which with the chase cam is up-screen.
  */
 const TROT_HZ = 3
 const STANCE = 0.6
@@ -23,16 +34,37 @@ function wrap01(t: number) {
   return t - Math.floor(t)
 }
 
-export function Robot({ variant }: { variant: 'world' | 'robot' }) {
+export function Robot({
+  variant,
+  pose,
+}: {
+  variant: 'world' | 'robot'
+  pose?: () => RobotPose
+}) {
   const group = useRef<Group>(null)
   const hips = useRef<Array<Group | null>>([null, null, null, null])
   const knees = useRef<Array<Group | null>>([null, null, null, null])
   const gait = useRef(0)
   const lean = useRef({ pitch: 0, roll: 0 })
   const youPin = variant === 'world'
+  const scene = useThree((s) => s.scene)
+  const lamp = useRef<ReturnType<typeof attachHeadlight> | null>(null)
+
+  useLayoutEffect(() => {
+    const mesh = group.current
+    if (!mesh || youPin) return
+    const head = attachHeadlight(scene, mesh)
+    head.light.castShadow = false
+    lamp.current = head
+    return () => {
+      mesh.remove(head.light)
+      scene.remove(head.target)
+      lamp.current = null
+    }
+  }, [scene, youPin])
 
   useFrame((_, dt) => {
-    const { robot } = useGame.getState()
+    const robot = pose ? pose() : useGame.getState().robot
     const g = group.current
     if (!g) return
 
@@ -70,7 +102,8 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
 
     const bob = moving ? Math.abs(Math.sin(cycle * Math.PI * 2)) * 0.028 : Math.sin(cycle * 1.4) * 0.006
     g.position.set(robot.x, robot.y + bob, robot.z)
-    g.rotation.set(lean.current.pitch, Math.PI - robot.yaw, lean.current.roll)
+    g.rotation.set(lean.current.pitch, robot.yaw, lean.current.roll)
+    lamp.current?.update({ x: robot.x, z: robot.z }, robot.yaw)
   })
 
   return (
@@ -81,7 +114,7 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
           <meshBasicMaterial color="#9d2235" depthTest={false} toneMapped={false} />
         </mesh>
       )}
-      <group scale={youPin ? 1 : 1.6}>
+      <group rotation={[0, Math.PI, 0]} scale={youPin ? 1 : 1.6}>
         <mesh position={[0, 0.1, -0.01]} castShadow>
           <boxGeometry args={[0.34, 0.14, 0.62]} />
           <meshStandardMaterial color="#1a1c20" metalness={0.72} roughness={0.32} />
@@ -145,17 +178,6 @@ export function Robot({ variant }: { variant: 'world' | 'robot' }) {
             </group>
           </group>
         ))}
-        {!youPin && (
-          <spotLight
-            position={[0, 0.28, 0.42]}
-            angle={0.5}
-            penumbra={0.45}
-            intensity={2.8}
-            distance={10}
-            color="#fff4d8"
-            castShadow={false}
-          />
-        )}
       </group>
     </group>
   )
