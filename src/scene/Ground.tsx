@@ -100,13 +100,11 @@ function Overlay({
   lift,
   step,
   color,
-  roughness,
 }: {
   polygons: Vec2[][]
   lift: number
   step: number
   color: string
-  roughness: number
 }) {
   const geos = useMemo(
     () => polygons.map((poly) => drapedPolyGeometry(poly, lift, step)).filter((g): g is BufferGeometry => Boolean(g)),
@@ -116,10 +114,8 @@ function Overlay({
     <group>
       {geos.map((geometry, i) => (
         <mesh key={i} geometry={geometry} receiveShadow>
-          <meshStandardMaterial
+          <meshBasicMaterial
             color={color}
-            roughness={roughness}
-            metalness={0}
             polygonOffset
             polygonOffsetFactor={-2}
             polygonOffsetUnits={-2}
@@ -133,7 +129,7 @@ function Overlay({
 export function Ground({ thermal }: { thermal: boolean }) {
   const sat = satPlane()
   const geometry = useMemo(() => {
-    const geo = new PlaneGeometry(sat.width, sat.depth, 220, 148)
+    const geo = new PlaneGeometry(sat.width, sat.depth, 88, 58)
     geo.rotateX(-Math.PI / 2)
     const pos = geo.attributes.position
     const colors = new Float32Array(pos.count * 3)
@@ -155,7 +151,7 @@ export function Ground({ thermal }: { thermal: boolean }) {
   const ribbons = useMemo(() => {
     return GROUND.paths
       .filter((path) => path.length >= 2)
-      .slice(0, 36)
+      .slice(0, 12)
       .map((path) => {
         const pts = path.map(([x, z]) => new Vector3(x, heightAt(x, z) + 0.07, z))
         return new CatmullRomCurve3(pts, false, 'catmullrom', 0.15)
@@ -175,15 +171,15 @@ export function Ground({ thermal }: { thermal: boolean }) {
       </mesh>
       {!thermal && (
         <>
-          <Overlay polygons={streets} lift={0.04} step={5.2} color="#6a6662" roughness={0.96} />
-          <Overlay polygons={walks} lift={0.07} step={2.8} color="#c4b08a" roughness={0.94} />
-          <Overlay polygons={plazas} lift={0.09} step={3.6} color="#d2c09a" roughness={0.9} />
-          <Overlay polygons={steps} lift={0.14} step={2.2} color="#ddd0b4" roughness={0.86} />
+          <Overlay polygons={streets} lift={0.04} step={8} color="#6a6662" />
+          <Overlay polygons={walks} lift={0.07} step={5.2} color="#c4b08a" />
+          <Overlay polygons={plazas} lift={0.09} step={6} color="#d2c09a" />
+          <Overlay polygons={steps} lift={0.14} step={4.2} color="#ddd0b4" />
         </>
       )}
       {ribbons.map((curve, i) => (
         <mesh key={i} receiveShadow>
-          <tubeGeometry args={[curve, Math.max(10, curve.points.length * 4), i === 0 ? 1.7 : 0.85, 5, false]} />
+          <tubeGeometry args={[curve, Math.max(8, curve.points.length * 2), i === 0 ? 1.7 : 0.85, 4, false]} />
           <meshStandardMaterial
             color={thermal ? '#245868' : i === 0 ? '#c4b08a' : '#8a7b68'}
             roughness={0.95}
