@@ -6,8 +6,8 @@ import { MASSING_CONFIG } from './doheny-massing.js'
 import { useRun } from '../run/store'
 import type { FireCell } from '../run/types'
 
-const MAX = 72
-const PUFFS = 3
+const MAX = 180
+const PUFFS = 8
 
 function outward(facade: FireCell['facades'][number], angle: number) {
   const local =
@@ -37,7 +37,7 @@ function socketsFor(cell: FireCell) {
 export function WindowSmoke() {
   const mesh = useRef<InstancedMesh>(null)
   const dummy = useMemo(() => new Object3D(), [])
-  const geo = useMemo(() => new PlaneGeometry(1.6, 2.4), [])
+  const geo = useMemo(() => new PlaneGeometry(1.15, 1.55), [])
   const mat = useMemo(
     () =>
       new MeshBasicMaterial({
@@ -60,11 +60,16 @@ export function WindowSmoke() {
     let i = 0
     for (const sock of sockets) {
       for (let p = 0; p < PUFFS && i < MAX; p++, i++) {
-        const age = (t * (0.22 + p * 0.05) + sock.x * 0.05 + p * 1.7) % 1
-        const rise = age * 3.4
-        const drift = age * 1.1
-        dummy.position.set(sock.x + sock.nx * (0.4 + drift), sock.y + rise, sock.z + sock.nz * (0.4 + drift))
-        dummy.scale.setScalar(0.7 + age * 1.6 + (sock.hot ? 0.35 : 0))
+        const age = (t * (0.18 + p * 0.04) + sock.x * 0.05 + p * 0.91) % 1
+        const rise = age * (4.8 + p * 0.35)
+        const drift = age * 1.6
+        const swirl = Math.sin(t * 0.7 + p + sock.z) * age * 0.55
+        dummy.position.set(
+          sock.x + sock.nx * (0.35 + drift) + sock.nz * swirl,
+          sock.y + rise,
+          sock.z + sock.nz * (0.35 + drift) - sock.nx * swirl,
+        )
+        dummy.scale.setScalar(0.45 + age * 1.9 + (sock.hot ? 0.4 : 0) + p * 0.04)
         dummy.lookAt(state.camera.position)
         dummy.updateMatrix()
         inst.setMatrixAt(i, dummy.matrix)

@@ -9,6 +9,8 @@ export type RobotPose = {
   y: number
   z: number
   yaw: number
+  pitch?: number
+  roll?: number
   camYaw?: number
   speed: number
   moving: boolean
@@ -102,7 +104,9 @@ export function Robot({
 
     const bob = moving ? Math.abs(Math.sin(cycle * Math.PI * 2)) * 0.028 : Math.sin(cycle * 1.4) * 0.006
     g.position.set(robot.x, robot.y + bob, robot.z)
-    g.rotation.set(lean.current.pitch, robot.yaw, lean.current.roll)
+    const surfacePitch = 'pitch' in robot ? (robot.pitch ?? 0) : 0
+    const surfaceRoll = 'roll' in robot ? (robot.roll ?? 0) : 0
+    g.rotation.set(lean.current.pitch + surfacePitch, robot.yaw, lean.current.roll + surfaceRoll)
     lamp.current?.update({ x: robot.x, z: robot.z }, robot.yaw)
   })
 
