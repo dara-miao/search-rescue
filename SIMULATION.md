@@ -1,8 +1,10 @@
 # Actual simulation
 
+The first screen is a scenario pick (fire, aftershock, night search). WORLD and ROBOT stay on the whole time. The mast then runs that outdoor sweep.
+
 Today the walk is real (`stepBody`). The fire is not. `tick()` adds `elapsed`, finds the nearest pin, and fails at 420s. Survivors do not move, heat, or hide. Thermal is a color grade. Mark is “stand inside 6.8 m and press F.” Doheny particles sit on the library centroid forever.
 
-This plan turns that clock into a search. WORLD stays Google photoreal. ROBOT stays the reconstruct. Collision stays in `world.ts` (do not edit it). No interiors product. No World Labs.
+This plan turns that clock into a search. WORLD stays Google photoreal. ROBOT stays the reconstruct. Collision lives in `collide.ts` and calls into `world.ts` (do not edit `world.ts`). Footprints are solid hulls — the west door is visual. No interiors product. No World Labs.
 
 The loop we steal is labels and pressure, not a stack: one building on fire, outdoor sweep, **HOT / NO GO / EVAC**, last-knowns that go stale.
 
@@ -26,9 +28,9 @@ Seed **Doheny** (`cx 151.7, cz 39.925`, `fire: true`). Victims stay where they a
 
 Deploy stays `{x: 82, z: 36, yaw: 1.32}` on the west walk, facing the door, not inside it.
 
-## What the player is actually doing
+## What the robot is actually doing
 
-A 7-minute **walk-and-tag** becomes:
+A 7-minute **autonomous sweep** (you watch; you do not drive) becomes:
 
 1. Read the zone on the mast (**SAFE / WARM / HOT / NO GO**) and the WORLD overlay.
 2. Find people with **sensors**, not a god-view roster. Optical sees far in clear air. Thermal sees through smoke, closer, and costs the pack.
@@ -92,9 +94,9 @@ Coarse grid over the sector. Not a CFD.
 - **Wind** authored, not live weather: afternoon push **east + a little south** in local axes (`+X` east, `+Z` south) → bias `(+0.65, +0.25)`. Smoke advects downwind faster than heat.
 - **Update** (explicit, damped):
 
-  `heat += dt * k * (neighborHeat − heat) * windBias`
-  `heat += dt * 0.04 * fuel * heat` (growth while fuel > 0)
-  `fuel -= dt * 0.02 * heat`
+  `heat += dt * k * (neighborHeat − heat) * windBias`  
+  `heat += dt * 0.04 * fuel * heat` (growth while fuel > 0)  
+  `fuel -= dt * 0.02 * heat`  
   `smoke = max(smoke * 0.992, downwindHeat * 0.8)`
 
 - **Sample** bilinear `heatAt(x,z)` / `smokeAt(x,z)` for victims, hull, sensors, VFX.

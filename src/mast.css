@@ -61,8 +61,8 @@
   justify-content: flex-start;
   padding: 28px 32px 32px;
   background:
-    linear-gradient(90deg, rgba(7, 8, 11, 0.78) 0%, rgba(7, 8, 11, 0.32) 38%, transparent 62%),
-    linear-gradient(180deg, transparent 52%, rgba(7, 8, 11, 0.55) 100%);
+    linear-gradient(90deg, rgba(7, 8, 11, 0.48) 0%, rgba(7, 8, 11, 0.16) 32%, transparent 56%),
+    linear-gradient(180deg, transparent 62%, rgba(7, 8, 11, 0.28) 100%);
   pointer-events: none;
 }
 
