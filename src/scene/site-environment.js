@@ -30,6 +30,12 @@
 
 import * as THREE from 'three';
 import { buildStagingApparatus } from './staging-apparatus.js';
+import {
+  defaultPaths,
+  heightAt,
+  lightPoleSites,
+  trousdaleRibbon,
+} from './site-ground.js';
 
 // ---------------------------------------------------------------- palette
 
@@ -112,7 +118,7 @@ function buildSky(radius = 800) {
  * frequency noise costs nothing and immediately looks like real turf under
  * moonlight.
  */
-function buildGround(extent = 900, segments = 48) {
+function buildGround(siteData, staging, extent = 900, segments = 64) {
   const geo = new THREE.PlaneGeometry(extent, extent, segments, segments);
   geo.rotateX(-Math.PI / 2);
 
@@ -121,6 +127,7 @@ function buildGround(extent = 900, segments = 48) {
   const a = new THREE.Color(NIGHT.lawn);
   const b = new THREE.Color(NIGHT.lawnDry);
   const tmp = new THREE.Color();
+  const opts = { staging };
 
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
@@ -135,8 +142,7 @@ function buildGround(extent = 900, segments = 48) {
     tmp.copy(a).lerp(b, THREE.MathUtils.clamp(n * 0.5 + 0.5, 0, 1));
     colors.push(tmp.r, tmp.g, tmp.b);
 
-    // Very slight undulation. Perfectly flat ground is another void tell.
-    pos.setY(i, n * 0.18);
+    pos.setY(i, heightAt(x, z, siteData, opts));
   }
 
   geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -173,13 +179,13 @@ function buildPaths(pathSpecs) {
       const g = new THREE.PlaneGeometry(width, len);
       g.rotateX(-Math.PI / 2);
       g.rotateY(-Math.atan2(dz, dx) + Math.PI / 2);
-      g.translate((x1 + x2) / 2, 0.06, (z1 + z2) / 2);
+      g.translate((x1 + x2) / 2, 0.08, (z1 + z2) / 2);
       geos.push(g);
 
       // Disc at each joint so corners don't show a notch.
       const j = new THREE.CircleGeometry(width / 2, 12);
       j.rotateX(-Math.PI / 2);
-      j.translate(x2, 0.061, z2);
+      j.translate(x2, 0.081, z2);
       geos.push(j);
     }
   }
@@ -194,6 +200,60 @@ function buildPaths(pathSpecs) {
   mesh.receiveShadow = true;
   mesh.name = 'paths';
   return mesh;
+}
+
+function buildTrousdale(siteData) {
+  const ribbon = trousdaleRibbon(siteData);
+  const [[x1, z1], [x2, z2]] = ribbon.points;
+  const dx = x2 - x1;
+  const dz = z2 - z1;
+  const len = Math.hypot(dx, dz);
+  const g = new THREE.PlaneGeometry(ribbon.width, len);
+  g.rotateX(-Math.PI / 2);
+  g.rotateY(-Math.atan2(dz, dx) + Math.PI / 2);
+  g.translate((x1 + x2) / 2, 0.085, (z1 + z2) / 2);
+  const mesh = new THREE.Mesh(
+    g,
+    new THREE.MeshStandardMaterial({ color: NIGHT.asphalt, roughness: 0.92 }),
+  );
+  mesh.receiveShadow = true;
+  mesh.name = 'trousdaleParkway';
+  mesh.userData.road = ribbon.name;
+  return mesh;
+}
+
+function buildLightPoles(sites) {
+  const pole = new THREE.CylinderGeometry(0.07, 0.1, 5.6, 6);
+  pole.translate(0, 2.8, 0);
+  const arm = new THREE.BoxGeometry(0.08, 0.08, 1.1);
+  arm.translate(0, 5.45, 0.35);
+  const lamp = new THREE.SphereGeometry(0.16, 8, 6);
+  lamp.translate(0, 5.35, 0.78);
+  const poleMat = new THREE.MeshStandardMaterial({ color: 0x1c1a16, roughness: 0.7, metalness: 0.25 });
+  const lampMat = new THREE.MeshStandardMaterial({
+    color: 0xffe2a8,
+    emissive: 0xffc56a,
+    emissiveIntensity: 1.4,
+    roughness: 0.4,
+  });
+  const group = new THREE.Group();
+  group.name = 'lightPoles';
+  const poles = new THREE.InstancedMesh(pole, poleMat, sites.length);
+  const arms = new THREE.InstancedMesh(arm, poleMat, sites.length);
+  const lamps = new THREE.InstancedMesh(lamp, lampMat, sites.length);
+  const m = new THREE.Matrix4();
+  sites.forEach((p, i) => {
+    m.makeTranslation(p.x, 0, p.z);
+    poles.setMatrixAt(i, m);
+    arms.setMatrixAt(i, m);
+    lamps.setMatrixAt(i, m);
+  });
+  poles.instanceMatrix.needsUpdate = true;
+  arms.instanceMatrix.needsUpdate = true;
+  lamps.instanceMatrix.needsUpdate = true;
+  group.add(poles, arms, lamps);
+  group.userData.count = sites.length;
+  return group;
 }
 
 // ---------------------------------------------------------------- trees
@@ -531,10 +591,13 @@ export function buildEnvironment(scene, siteData, opts = {}) {
   scene.background = new THREE.Color(NIGHT.fog);
 
   const sky = buildSky(800);
-  const ground = buildGround(900, 48);
+  const ground = buildGround(siteData, staging, 900, 64);
   const distant = buildDistantCampus(siteData, 22);
 
-  const paths = buildPaths(opts.paths || defaultPaths(centre, D, staging));
+  const pathSpecs = opts.paths || defaultPaths(centre, D, staging);
+  const paths = buildPaths(pathSpecs);
+  const road = buildTrousdale(siteData);
+  const poles = buildLightPoles(lightPoleSites(siteData, staging));
 
   const placements = scatterTrees(siteData, {
     exclusions: [
@@ -550,13 +613,14 @@ export function buildEnvironment(scene, siteData, opts = {}) {
 
   const root = new THREE.Group();
   root.name = 'environment';
-  root.add(sky, ground, distant, trees, lightGroup, emGroup, yard.group);
+  root.add(sky, ground, distant, trees, poles, road, lightGroup, emGroup, yard.group);
   if (paths) root.add(paths);
 
   let t = 0;
   return {
     root, sky, ground, trees, distant, moon, staging,
     treeCount: placements.length,
+    poleCount: poles.userData.count,
 
     update(dt, state = {}) {
       t += dt;
@@ -579,15 +643,4 @@ export function buildEnvironment(scene, siteData, opts = {}) {
       }
     },
   };
-}
-
-/** Paths radiating from the entrance across the lawn toward staging. */
-function defaultPaths(centre, D, staging) {
-  const front = centre.z + D / 2;
-  return [
-    { width: 5.0, points: [[centre.x, front + 2], [centre.x, staging.z + 26]] },
-    { width: 3.2, points: [[centre.x - 46, front + 12], [centre.x + 46, front + 12]] },
-    { width: 2.6, points: [[centre.x - 40, front + 40], [centre.x - 8, front + 14]] },
-    { width: 2.6, points: [[centre.x + 40, front + 40], [centre.x + 8, front + 14]] },
-  ];
 }

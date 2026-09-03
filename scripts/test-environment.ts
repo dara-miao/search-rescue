@@ -45,6 +45,9 @@ assert(
   'west engine stays off the spawn disk',
 )
 assert(scene.getObjectByName('environment') === env.root, 'environment root is parented')
+assert(!!env.root.getObjectByName('trousdaleParkway'), 'Trousdale Parkway is the east asphalt')
+assert(!!env.root.getObjectByName('lightPoles'), 'light poles stand on the lawn')
+assert(env.poleCount > 8, `enough poles to read as a campus, not two lamps (${env.poleCount})`)
 
 env.update(0.16, { fireIntensity: 0 })
 assert((env as { moon?: unknown }).moon !== undefined, 'moon is the shadow caster')
