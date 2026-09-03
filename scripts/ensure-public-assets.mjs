@@ -6,6 +6,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const assets = [
   {
+    path: join(root, 'public/textures/doheny-elevation.jpg'),
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Doheny_Library.jpg/1280px-Doheny_Library.jpg',
+  },
+  {
     path: join(root, 'public/textures/usc-sat-dusk.jpg'),
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=-118.2884,34.0186,-118.2814,34.0234&bboxSR=4326&imageSR=4326&size=1536,1264&format=jpg&f=image',
   },

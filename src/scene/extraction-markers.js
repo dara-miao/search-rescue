@@ -55,7 +55,7 @@ export const MARKER_CONFIG = {
     thickness: 0.18,
     inflate: 0.28,          // sits just outside the window surround
     depth: 0.05,
-    offset: 0.12,           // proud of the wall face
+    offset: 0.38,           // must clear the glass, which sits at +reveal
   },
 
   groundRing: {
@@ -135,9 +135,10 @@ function outlineGeometry(width, height, arched, cfg) {
  * correct but visually broken. The outward half is the only part the robot
  * can actually occupy, so that is the only part drawn.
  *
- * RingGeometry sweeps theta from +X toward +Y; after rotateX(-90°) that maps
- * to +X through -Z to -X, which is exactly the outward hemisphere in facade
- * local space (where -Z is outward).
+ * RingGeometry sweeps theta from +X toward +Y; rotateX(+90°) maps that to
+ * +X through +Z to -X — the outward half. Facade holders sit on the outer
+ * wall with +Z pointing at the lawn. The massing comment says −Z is
+ * outward; the holder placement does the opposite, and −Z buries the ring.
  */
 function groundRingGeometry(cfg) {
   const r = cfg.rescueRadius;
@@ -146,7 +147,7 @@ function groundRingGeometry(cfg) {
     cfg.groundRing.segments, 1,
     0, Math.PI
   );
-  g.rotateX(-Math.PI / 2);
+  g.rotateX(Math.PI / 2);
   g.translate(0, cfg.groundRing.y, 0);
   return g;
 }
@@ -194,10 +195,9 @@ function buildMarker(spec, cfg) {
     fog: false,         // must read from the far lawn; fog ate the shafts
   });
 
-  // In facade local space -Z is outward (see buildFacade in doheny-massing).
-  // Every marker offset is negative for that reason — a positive offset
-  // buries the marker inside the wall, where it is invisible.
-  const OUT = -1;
+  // Facade holders sit on the outer wall. +Z is the lawn; −Z is into the
+  // brick. The massing comment says the reverse — do not follow it here.
+  const OUT = 1;
 
   // Outline needs white vertex colours so vertexColors doesn't darken it.
   const outline = outlineGeometry(spec.width, spec.height, spec.arched, cfg);
