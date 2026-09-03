@@ -448,6 +448,91 @@
   cursor: pointer;
 }
 
+.objective {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(440px, calc(100% - 140px));
+  padding: 10px 16px 12px;
+  background: rgba(10, 12, 16, 0.84);
+  border: 1px solid rgba(239, 230, 214, 0.14);
+  color: #efe6d6;
+  text-align: center;
+  pointer-events: none;
+}
+
+.objective.ready {
+  border-color: #5ad0e8;
+  box-shadow: 0 0 0 1px rgba(90, 208, 232, 0.28);
+}
+
+.objective.deliver {
+  border-color: #c9a227;
+}
+
+.objective-kicker {
+  margin: 0 0 2px;
+  font: 500 11px/1.2 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c9a227;
+}
+
+.objective.ready .objective-kicker {
+  color: #5ad0e8;
+}
+
+.objective h2 {
+  margin: 0 0 4px;
+  font: 400 26px/1.1 'Bebas Neue', 'IBM Plex Sans', sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.objective p {
+  margin: 0;
+  color: #c4b8a4;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.hold-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 26%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(320px, calc(100% - 32px));
+  height: 28px;
+  overflow: hidden;
+  background: rgba(10, 12, 16, 0.72);
+  border: 1px solid rgba(90, 208, 232, 0.45);
+  pointer-events: none;
+}
+
+.hold-banner b {
+  display: block;
+  height: 100%;
+  background: rgba(90, 208, 232, 0.35);
+}
+
+.hold-banner span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 500 12px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6d6;
+}
+
+.hold-banner.hint {
+  height: 26px;
+  border-color: rgba(239, 230, 214, 0.28);
+}
+
 @media (max-width: 640px) {
   .stage0 {
     left: 10px;
@@ -494,5 +579,22 @@
 
   .briefing {
     padding: 10px;
+  }
+
+  .objective {
+    top: 10px;
+    width: calc(100% - 100px);
+    left: auto;
+    right: 10px;
+    transform: none;
+    padding: 8px 10px 10px;
+  }
+
+  .objective h2 {
+    font-size: 20px;
+  }
+
+  .hold-banner {
+    bottom: 34%;
   }
 }
