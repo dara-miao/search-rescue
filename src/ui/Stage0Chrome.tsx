@@ -3,7 +3,7 @@ import { attribution, buildingName, osmId, site } from '../data/site'
 export function Stage0Chrome() {
   const levelsNote =
     site.building.levelSource === 'fallback'
-      ? 'OSM has no building:levels tag — using 4, which matches Doheny'
+      ? 'OSM has no building:levels tag, so this uses 4, which matches Doheny'
       : `OSM building:levels = ${site.building.levels}`
 
   return (
@@ -43,7 +43,7 @@ export function Stage0Chrome() {
       </dl>
       <p className="stage0-note">
         Visual is the procedural massing (hip roof, cornice, south pavilion). The pale line on the
-        lawn is the real OSM footprint, collision later. Entrance faces Alumni Park.
+        lawn is the real OSM footprint. Entrance faces Alumni Park.
       </p>
       <p className="stage0-hint">Drag to orbit · scroll to zoom</p>
       <p className="stage0-license">{attribution()}</p>

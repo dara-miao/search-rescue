@@ -22,11 +22,11 @@ export function DriveChrome() {
           </div>
           <div>
             <dt>Look</dt>
-            <dd>Q / E or drag · scroll zoom 8–25 m</dd>
+            <dd>Q / E or drag · scroll zoom 8 to 25 m</dd>
           </div>
         </dl>
         <p className="stage0-note">
-          Night on Alumni Park. Chase camera, 25° pitch. The hull stops on the OSM outline — you
+          Night on Alumni Park. Chase camera, 25° pitch. The hull stops on the OSM outline. You
           cannot go inside.
         </p>
         <p className="stage0-license">{attribution()}</p>
