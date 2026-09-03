@@ -1,7 +1,7 @@
 import raw from '../data/ground.json'
 
 const STEPS = { x: 108.6, z: 50.2, yaw: 1.28 }
-const DEPLOY = { x: 82, z: 36, yaw: 1.32 }
+const DEPLOY = { x: 94, z: 52, yaw: 1.37 }
 
 export type Cover = 'lawn' | 'walkway' | 'street' | 'steps' | 'plaza' | 'dirt'
 
