@@ -64,7 +64,11 @@ export function OpticalFeed() {
       }
     }
 
+    let lastTick = 0
     const consider = () => {
+      const now = performance.now()
+      if (now - lastTick < 240) return
+      lastTick = now
       if (cancelled || document.hidden) return
       const { robot, phase } = useGame.getState()
       if (phase !== 'playing') return
