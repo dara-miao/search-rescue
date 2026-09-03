@@ -15,9 +15,9 @@ export function holdAnchor(state: Pick<RunState, 'hold' | 'victims' | 'extractio
     const ext =
       state.extractions.find((e) => e.cellId === victim.cellId) ??
       state.extractions.find((e) => e.floor === Math.min(victim.floor, 1) && e.row === victim.row && e.col === victim.col)
-    if (ext) return { x: ext.x, z: ext.z, kind: hold.kind as const }
+    if (ext) return { x: ext.x, z: ext.z, kind: hold.kind }
   }
-  return { x: victim.x, z: victim.z, kind: hold.kind as const }
+  return { x: victim.x, z: victim.z, kind: hold.kind }
 }
 
 export const HOLD_COLOR = {

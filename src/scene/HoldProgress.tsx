@@ -1,12 +1,17 @@
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
-import type { Group, Mesh } from 'three'
+import type { Group, Mesh, MeshBasicMaterial } from 'three'
 import { useDrive } from '../drive/store'
 import { HOLD_COLOR, holdAnchor, holdFrac } from '../run/hold'
 import { useRun } from '../run/store'
 
 function ringColor(kind: keyof typeof HOLD_COLOR) {
   return HOLD_COLOR[kind]
+}
+
+function paint(mesh: Mesh, hex: string) {
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+  for (const mat of mats) (mat as MeshBasicMaterial).color.set(hex)
 }
 
 export function HoldProgress() {
@@ -34,12 +39,9 @@ export function HoldProgress() {
     if (!anchor) return
 
     const color = ringColor(anchor.kind)
-    const matFill = ff.material as { color: { set: (c: string) => void } }
-    const matCol = col.material as { color: { set: (c: string) => void } }
-    const matFeet = ftFill.material as { color: { set: (c: string) => void } }
-    matFill.color.set(color)
-    matCol.color.set(color)
-    matFeet.color.set(color)
+    paint(ff, color)
+    paint(col, color)
+    paint(ftFill, color)
 
     tg.position.set(anchor.x, 0.05, anchor.z)
     ff.scale.setScalar(0.18 + frac * 0.82)
