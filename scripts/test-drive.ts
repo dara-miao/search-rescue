@@ -4,6 +4,7 @@ import { spawnIsValid, stagingPose } from '../src/drive/spawn'
 import { ROBOT_CONFIG, resolveCollision } from '../src/drive/robot-controller.js'
 import { CHASE_CONFIG, shortestAngle, turnRateAtSpeed } from '../src/drive/robot-chase.js'
 import { apparatusLayout } from '../src/scene/staging-apparatus.js'
+import { CLIMB_M, chassisAttitude, followGround, heightAt } from '../src/scene/site-ground.js'
 import { ACCEL, MIN_SPEED_SCALE, RAMP_S, TOP_SPEED, freshBody, siteBlockers, stepDrive } from '../src/drive/step'
 
 function assert(ok: boolean, msg: string) {
@@ -137,6 +138,30 @@ slam.z = truck.z
 slam.speed = 6
 stepDrive(slam, { x: 0, y: -1 }, 0.05)
 assert(Math.hypot(slam.x - truck.x, slam.z - truck.z) > 0.5, 'an engine hull rejects a disk sitting inside it')
+
+const lawnY = heightAt(spawn.x, spawn.z, site)
+assert(Math.abs(spawn.y - lawnY) < 0.02, 'spawn sits on the sampled ground')
+const ob = site.building.orientedBounds
+const lip = { x: 0, z: -ob.depth / 2 - 3.1 }
+const lipWorld = {
+  x: ob.centre.x + lip.x * Math.cos(ob.angleRad) - lip.z * Math.sin(ob.angleRad),
+  z: ob.centre.z + lip.x * Math.sin(ob.angleRad) + lip.z * Math.cos(ob.angleRad),
+}
+const lipY = heightAt(lipWorld.x, lipWorld.z, site)
+assert(lipY > lawnY + 0.12, `north loading lip is a curb (lip ${lipY.toFixed(2)} vs lawn ${lawnY.toFixed(2)})`)
+assert(CLIMB_M === 0.4, 'climb threshold is 0.4 m')
+assert(followGround(0, spawn.x, spawn.z, site).blocked === false, 'lawn from 0 is climbable')
+assert(followGround(0, lipWorld.x, lipWorld.z, site).blocked === false, 'curb within 0.4 m is accepted')
+assert(followGround(0, lipWorld.x, lipWorld.z, site).y > lawnY, 'accepted curb raises Y')
+assert(followGround(-0.25, lipWorld.x, lipWorld.z, site).blocked, 'a rise over 0.4 m is refused')
+const lean = chassisAttitude(lipWorld.x, lipWorld.z, 0, site)
+assert(Number.isFinite(lean.pitch) && Number.isFinite(lean.roll), 'chassis reads a surface normal')
+
+const rider = freshBody()
+rider.x = spawn.x
+rider.z = spawn.z
+for (let i = 0; i < 8; i++) stepDrive(rider, { x: 0, y: -1 }, 0.05)
+assert(Math.abs(rider.y - heightAt(rider.x, rider.z, site)) < 0.05, 'a drive step snaps Y to the ground')
 
 if (process.exitCode) {
   console.error('drive tests failed')

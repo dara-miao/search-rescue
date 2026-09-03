@@ -177,6 +177,11 @@ const easyExt = rescueRun.extractions.find((e) => e.cellId === easy.cellId) ?? {
 }
 holdFor(rescueRun, inputAt(easyExt.x, easyExt.z, { hold: true, forceRescue: true }), 1.3)
 assert(easy.state === 'RESCUED', `self/group extract resolves without a carry (${easy.state})`)
+assert(rescueRun.evacuees.length === easy.count, `self/group walk-out spawns ${easy.count} people (got ${rescueRun.evacuees.length})`)
+assert(
+  rescueRun.evacuees.every((e) => e.victimId === easy.id),
+  'walk-out people belong to the rescued group',
+)
 
 const carryRun = createRun(12)
 const assisted = carryRun.victims.find((v) => v.type === 'ASSISTED')!
@@ -288,6 +293,19 @@ useRun.getState().tick(inputAt(0, 40, { moving: true, speed: 3 }), 1)
 assert(useRun.getState().t === heldT, 'briefing does not tick the fire')
 useRun.getState().begin()
 assert(useRun.getState().phase === 'playing', 'roll out starts the run')
+
+useRun.getState().start(11)
+for (const c of useRun.getState().cells) {
+  c.heat = 100
+  c.vented = true
+}
+useRun.getState().begin()
+useRun.getState().tick(inputAt(0, 40), 0.05)
+assert(useRun.getState().phase === 'debrief', 'store ends on all-vented')
+useRun.getState().showCredits()
+assert(useRun.getState().phase === 'credits', 'debrief opens the credits screen')
+useRun.getState().hideCredits()
+assert(useRun.getState().phase === 'debrief', 'credits returns to the debrief')
 
 if (process.exitCode) {
   console.error('run tests failed')
