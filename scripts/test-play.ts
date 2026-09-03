@@ -45,7 +45,7 @@ for (let t = 0; t < CAMPUS.timeLimit && !sim.complete && !sim.fail; ) {
 }
 
 if (sim.fail) fail(`hold-walk run failed: ${sim.failNote}`)
-if (sim.complete === false) fail(`hold-walk run stalled at ${marks}/4 after ${CAMPUS.timeLimit}s`)
+if (!sim.complete) fail(`hold-walk run stalled at ${marks}/4 after ${CAMPUS.timeLimit}s`)
 if (marks !== 4) fail(`expected 4 marks, got ${marks}`)
 
 console.log(`hold-walk clear: 4/4 in ${sim.elapsed.toFixed(1)}s`)

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { meanZ, northFacadeCells, site, southFacadeCells } from '../src/data/site'
+import { attribution, buildingName, meanZ, northFacadeCells, osmId, site, southFacadeCells } from '../src/data/site'
 
 function assert(ok: boolean, msg: string) {
   if (!ok) {
@@ -23,15 +23,15 @@ function pointInPoly(x: number, z: number, pts: Array<{ x: number; z: number }>)
   return inside
 }
 
-assert(/doheny/i.test(site.building.name), 'picked the Doheny-named footprint')
-assert(site.building.osmId === 'relation/6095470', 'OSM id is relation/6095470')
+assert(/doheny/i.test(buildingName()), 'picked the Doheny-named footprint')
+assert(osmId() === 'relation/6095470', 'OSM id is relation/6095470')
 assert(site.building.footprint.length >= 8, 'footprint has enough vertices for the wing')
-assert(site.building.holes.length === 1, 'courtyard inner ring is present')
+assert((site.building.holes?.length ?? 0) === 1, 'courtyard inner ring is present')
 assert(site.building.areaSqM > 3000 && site.building.areaSqM < 4200, 'area is Doheny-sized')
 assert(site.building.heightM === 22.8, 'height comes from the OSM tag (22.8 m)')
 assert(site.building.levels === 4, 'levels are 4')
 assert(site.building.levelSource === 'fallback', 'levels tag is missing — fallback recorded, not silent')
-assert(site.license.includes('OpenStreetMap'), 'ODbL attribution is stored')
+assert(attribution().includes('OpenStreetMap'), 'ODbL attribution is stored')
 
 const south = southFacadeCells(0)
 const north = northFacadeCells(0)
