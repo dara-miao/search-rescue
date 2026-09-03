@@ -1,63 +1,69 @@
 # Doheny Rescue
 
-Browser search-and-rescue around Doheny Memorial Library at USC. The interior is closed. Every rescue happens from the perimeter. The run is about triage under incomplete information, not driving skill.
+Night perimeter search-and-rescue around the real Doheny Memorial Library at USC. The interior is closed. Every rescue is from a window or door. The run is triage under incomplete information, not driving skill.
 
-You spawn on the Alumni Park lawn, ~30 m south of the entrance, at night. A short briefing holds the clock. Doheny is on fire. Windows glow as rooms vent. You cannot go inside. The gold compass pip is the building. The cyan pip is the nearest live opening.
+**Play it:** [usc-search-rescue.vercel.app](https://usc-search-rescue.vercel.app) — add `?seed=42` to pin ignition and victim placement.
+
+You spawn on the Alumni Park lawn, about 30 m south of the entrance. A briefing holds the clock. Windows glow as rooms vent. The gold compass pip is the building. The cyan pip is the nearest live opening.
 
 ## Play
 
 - **W / S** or knob up/down — throttle. Speed ramps to 6 m/s.
-- **A / D** or knob left/right — steer. Turn rate scales with speed: a held stick at rest pivots slowly (about 11 s per revolution), not a spin. At speed it holds a 3.6 m arc. Scroll zooms 8–25 m. The chase camera stays behind the robot.
-- **T** (or Thermal) — hold for thermal. Signatures show through the walls. Count, condition, and type stay hidden.
-- **Space / F** (or Hold) — scan (6 s within 6 m), rescue (hold at an open extraction), or mark an unreachable victim (2 s). Moving interrupts a hold.
-- Cyan shafts and outlines are extraction points — they stay readable across the lawn and vanish when that room vents. The ground semicircle is the 4 m rescue radius.
+- **A / D** or knob left/right — steer. A held stick at rest pivots slowly (about 11 s per revolution). At speed it holds a 3.6 m arc. Scroll zooms 8–25 m. The chase camera stays behind the robot.
+- **T** (or Thermal) — hold for thermal. Signatures show through the walls. Count, condition, and type stay hidden until you scan.
+- **Space / F** (or Hold) — scan (6 s within 6 m), extract at a live cyan opening, or mark an unreachable victim (2 s). Moving interrupts a hold. A ring fills at your feet and at the opening.
+- Cyan shafts mark live extractions. They vanish when that room vents. The ground semicircle is the 4 m rescue radius.
 - After a scan the HUD shows condition, type, and count. It never shows the clock.
-- The red ring on the lawn is staging: drop a carried victim, recharge battery. Two engines and a utility sit just south of the ring.
-- Hold Space or F and a ring fills at your feet and at the opening.
+- The red ring is staging: drop a carried victim, recharge. Two engines and a utility sit just south of it.
 - Below 20% battery the robot limps. Empty still crawls so you can reach the ring. Heat cannot kill you.
-- North lip is 60% speed. West landscaping is 70%.
-- Within 8 m of a vented facade, battery drain is 2.5× and thermal breaks into noise. You do not die.
+- North lip is 60% speed. West landscaping is 70%. Within 8 m of a vented facade, drain is 2.5× and thermal breaks into noise.
 
-The run ends when every cell has vented. The debrief lists each victim in encounter order: what you saw, what you did, what was true. No grade. Credits lists OSM and the Wikimedia elevation photograph.
+The run ends when every cell has vented. Debrief lists each victim in encounter order: what you saw, what you did, what was true. No grade. Credits lists OSM and the Wikimedia elevation photograph.
 
-`?seed=42` pins ignition and victim placement. Windows telegraph with smoke about three seconds before they vent. Audio (rumble / vent) starts after the first click; mute from the dock.
+Windows telegraph with smoke about three seconds before they vent. Audio (rumble / vent) starts after the first click; mute from the dock.
 
-`?play=1` still hosts the older dual-POV briefing.
+`?play=1` still hosts the older dual-POV briefing (photoreal WORLD tiles + OSM ROBOT). That path needs a Google Maps key. The perimeter run does not.
 
-## Run it
+## Run it locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Opens on port `43147`.
+Opens on port `43147`. `predev` / `prebuild` download the Wikimedia elevation photograph and generate brick and limestone maps if they are missing.
+
+```bash
+npm run test:site    # footprint, massing, drive, environment, run
+npm run build        # tsc + vite, same as production
+```
 
 ```bash
 node tools/extract-footprint.mjs                    # live Overpass
 node tools/extract-footprint.mjs overpass-raw.json  # replay the committed dump
-npm run test:site
 ```
 
 `overpass-raw.json` is committed so the footprint stays reproducible if OSM or the mirrors change.
 
-## Spec stages
+## What shipped
 
-0. Footprint — real OSM outline, courtyard hole, fire grid
-1. Movement — kinematic robot, chase camera, OSM hull
-2. Victims and rescue — scan / extract / carry / mark / deliver
-3. Fire — 4 Hz spread, venting, extractions close, window glow
-4. Information — thermal, hidden attributes, signature inversion
+Spec stages 0–6 in `docs/doheny-rescue-sim-spec.md`:
+
+0. Real OSM footprint, courtyard hole, fire grid
+1. Kinematic robot, locked chase camera, OSM hull
+2. Scan / extract / carry / mark / walk-out
+3. 4 Hz fire, venting, extractions close, window glow
+4. Thermal, hidden attributes, signature inversion
 5. Debrief — encounter list and counterfactuals
-6. Battery, pre-vent smoke, audio, `?seed=`, staging engines, limp, hold rings, walk-out, ground follow, credits, Trousdale, light poles, photo facade
+6. Battery limp, pre-vent smoke, audio, `?seed=`, staging engines, hold rings, ground follow, Trousdale, light poles, photo facade, credits
 
-Spec: `docs/doheny-rescue-sim-spec.md`.
+The chassis snaps to the lawn, paths, north loading lip, south steps, and light wells, and climbs rises up to 0.4 m.
 
 ## Data
 
-© OpenStreetMap contributors (ODbL). The license string is stored on `site-data.json`. Facade maps are derived from “Doheny Library” by Padsquad19, Wikimedia Commons, CC BY-SA 3.0.
+© OpenStreetMap contributors (ODbL). The license string lives on `src/data/site-data.json` and on the Credits screen. Facade maps are derived from “Doheny Library” by Padsquad19, Wikimedia Commons, CC BY-SA 3.0. USC Digital Library photographs were modelling reference only — they are not textures.
 
-A Google Maps key is only needed for the legacy `?play=1` photoreal WORLD view. Put it in `.env.local` (gitignored):
+A Google Maps key is only needed for `?play=1`. Put it in `.env.local` (gitignored):
 
 ```
 VITE_GOOGLE_MAPS_KEY=AIza...
@@ -67,4 +73,4 @@ Without a key, the perimeter run still works.
 
 ## Stack
 
-Vite, React, TypeScript, Three.js, React Three Fiber, Drei, zustand.
+Vite, React, TypeScript, Three.js, React Three Fiber, Drei, zustand. Hosted on Vercel as project `usc-search-rescue`.
