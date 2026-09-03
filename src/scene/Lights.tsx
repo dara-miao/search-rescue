@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Stars } from '@react-three/drei'
 import { BackSide, CanvasTexture, SRGBColorSpace } from 'three'
 import { C } from './colors'
 
@@ -110,7 +109,6 @@ export function Lights({
       <hemisphereLight args={['#134050', '#020406', 0.5]} />
       <directionalLight position={[-80, 70, 40]} intensity={0.3} color="#88ccee" />
       <directionalLight position={[40, 18, -20]} intensity={0.05} color="#ff8a4a" />
-      <Stars radius={280} depth={60} count={160} factor={4} fade speed={0.35} />
     </>
   )
 }

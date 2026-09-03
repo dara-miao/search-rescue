@@ -1,16 +1,16 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Color, InstancedMesh, Object3D, type PointLight } from 'three'
+import { InstancedMesh, Object3D, type PointLight } from 'three'
 import { heightAt } from '../game/ground'
 import { useGame } from '../game/store'
 import type { HotCell } from '../sim/types'
 
 const dummy = new Object3D()
-const flameColor = new Color()
-const MAX = 48
+const MAX = 16
 
-function FlameField({ thermal }: { thermal: boolean }) {
+function FlameField() {
   const mesh = useRef<InstancedMesh>(null)
+  const skip = useRef(0)
   const seeds = useMemo(
     () =>
       Array.from({ length: MAX }, () => ({
@@ -24,6 +24,8 @@ function FlameField({ thermal }: { thermal: boolean }) {
   )
 
   useFrame(({ clock }) => {
+    skip.current += 1
+    if (skip.current % 2) return
     const m = mesh.current
     if (!m) return
     const hot = useGame.getState().sim.field.hot
@@ -46,29 +48,22 @@ function FlameField({ thermal }: { thermal: boolean }) {
       dummy.rotation.y = p.t
       dummy.updateMatrix()
       m.setMatrixAt(i, dummy.matrix)
-      flameColor.setHSL(thermal ? 0.08 : 0.065 - life * 0.04, 1, thermal ? 0.55 : 0.5 - life * 0.18)
-      m.setColorAt(i, flameColor)
     }
     m.instanceMatrix.needsUpdate = true
-    if (m.instanceColor) m.instanceColor.needsUpdate = true
     m.count = Math.min(MAX, Math.max(1, hot.length))
   })
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, MAX]}>
+    <instancedMesh ref={mesh} args={[undefined, undefined, MAX]} frustumCulled={false}>
       <coneGeometry args={[0.5, 1.2, 5]} />
-      <meshStandardMaterial
-        color={thermal ? '#ff6a00' : '#ff4d00'}
-        emissive={thermal ? '#ff8a00' : '#ff2a00'}
-        emissiveIntensity={thermal ? 4 : 2.8}
-        toneMapped={false}
-      />
+      <meshBasicMaterial color="#ff4d00" toneMapped={false} />
     </instancedMesh>
   )
 }
 
-function Smoke({ thermal }: { thermal: boolean }) {
+function Smoke() {
   const mesh = useRef<InstancedMesh>(null)
+  const skip = useRef(0)
   const seeds = useMemo(
     () =>
       Array.from({ length: MAX }, () => ({
@@ -80,6 +75,8 @@ function Smoke({ thermal }: { thermal: boolean }) {
   )
 
   useFrame(({ clock }) => {
+    skip.current += 1
+    if (skip.current % 2 === 0) return
     const m = mesh.current
     if (!m) return
     const hot = useGame.getState().sim.field.hot
@@ -109,19 +106,14 @@ function Smoke({ thermal }: { thermal: boolean }) {
   })
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, MAX]}>
+    <instancedMesh ref={mesh} args={[undefined, undefined, MAX]} frustumCulled={false}>
       <sphereGeometry args={[0.8, 6, 6]} />
-      <meshStandardMaterial
-        color={thermal ? '#1a1010' : '#2a2422'}
-        transparent
-        opacity={thermal ? 0.12 : 0.26}
-        depthWrite={false}
-      />
+      <meshBasicMaterial color="#2a2422" transparent opacity={0.22} depthWrite={false} />
     </instancedMesh>
   )
 }
 
-function PeakLight({ thermal }: { thermal: boolean }) {
+function PeakLight() {
   const light = useRef<PointLight>(null)
   useFrame(() => {
     const peak = useGame.getState().sim.field.hot[0]
@@ -132,18 +124,18 @@ function PeakLight({ thermal }: { thermal: boolean }) {
       return
     }
     l.position.set(peak.x, heightAt(peak.x, peak.z) + 8, peak.z)
-    l.intensity = (thermal ? 8 : 70) * peak.heat
-    l.distance = 50 + 40 * peak.heat
+    l.intensity = 48 * peak.heat
+    l.distance = 40 + 28 * peak.heat
   })
-  return <pointLight ref={light} color={thermal ? '#ff6600' : '#ff6a1a'} distance={70} />
+  return <pointLight ref={light} color="#ff6a1a" distance={56} />
 }
 
-export function Fire({ thermal }: { thermal: boolean }) {
+export function Fire({ thermal: _thermal }: { thermal: boolean }) {
   return (
     <group>
-      <FlameField thermal={thermal} />
-      <Smoke thermal={thermal} />
-      <PeakLight thermal={thermal} />
+      <FlameField />
+      <Smoke />
+      <PeakLight />
     </group>
   )
 }

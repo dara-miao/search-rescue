@@ -31,9 +31,8 @@ function Person({
   const lost = status === 'lost'
 
   useFrame(({ clock }) => {
-    if (!g.current) return
-    const pulse = 0.85 + Math.sin(clock.elapsedTime * 3 + x) * 0.15
-    g.current.scale.setScalar(found || lost ? 1 : pulse)
+    if (!g.current || found || lost) return
+    g.current.scale.setScalar(0.9 + Math.sin(clock.elapsedTime * 2.4 + x) * 0.1)
   })
 
   const heat = found ? '#2ee59a' : lost ? '#6a6a6a' : thermal ? C.thermalHot : '#ffb078'
@@ -98,13 +97,13 @@ export function People({ thermal, world = false }: { thermal: boolean; world?: b
   const nearestId = useGame((s) => s.nearestId)
   const nearestDist = useGame((s) => s.nearestDist)
   const elapsed = useGame((s) => s.elapsed)
-  const robot = useGame((s) => s.robot)
 
   if (world) return null
 
   const visible = survivors.filter((p) => p.status !== 'unseen')
   const lock = survivors.find((p) => p.id === nearestId)
   const showRing = Boolean(lock && recentlyDetected(lock, elapsed) && nearestDist <= CAMPUS.markRange * 2.5)
+  const ringAt = showRing && lock ? lock : null
 
   return (
     <group>
@@ -120,19 +119,10 @@ export function People({ thermal, world = false }: { thermal: boolean; world?: b
           thermal={thermal && p.status !== 'lost'}
         />
       ))}
-      {showRing && (
-        <mesh
-          position={[robot.x, heightAt(robot.x, robot.z) + 0.08, robot.z]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <ringGeometry args={[CAMPUS.markRange - 0.08, CAMPUS.markRange, 40]} />
-          <meshStandardMaterial
-            color="#ffcc00"
-            emissive="#ffcc00"
-            emissiveIntensity={0.8}
-            transparent
-            opacity={0.35}
-          />
+      {ringAt && (
+        <mesh position={[ringAt.x, heightAt(ringAt.x, ringAt.z) + 0.08, ringAt.z]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[CAMPUS.markRange - 0.08, CAMPUS.markRange, 24]} />
+          <meshBasicMaterial color="#ffcc00" transparent opacity={0.32} />
         </mesh>
       )}
     </group>
