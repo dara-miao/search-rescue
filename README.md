@@ -4,17 +4,18 @@ Night perimeter search-and-rescue around the real Doheny Memorial Library at USC
 
 **Play it:** [usc-search-rescue.vercel.app](https://usc-search-rescue.vercel.app) — add `?seed=42` to pin ignition and victim placement.
 
-You spawn on the Alumni Park lawn, about 30 m south of the entrance. A briefing holds the clock. Windows glow as rooms vent. The gold compass pip is the building. The cyan pip is the nearest live opening.
+You spawn on the Alumni Park lawn, about 30 m south of the entrance. A briefing holds the clock. Roll out, then follow the cyan pip and the lawn beacons to a live opening. People wait at the glass. Windows glow as rooms vent. The gold compass pip is the building.
 
 ## Play
 
-- **W / S** or knob up/down — throttle. Speed ramps to 6 m/s.
-- **A / D** or knob left/right — steer. A held stick at rest pivots slowly (about 11 s per revolution). At speed it holds a 3.6 m arc. Scroll zooms 8–25 m. The chase camera stays behind the robot.
-- **T** (or Thermal) — hold for thermal. Signatures show through the walls. Count, condition, and type stay hidden until you scan.
-- **Space / F** (or Hold) — scan (6 s within 6 m), extract at a live cyan opening, or mark an unreachable victim (2 s). Moving interrupts a hold. A ring fills at your feet and at the opening.
-- Cyan shafts mark live extractions. They vanish when that room vents. The ground semicircle is the 4 m rescue radius.
+- The top banner is the current objective: drive to a cyan opening, stop, scan, extract, or carry back to the red ring.
+- **W / S** or knob up/down: throttle. Speed ramps to 6 m/s.
+- **A / D** or knob left/right: steer. A held stick at rest pivots slowly (about 11 s per revolution). At speed it holds a 3.6 m arc. Scroll zooms 8–25 m. The chase camera stays behind the robot.
+- **T** or Thermal toggles thermal. Signatures show through the walls. Count, condition, and type stay hidden until you scan.
+- **Space** or Scan: hold still for 6 s within 7 m of an opening to scan. **F** or Extract: hold at the 4 m rescue radius. Unreachable people mark in 2 s. Moving cancels a hold.
+- Cyan shafts and pulsing lawn rings mark openings that still have someone waiting. They vanish when that room vents.
 - After a scan the HUD shows condition, type, and count. It never shows the clock.
-- The red ring is staging: drop a carried victim, recharge. Two engines and a utility sit just south of it.
+- The red ring is staging: drop a carried victim, recharge. Two engines and a utility sit just south of it. Restart replays the same seed.
 - Below 20% battery the robot limps. Empty still crawls so you can reach the ring. Heat cannot kill you.
 - North lip is 60% speed. West landscaping is 70%. Within 8 m of a vented facade, drain is 2.5× and thermal breaks into noise.
 
@@ -43,7 +44,7 @@ node tools/extract-footprint.mjs                    # live Overpass
 node tools/extract-footprint.mjs overpass-raw.json  # replay the committed dump
 ```
 
-`overpass-raw.json` is committed so the footprint stays reproducible if OSM or the mirrors change.
+overpass-raw.json is committed so the footprint stays reproducible if OSM or the mirrors change.
 
 ## What shipped
 
