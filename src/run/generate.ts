@@ -215,5 +215,6 @@ export function createRun(seed = (Math.random() * 1e9) | 0): RunState {
     fireIntensity: 0,
     inHeat: false,
     lastReveal: null,
+    evacuees: [],
   }
 }

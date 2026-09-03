@@ -1,4 +1,5 @@
 import { stagingPose } from '../drive/spawn'
+import { spawnWalkout } from './evacuees'
 import { MARKER_CONFIG } from '../scene/extraction-markers.js'
 import { allVented, fireIntensityOf, stepFire } from './fire'
 import { dist, nearVentedFacade } from './layout'
@@ -162,6 +163,7 @@ function finishHold(state: RunState, victim: Victim, kind: HoldState['kind']) {
     } else {
       victim.state = 'RESCUED'
       victim.action = 'rescued'
+      spawnWalkout(state, victim, ext)
     }
     writeReveal(state, victim, 'rescue')
   }
