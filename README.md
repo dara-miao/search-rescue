@@ -18,7 +18,7 @@ You spawn on the Alumni Park lawn, ~30 m south of the entrance, at night. A shor
 - North lip is 60% speed. West landscaping is 70%.
 - Within 8 m of a vented facade, battery drain is 2.5× and thermal breaks into noise. You do not die.
 
-The run ends when every cell has vented. The debrief lists each victim in encounter order: what you saw, what you did, what was true. No grade.
+The run ends when every cell has vented. The debrief lists each victim in encounter order: what you saw, what you did, what was true. No grade. Credits lists OSM and the Wikimedia elevation photograph.
 
 `?seed=42` pins ignition and victim placement. Windows telegraph with smoke about three seconds before they vent. Audio (rumble / vent) starts after the first click; mute from the dock.
 
@@ -49,13 +49,13 @@ npm run test:site
 3. Fire — 4 Hz spread, venting, extractions close, window glow
 4. Information — thermal, hidden attributes, signature inversion
 5. Debrief — encounter list and counterfactuals
-6. Battery, pre-vent smoke, audio, `?seed=`, staging engines, limp, hold rings
+6. Battery, pre-vent smoke, audio, `?seed=`, staging engines, limp, hold rings, walk-out, ground follow, credits, Trousdale, light poles, photo facade
 
 Spec: `docs/doheny-rescue-sim-spec.md`.
 
 ## Data
 
-© OpenStreetMap contributors (ODbL). The license string is stored on `site-data.json`.
+© OpenStreetMap contributors (ODbL). The license string is stored on `site-data.json`. Facade maps are derived from “Doheny Library” by Padsquad19, Wikimedia Commons, CC BY-SA 3.0.
 
 A Google Maps key is only needed for the legacy `?play=1` photoreal WORLD view. Put it in `.env.local` (gitignored):
 
