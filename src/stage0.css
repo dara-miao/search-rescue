@@ -61,14 +61,38 @@
   margin: 0;
 }
 
+.briefing-steps {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.briefing-steps li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #efe6d6;
+}
+
+.briefing-steps span {
+  font: 500 12px/1.4 'IBM Plex Mono', ui-monospace, monospace;
+  color: #c9a227;
+}
+
 .compass {
   position: absolute;
-  top: 14px;
-  left: 50%;
+  top: 16px;
+  right: 16px;
+  left: auto;
   z-index: 5;
   width: 88px;
   height: 88px;
-  transform: translateX(-50%);
+  transform: none;
   pointer-events: none;
 }
 
@@ -160,11 +184,32 @@
   font-style: normal;
 }
 
-.heat-noise {
+.heat-noise,
+.thermal-cast {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 3;
   pointer-events: none;
+}
+
+.thermal-cast {
+  box-shadow: inset 0 0 90px rgba(90, 208, 232, 0.2);
+}
+
+.thermal-cast.hot {
+  box-shadow: inset 0 0 110px rgba(255, 90, 30, 0.22);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 90, 30, 0.07) 0 1px,
+      transparent 1px 4px
+    );
+  mix-blend-mode: screen;
+  animation: heat-roll 0.14s steps(2) infinite;
+}
+
+.heat-noise {
+  z-index: 4;
   background:
     repeating-linear-gradient(
       0deg,
@@ -337,6 +382,21 @@
   color: #c9a227;
 }
 
+.run-actions button.ready {
+  border-color: #5ad0e8;
+  color: #5ad0e8;
+  box-shadow: 0 0 0 1px rgba(90, 208, 232, 0.28);
+}
+
+.run-actions button.dim {
+  opacity: 0.42;
+}
+
+.run-actions button.ready.dim,
+.run-actions button.on.dim {
+  opacity: 1;
+}
+
 .debrief {
   position: absolute;
   inset: 0;
@@ -446,6 +506,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.debrief-go.ghost {
+  border-color: rgba(239, 230, 214, 0.22);
+  color: #cfc4b4;
 }
 
 .objective {
@@ -569,6 +634,7 @@
 
   .compass {
     top: 8px;
+    right: 8px;
     width: 72px;
     height: 72px;
   }
@@ -583,9 +649,9 @@
 
   .objective {
     top: 10px;
-    width: calc(100% - 100px);
-    left: auto;
-    right: 10px;
+    left: 10px;
+    right: 88px;
+    width: auto;
     transform: none;
     padding: 8px 10px 10px;
   }
