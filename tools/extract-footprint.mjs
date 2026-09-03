@@ -353,6 +353,12 @@ if (southCells.length && northCells.length && southMeanZ < northMeanZ) {
 }
 
 const site = {
+  source: {
+    osm: picked.osmId,
+    name: picked.name || 'Doheny Memorial Library',
+    license: '© OpenStreetMap contributors (ODbL)',
+    retrieved: new Date().toISOString().slice(0, 10),
+  },
   origin: ORIGIN,
   projection: '+X east, +Z south, metres, equirectangular about origin',
   license: '© OpenStreetMap contributors (ODbL)',
@@ -370,6 +376,7 @@ const site = {
       width: bounds.width,
       depth: bounds.depth,
       angleRad: bounds.angleRad,
+      angleDeg: (bounds.angleRad * 180) / Math.PI,
       angleNormalizedDeg: bounds.angleNormalizedDeg,
       centre: bounds.centre,
     },
