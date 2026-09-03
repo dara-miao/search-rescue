@@ -8,6 +8,8 @@ import type { Victim } from '../run/types'
 import { HeatZones } from './HeatZones'
 import { HoldProgress } from './HoldProgress'
 import { WalkOut } from './WalkOut'
+import { OpeningBeacons } from './OpeningBeacons'
+import { WindowPeople } from './WindowPeople'
 
 const SIG = {
   STRONG: { color: '#ffd27a', r: 2.15 },
@@ -94,6 +96,8 @@ export function RunLayer() {
       <HeatZones />
       <HoldProgress />
       <WalkOut />
+      <OpeningBeacons />
+      <WindowPeople />
       <Carried />
       <mesh position={[staging.x, 0.04, staging.z]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[5.2, 6.4, 40]} />

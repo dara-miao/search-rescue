@@ -44,6 +44,7 @@ export function useRunLoop() {
 
     let last = performance.now()
     let raf = 0
+    let tLatch = false
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick)
       const dt = Math.min(0.05, (now - last) / 1000)
@@ -51,7 +52,15 @@ export function useRunLoop() {
       try {
         const run = useRun.getState()
         const drive = useDrive.getState()
-        const thermal = keys.has('KeyT') || run.hudThermal
+        if (keys.has('KeyT')) {
+          if (!tLatch && run.phase === 'playing') {
+            tLatch = true
+            run.toggleThermal()
+          }
+        } else {
+          tLatch = false
+        }
+        const thermal = useRun.getState().hudThermal
         const hold = keys.has('Space') || keys.has('KeyF') || run.hudHold || run.hudRescue
         const forceRescue = keys.has('KeyF') || run.hudRescue
 
@@ -75,8 +84,8 @@ export function useRunLoop() {
             dt,
           )
         }
-      } catch {
-        // Keep the loop alive — a single bad frame must not freeze drive.
+      } catch (err) {
+        console.error(err)
       }
     }
     raf = requestAnimationFrame(tick)

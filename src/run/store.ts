@@ -12,6 +12,8 @@ type RunStore = RunState & {
   begin: () => void
   showCredits: () => void
   hideCredits: () => void
+  toggleThermal: () => void
+  replay: () => void
   tick: (input: RunInput, dt: number) => void
   setHud: (patch: { thermal?: boolean; hold?: boolean; rescue?: boolean }) => void
 }
@@ -48,6 +50,20 @@ export const useRun = create<RunStore>((set, get) => ({
   hideCredits: () => {
     if (get().phase !== 'credits') return
     set({ phase: 'debrief' })
+  },
+  toggleThermal: () => set({ hudThermal: !get().hudThermal }),
+  replay: () => {
+    const seed = get().seed
+    hudWait = 0
+    resetRunAudio()
+    set({
+      ...gated(seed),
+      phase: 'playing',
+      t: 0,
+      hudThermal: false,
+      hudHold: false,
+      hudRescue: false,
+    })
   },
   setHud: (patch) =>
     set({
