@@ -1,13 +1,11 @@
 import { stagingPose } from '../drive/spawn'
 import { spawnWalkout } from './evacuees'
-import { MARKER_CONFIG } from '../scene/extraction-markers.js'
 import { allVented, fireIntensityOf, stepFire } from './fire'
+import { actDist, RESCUE_RANGE, SCAN_RANGE } from './intent'
 import { dist, nearVentedFacade } from './layout'
 import type { Extraction, HoldState, RunInput, RunState, Victim } from './types'
 
-const SCAN_RANGE = 6
 const SCAN_S = 6
-const RESCUE_RANGE = MARKER_CONFIG.rescueRadius
 const MARK_S = 2
 const MOVE_BREAK = 0.25
 const STAGING_R = 7
@@ -92,10 +90,10 @@ function pickTarget(
 
   for (const victim of state.victims) {
     if (victim.state !== 'WAITING') continue
-    const dScan = dist(input.x, input.z, victim.x, victim.z)
-    if (victim.type === 'UNREACHABLE' && dScan <= SCAN_RANGE && dScan < bestMarkD) {
+    const dAct = actDist(state, victim, input.x, input.z)
+    if (victim.type === 'UNREACHABLE' && dAct <= SCAN_RANGE && dAct < bestMarkD) {
       bestMark = victim
-      bestMarkD = dScan
+      bestMarkD = dAct
     }
     const ext = extractionOf(state, victim)
     if (ext && extractionOpen(state, ext) && victim.type !== 'UNREACHABLE') {
@@ -106,9 +104,9 @@ function pickTarget(
         bestRescueD = d
       }
     }
-    if (dScan <= SCAN_RANGE && !victim.scanned && dScan < bestScanD) {
+    if (dAct <= SCAN_RANGE && !victim.scanned && dAct < bestScanD) {
       bestScan = victim
-      bestScanD = dScan
+      bestScanD = dAct
     }
   }
 
