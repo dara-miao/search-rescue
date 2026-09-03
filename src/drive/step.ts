@@ -1,5 +1,6 @@
 import { site } from '../data/site'
 import { MASSING_CONFIG } from '../scene/doheny-massing.js'
+import { chassisAttitude, followGround } from '../scene/site-ground.js'
 import { apparatusBlockers } from '../scene/staging-apparatus.js'
 import { CHASE_CONFIG, forwardVector, stepDrive as stepKinematics } from './robot-chase.js'
 import { buildBlockers, resolveCollision } from './robot-controller.js'
@@ -25,6 +26,8 @@ export type DriveBody = {
   z: number
   y: number
   yaw: number
+  pitch: number
+  roll: number
   speed: number
   yawRate: number
   moving: boolean
@@ -68,16 +71,28 @@ export function stepDrive(
   const kin = { position: { x: body.x, z: body.z }, yaw: body.yaw, speed: body.speed }
   let yawRate = 0
   let hit = false
+  let y = body.y
 
   for (let i = 0; i < steps; i++) {
+    const prevX = kin.position.x
+    const prevZ = kin.position.z
     const out = stepKinematics(kin, stick, stepDt, cfg)
     const resolved = resolveCollision({ x: out.nextX, z: out.nextZ }, CHASE_CONFIG.radius, BLOCKERS)
-    kin.position.x = resolved.x
-    kin.position.z = resolved.z
-    yawRate = out.yawRate
-    if (resolved.hit) {
+    const ground = followGround(y, resolved.x, resolved.z, site)
+    if (ground.blocked) {
+      kin.position.x = prevX
+      kin.position.z = prevZ
       hit = true
       kin.speed *= 0.55
+    } else {
+      kin.position.x = resolved.x
+      kin.position.z = resolved.z
+      y = ground.y
+      yawRate = out.yawRate
+      if (resolved.hit) {
+        hit = true
+        kin.speed *= 0.55
+      }
     }
   }
 
@@ -87,7 +102,11 @@ export function stepDrive(
   body.speed = kin.speed
   body.yawRate = yawRate
   if (hit) body.speed *= 0.85
-  body.y = 0
+  body.y = y
+  const lean = chassisAttitude(body.x, body.z, body.yaw, site)
+  const k = 1 - Math.exp(-8 * Math.max(dt, 0))
+  body.pitch += (lean.pitch - body.pitch) * k
+  body.roll += (lean.roll - body.roll) * k
   body.moving = Math.abs(body.speed) > 0.14
   return body
 }

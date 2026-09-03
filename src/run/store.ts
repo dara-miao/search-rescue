@@ -10,6 +10,8 @@ type RunStore = RunState & {
   hudRescue: boolean
   start: (seed?: number) => void
   begin: () => void
+  showCredits: () => void
+  hideCredits: () => void
   tick: (input: RunInput, dt: number) => void
   setHud: (patch: { thermal?: boolean; hold?: boolean; rescue?: boolean }) => void
 }
@@ -39,6 +41,14 @@ export const useRun = create<RunStore>((set, get) => ({
     if (get().phase !== 'briefing') return
     set({ phase: 'playing', t: 0 })
   },
+  showCredits: () => {
+    if (get().phase !== 'debrief') return
+    set({ phase: 'credits' })
+  },
+  hideCredits: () => {
+    if (get().phase !== 'credits') return
+    set({ phase: 'debrief' })
+  },
   setHud: (patch) =>
     set({
       hudThermal: patch.thermal ?? get().hudThermal,
@@ -53,6 +63,7 @@ export const useRun = create<RunStore>((set, get) => ({
     const carried = prev.carriedId
     const wasHeat = prev.inHeat
     const revealAt = prev.lastReveal?.at
+    const evacBefore = prev.evacuees.length
     stepRun(prev, input, dt)
     hudWait += dt
     const flush =
@@ -63,7 +74,9 @@ export const useRun = create<RunStore>((set, get) => ({
       prev.carriedId !== carried ||
       prev.vents.length !== ventsBefore ||
       prev.inHeat !== wasHeat ||
-      prev.lastReveal?.at !== revealAt
+      prev.lastReveal?.at !== revealAt ||
+      prev.evacuees.length !== evacBefore ||
+      (prev.evacuees.length > 0 && hudWait >= 0.03)
     if (!flush) return
     hudWait = 0
     set({
@@ -80,6 +93,7 @@ export const useRun = create<RunStore>((set, get) => ({
       cells: prev.cells,
       encounters: prev.encounters,
       lastReveal: prev.lastReveal,
+      evacuees: prev.evacuees,
     })
   },
 }))

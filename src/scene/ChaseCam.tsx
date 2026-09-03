@@ -25,14 +25,14 @@ export function ChaseCam() {
   }, [el])
 
   useFrame((_, dt) => {
-    const { x, z, yaw, speed, yawRate, zoom } = useDrive.getState()
+    const { x, y, z, yaw, speed, yawRate, zoom } = useDrive.getState()
     const cfg = {
       ...CHASE_CONFIG,
       camera: { ...CHASE_CONFIG.camera, distance: zoom },
     }
     stepChaseCamera(
       chase.current,
-      { position: { x, z }, yaw, speed, yawRate },
+      { position: { x, y, z }, yaw, speed, yawRate },
       cam,
       dt,
       cfg,

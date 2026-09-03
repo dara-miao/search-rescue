@@ -59,7 +59,19 @@ export type Victim = {
 
 export type Encounter = { id: string; at: number }
 
-export type RunPhase = 'briefing' | 'playing' | 'debrief'
+export type RunPhase = 'briefing' | 'playing' | 'debrief' | 'credits'
+
+export type Evacuee = {
+  id: string
+  victimId: string
+  startX: number
+  startZ: number
+  destX: number
+  destZ: number
+  born: number
+  duration: number
+  lane: number
+}
 
 export type FireEvent = {
   t: number
@@ -107,6 +119,7 @@ export type RunState = {
   fireIntensity: number
   inHeat: boolean
   lastReveal: Reveal | null
+  evacuees: Evacuee[]
 }
 
 export type RunInput = {
