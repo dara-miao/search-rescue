@@ -1,4 +1,4 @@
-import { site } from '../data/site'
+import { attribution, buildingName, osmId, site } from '../data/site'
 
 export function Stage0Chrome() {
   const levelsNote =
@@ -8,12 +8,12 @@ export function Stage0Chrome() {
 
   return (
     <aside className="stage0">
-      <p className="stage0-kicker">Stage 0 · footprint</p>
-      <h1>{site.building.name}</h1>
+      <p className="stage0-kicker">Stage 0 · massing</p>
+      <h1>{buildingName()}</h1>
       <dl>
         <div>
           <dt>OSM</dt>
-          <dd>{site.building.osmId}</dd>
+          <dd>{osmId()}</dd>
         </div>
         <div>
           <dt>Area</dt>
@@ -25,7 +25,9 @@ export function Stage0Chrome() {
         </div>
         <div>
           <dt>Floors</dt>
-          <dd>{site.building.levels} · {levelsNote}</dd>
+          <dd>
+            {site.building.levels} · {levelsNote}
+          </dd>
         </div>
         <div>
           <dt>Rotation</dt>
@@ -34,17 +36,17 @@ export function Stage0Chrome() {
         <div>
           <dt>Fire grid</dt>
           <dd>
-            {site.fireGrid.cells.length} cells kept · {site.fireGrid.discardedOutsideFootprint}{' '}
-            discarded outside the wing
+            {site.fireGrid.cells.length} cells kept · {site.fireGrid.discardedOutsideFootprint} discarded
+            outside the wing
           </dd>
         </div>
       </dl>
       <p className="stage0-note">
-        South facade cells sit on the Alumni Park side (+Z). Roof tiles: orange = south, blue = north,
-        dark = core.
+        Visual is the procedural massing (hip roof, cornice, south pavilion). The pale line on the
+        lawn is the real OSM footprint, collision later. Entrance faces Alumni Park.
       </p>
       <p className="stage0-hint">Drag to orbit · scroll to zoom</p>
-      <p className="stage0-license">{site.license}</p>
+      <p className="stage0-license">{attribution()}</p>
     </aside>
   )
 }
