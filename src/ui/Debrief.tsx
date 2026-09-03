@@ -66,6 +66,9 @@ export function Debrief() {
           <button type="button" className="debrief-go" onClick={again}>
             New run
           </button>
+          <button type="button" className="debrief-go" onClick={() => useRun.getState().showCredits()}>
+            Credits
+          </button>
         </div>
       </div>
     </div>

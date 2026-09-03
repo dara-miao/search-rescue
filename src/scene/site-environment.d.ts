@@ -25,6 +25,7 @@ export type EnvironmentHandle = {
   moon: Light
   staging: { x: number; z: number }
   treeCount: number
+  poleCount: number
   update: (
     dt: number,
     state?: {
