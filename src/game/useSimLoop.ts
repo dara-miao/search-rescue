@@ -69,6 +69,7 @@ export function useSimLoop(active: boolean) {
           const wish = stickWish('drive', pad.stickX, pad.stickY)
           input.turn((Math.abs(wish.turn) > 0.02 ? wish.turn : pad.stickX) * dt * TURN_RATE)
           input.nod(wish.nod * dt * NOD_RATE)
+          // Any lean walks. Back-stick reverses; sideways still creeps forward.
           if (pad.stickY < -0.2) forward = Math.min(wish.forward, -stickMag)
           else forward = Math.max(0.55, wish.forward, stickMag)
         }
