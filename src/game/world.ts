@@ -83,6 +83,10 @@ const PREP: Prepared[] = BUILDINGS.map((building) => {
 
 export const DOHENY_DOOR = PREP.find((p) => p.building.enterable)?.door
 
+export function doorOf(building: CampusBuilding) {
+  return PREP.find((p) => p.building.id === building.id)?.door
+}
+
 function pointInRing(x: number, z: number, ring: Ring) {
   let inside = false
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -127,7 +131,7 @@ function isDoorEdge(
     (Math.abs(ax - door.ax) < 0.05 && Math.abs(az - door.az) < 0.05 && Math.abs(bx - door.bx) < 0.05 && Math.abs(bz - door.bz) < 0.05) ||
     (Math.abs(ax - door.bx) < 0.05 && Math.abs(az - door.bz) < 0.05 && Math.abs(bx - door.ax) < 0.05 && Math.abs(bz - door.az) < 0.05)
   if (!same) return false
-  return t > 0.32 && t < 0.68
+  return t > 0.04 && t < 0.96
 }
 
 function pushFromRing(
