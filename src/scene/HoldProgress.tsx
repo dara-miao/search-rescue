@@ -1,9 +1,11 @@
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Group, Mesh, MeshBasicMaterial } from 'three'
+import { site } from '../data/site'
 import { useDrive } from '../drive/store'
 import { HOLD_COLOR, holdAnchor, holdFrac } from '../run/hold'
 import { useRun } from '../run/store'
+import { heightAt } from './site-ground.js'
 
 function ringColor(kind: keyof typeof HOLD_COLOR) {
   return HOLD_COLOR[kind]
@@ -43,12 +45,12 @@ export function HoldProgress() {
     paint(col, color)
     paint(ftFill, color)
 
-    tg.position.set(anchor.x, 0.05, anchor.z)
+    tg.position.set(anchor.x, heightAt(anchor.x, anchor.z, site) + 0.05, anchor.z)
     ff.scale.setScalar(0.18 + frac * 0.82)
     col.position.y = 0.12 + frac * 1.35
     col.scale.set(1, 0.2 + frac * 2.4, 1)
 
-    ft.position.set(drive.x, 0.06, drive.z)
+    ft.position.set(drive.x, drive.y + 0.06, drive.z)
     ftFill.scale.setScalar(0.22 + frac * 0.78)
   })
 

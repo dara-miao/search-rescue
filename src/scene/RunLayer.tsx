@@ -7,6 +7,7 @@ import { useRun } from '../run/store'
 import type { Victim } from '../run/types'
 import { HeatZones } from './HeatZones'
 import { HoldProgress } from './HoldProgress'
+import { WalkOut } from './WalkOut'
 
 const SIG = {
   STRONG: { color: '#ffd27a', r: 2.15 },
@@ -71,7 +72,7 @@ function Carried() {
     const face = drive.yaw
     const backX = Math.sin(face) * 0.42
     const backZ = Math.cos(face) * 0.42
-    m.position.set(drive.x + backX, 0.62, drive.z + backZ)
+    m.position.set(drive.x + backX, drive.y + 0.62, drive.z + backZ)
   })
   return (
     <mesh ref={group} visible={false} renderOrder={18}>
@@ -92,6 +93,7 @@ export function RunLayer() {
     <group>
       <HeatZones />
       <HoldProgress />
+      <WalkOut />
       <Carried />
       <mesh position={[staging.x, 0.04, staging.z]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[5.2, 6.4, 40]} />
