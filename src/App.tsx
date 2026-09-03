@@ -1,7 +1,15 @@
+import { useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
+import { useDrive } from './drive/store'
+import { parseSeed } from './run/seed'
+import { useRunAudio } from './run/useRunAudio'
+import { useRunLoop } from './run/useRunLoop'
+import { useRun } from './run/store'
 import { FootprintView } from './scene/FootprintView'
-import { Stage0Chrome } from './ui/Stage0Chrome'
+import { Briefing } from './ui/Briefing'
+import { Debrief } from './ui/Debrief'
+import { RunHud } from './ui/RunHud'
 import PlayApp from './PlayApp'
 
 function legacyPlay() {
@@ -10,12 +18,21 @@ function legacyPlay() {
 }
 
 function Stage0App() {
+  useRunLoop()
+  useRunAudio()
+  useEffect(() => {
+    const seed = parseSeed(window.location.search)
+    if (seed == null) return
+    useRun.getState().start(seed)
+    useDrive.getState().reset()
+  }, [])
+  const phase = useRun((s) => s.phase)
   return (
     <div className="app stage0-app">
       <Canvas
         style={{ position: 'absolute', inset: 0 }}
         dpr={[1, 1.5]}
-        shadows
+        shadows={false}
         gl={{
           antialias: true,
           stencil: false,
@@ -25,7 +42,7 @@ function Stage0App() {
       >
         <FootprintView />
       </Canvas>
-      <Stage0Chrome />
+      {phase === 'debrief' ? <Debrief /> : phase === 'briefing' ? <Briefing /> : <RunHud />}
     </div>
   )
 }
