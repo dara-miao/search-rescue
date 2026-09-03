@@ -28,6 +28,8 @@ export const useDrive = create<DriveStore>((set, get) => ({
         z: s.z,
         y: s.y,
         yaw: s.yaw,
+        pitch: s.pitch,
+        roll: s.roll,
         speed: s.speed,
         yawRate: s.yawRate,
         moving: s.moving,

@@ -8,6 +8,7 @@ import { useRunLoop } from './run/useRunLoop'
 import { useRun } from './run/store'
 import { FootprintView } from './scene/FootprintView'
 import { Briefing } from './ui/Briefing'
+import { Credits } from './ui/Credits'
 import { Debrief } from './ui/Debrief'
 import { RunHud } from './ui/RunHud'
 import PlayApp from './PlayApp'
@@ -42,7 +43,15 @@ function Stage0App() {
       >
         <FootprintView />
       </Canvas>
-      {phase === 'debrief' ? <Debrief /> : phase === 'briefing' ? <Briefing /> : <RunHud />}
+      {phase === 'credits' ? (
+        <Credits />
+      ) : phase === 'debrief' ? (
+        <Debrief />
+      ) : phase === 'briefing' ? (
+        <Briefing />
+      ) : (
+        <RunHud />
+      )}
     </div>
   )
 }

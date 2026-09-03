@@ -1,5 +1,6 @@
 import { site } from '../data/site'
 import { MASSING_CONFIG } from '../scene/doheny-massing.js'
+import { heightAt } from '../scene/site-ground.js'
 import { apparatusBlockers } from '../scene/staging-apparatus.js'
 import { pointInPoly } from './hull'
 import { ROBOT_CONFIG, buildBlockers, resolveCollision } from './robot-controller.js'
@@ -18,7 +19,7 @@ export function stagingPose() {
   z = held.z + south.z * 6
 
   const yaw = Math.atan2(south.x, south.z)
-  return { x, z, y: 0, yaw, speed: 0, moving: false }
+  return { x, z, y: heightAt(x, z, site), yaw, pitch: 0, roll: 0, speed: 0, moving: false }
 }
 
 export function spawnIsValid() {
