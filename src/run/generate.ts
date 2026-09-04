@@ -40,14 +40,10 @@ export function rollCondition(signature: Signature, rng: () => number): Conditio
   return 'CRITICAL'
 }
 
-function rescueTimeFor(type: RescueType, floor: number, fast: boolean, rng: () => number): number {
+function rescueTimeFor(type: RescueType): number {
   if (type === 'UNREACHABLE') return 0
-  let t: number
-  if (type === 'SELF_EXTRACT' || type === 'GROUP') t = 1.4 + rng() * 0.8
-  else t = 2.2 + rng() * 1
-  if (floor === 0) t *= 1.5
-  if (fast) t *= 0.7
-  return t
+  if (type === 'SELF_EXTRACT' || type === 'GROUP') return 2
+  return 3
 }
 
 const SIGS: Signature[] = ['STRONG', 'WEAK', 'WEAK', 'FAINT', 'FAINT']
@@ -149,16 +145,9 @@ export function generateVictims(seed: number): Victim[] {
     slots[2].count = 3
   }
 
-  const extractions = makeExtractions(siteCells())
-
   return slots.map((slot, i) => {
     const cell = slot.cell
     const out = outsidePoint(cell)
-    const ext =
-      slot.type === 'UNREACHABLE'
-        ? undefined
-        : extractions.find((e) => e.cellId === cell.id) ??
-          extractions.find((e) => e.floor === Math.min(cell.floor, 1) && e.facade === out.facade)
     const clock = clockFor(slot.condition, rng)
     const count =
       slot.type === 'GROUP' ? Math.max(3, slot.count) : slot.type === 'SELF_EXTRACT' ? Math.max(1, slot.count) : 1
@@ -177,7 +166,7 @@ export function generateVictims(seed: number): Victim[] {
       count,
       clock,
       clock0: clock,
-      rescueTime: rescueTimeFor(slot.type, cell.floor, Boolean(ext?.fast), rng),
+      rescueTime: rescueTimeFor(slot.type),
       scanned: false,
       state: 'WAITING' as const,
       seenAt: null,

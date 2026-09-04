@@ -96,12 +96,18 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
 
   if (state.hold.kind !== 'idle') {
     const victim = state.victims.find((v) => v.id === state.hold.targetId)
-    const pct = state.hold.need > 0 ? Math.round((state.hold.progress / state.hold.need) * 100) : 0
-    const verb = state.hold.kind === 'scan' ? 'Assessing' : state.hold.kind === 'mark' ? 'Marking' : 'Rescuing'
+    const title =
+      state.hold.kind === 'scan'
+        ? 'Assessing'
+        : state.hold.kind === 'mark'
+          ? 'Marking'
+          : victim?.type === 'ASSISTED'
+            ? 'Picking them up'
+            : 'Walking them out'
     return withStep({
       kind: state.hold.kind,
-      title: `${verb} ${pct}%`,
-      detail: victim ? `${victim.roomName} · hold still` : 'Hold still',
+      title,
+      detail: victim?.roomName ?? '',
       dist: victim ? actDist(state, victim, x, z) : 0,
       inRange: true,
       hold: state.hold.kind,
@@ -111,8 +117,10 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
   if (scan) {
     return withStep({
       kind: 'scan',
-      title: 'Hold Space to assess',
-      detail: scan.roomName,
+      title: 'Press Space to assess',
+      detail: state.thermal
+        ? `${scan.signature.toLowerCase()} signature · count and condition hidden`
+        : 'Count and condition hidden',
       dist: scanD,
       inRange: true,
       hold: 'scan',
@@ -122,7 +130,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
   if (mark) {
     return withStep({
       kind: 'mark',
-      title: 'Hold Space to mark',
+      title: 'Press Space to mark',
       detail: mark.roomName,
       dist: markD,
       inRange: true,
@@ -134,10 +142,10 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     const ready = rescue.scanned
     return withStep({
       kind: 'rescue',
-      title: 'Hold F to rescue',
+      title: 'Press F to rescue',
       detail: ready
         ? `${conditionLabel(rescue.condition)} · ${typeLabel(rescue.type)} · ${rescue.count}`
-        : `${rescue.roomName} · size up first if you can`,
+        : 'Count and condition hidden · size up first',
       dist: rescueD,
       inRange: true,
       hold: 'rescue',
@@ -157,7 +165,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     if (scannedWait && near.dist > RESCUE_RANGE) {
       return withStep({
         kind: 'drive',
-        title: near.dist <= 8 ? 'Hold F to rescue' : 'To the opening',
+        title: near.dist <= 8 ? 'Press F to rescue' : 'To the opening',
         detail: `${near.ext.opening} · ${conditionLabel(scannedWait.condition)}`,
         dist: near.dist,
         inRange: false,
