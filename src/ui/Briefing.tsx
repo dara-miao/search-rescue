@@ -32,8 +32,10 @@ export function Briefing() {
         <button type="button" className="debrief-go" onClick={go}>
           Deploy
         </button>
-        <p className="stage0-license">{attribution()}</p>
       </div>
+      <p className="osm-mark" title={attribution()}>
+        © OSM
+      </p>
     </div>
   )
 }
