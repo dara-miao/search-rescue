@@ -5,7 +5,7 @@ const WALK_S = 9
 
 /** Occupants leave the opening and walk toward staging. Scoring already flipped to RESCUED. */
 export function spawnWalkout(state: RunState, victim: Victim, ext: Extraction | null) {
-  if (victim.type !== 'SELF_EXTRACT' && victim.type !== 'GROUP') return
+  if (victim.type === 'UNREACHABLE') return
   const startX = ext?.x ?? victim.x
   const startZ = ext?.z ?? victim.z
   const dest = stagingPose()
@@ -19,7 +19,7 @@ export function spawnWalkout(state: RunState, victim: Victim, ext: Extraction | 
       destX: dest.x + (i - (n - 1) / 2) * 0.7,
       destZ: dest.z + 1.2,
       born: state.t + i * 0.35,
-      duration: WALK_S + i * 0.4,
+      duration: (victim.type === 'ASSISTED' ? WALK_S + 4 : WALK_S) + i * 0.4,
       lane: i,
     }
     state.evacuees.push(evac)

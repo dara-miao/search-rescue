@@ -22,7 +22,7 @@ export function coachCopy(step: CoachStep, meters: number | null) {
     }
   }
   if (step === 'rescue') {
-    return { n: 4, title: 'Rescue', hint: 'Press F. Carry to staging if they cannot walk' }
+    return { n: 4, title: 'Rescue', hint: 'Press F. They walk to staging. You stay on the perimeter.' }
   }
   return { n: 0, title: '', hint: '' }
 }

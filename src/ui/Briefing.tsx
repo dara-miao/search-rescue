@@ -11,7 +11,7 @@ const BEATS = [
   },
   {
     title: 'Your job is the perimeter.',
-    body: 'Drive to marked openings. Assess who is at the glass. Rescue who you can reach. Carry them to staging.',
+    body: 'Drive to marked openings. Assess who is at the glass. Rescue who you can reach. They walk to staging.',
   },
   {
     title: 'Assess to size up who is at the glass.',
@@ -23,7 +23,7 @@ const BEATS = [
   },
   {
     title: 'The interior is closed.',
-    body: 'You stay on the lawn. Staging is the red ring behind you.',
+    body: 'You stay on the lawn. The red ring is staging. Charge there if you limp.',
   },
 ] as const
 

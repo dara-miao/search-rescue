@@ -21,7 +21,7 @@ function seenLine(v: Victim) {
 function didLine(v: Victim) {
   if (v.scanLost) return 'Sized up after they were already gone'
   if (v.action === 'rescued') {
-    return v.type === 'ASSISTED' ? 'Carried to staging' : 'Cleared the opening'
+    return v.type === 'ASSISTED' ? 'Helped them out' : 'Cleared the opening'
   }
   if (v.action === 'marked') return 'Marked for crews'
   if (v.action === 'scanned') return 'Sized up, then left'

@@ -20,7 +20,7 @@ A short briefing holds the clock, then the lawn comes up. Deploy from staging. M
 1. Drive to a marked opening and stop.
 2. Hold still and assess. Thermal shows signatures through the walls. Count, condition, and type stay hidden until you do.
 3. Rescue who you can reach. Mark the rest.
-4. Carry them to staging. Drop off and recharge.
+4. Rescue. They walk to the red ring. Charge there if the battery limps.
 5. When a room vents that opening dies. The run ends when every cell has vented.
 
 Debrief lists each person in encounter order: what you saw, what you did, what was true. No grade.
