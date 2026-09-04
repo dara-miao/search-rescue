@@ -27,8 +27,8 @@ export function Briefing() {
     <div className="briefing">
       <div className="briefing-card">
         <p className="stage0-kicker">Perimeter · seed {seed}</p>
-        <h1>The interior is closed</h1>
-        <p>Fire is already in the stacks. You work the glass from the lawn. Staging is the red ring behind you.</p>
+        <h1>Fire in the stacks</h1>
+        <p>Interior is closed. Work the glass from the lawn. Staging is the red ring behind you.</p>
         <button type="button" className="debrief-go" onClick={go}>
           Deploy
         </button>
