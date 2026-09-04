@@ -6,7 +6,9 @@ import { holdAnchor, holdFrac } from '../src/run/hold'
 import { makeExtractions, nearVentedFacade, outsidePoint, siteCells, speedScaleAt } from '../src/run/layout'
 import { parseSeed, seedQuery } from '../src/run/seed'
 import { cardinal, dohenyOffset, headingDeg, offsetTo } from '../src/run/heading'
-import { nearestLiveOpening, revealLine } from '../src/run/opening'
+import { playIntent } from '../src/run/intent'
+import { coachCopy, stepCoach } from '../src/run/coach'
+import { nearestLiveOpening, nearestPlayOpening, revealLine } from '../src/run/opening'
 import { useRun } from '../src/run/store'
 import { stepRun } from '../src/run/tick'
 import { stagingPose } from '../src/drive/spawn'
@@ -78,13 +80,10 @@ let strongCrit = 0
   assert(faintCrit > strongCrit * 2, `FAINT is more often CRITICAL than STRONG (${faintCrit} vs ${strongCrit})`)
 }
 
-const floor0 = generateVictims(3).find((v) => v.floor === 0 && v.type === 'ASSISTED')
-const floor1 = generateVictims(3).find((v) => v.floor === 1 && v.type === 'ASSISTED')
-if (floor0 && floor1) {
-  assert(floor0.rescueTime > floor1.rescueTime, 'floor 0 assisted rescue is slower (light well)')
-} else {
-  assert(generateVictims(3).some((v) => v.floor === 0 && v.rescueTime > 6), 'floor 0 rescue times are stretched')
-}
+const walkTimes = generateVictims(3).filter((v) => v.type === 'SELF_EXTRACT' || v.type === 'GROUP')
+const carryTimes = generateVictims(3).filter((v) => v.type === 'ASSISTED')
+assert(walkTimes.length > 0 && walkTimes.every((v) => v.rescueTime === 2), 'walk-outs clear in 2s')
+assert(carryTimes.length > 0 && carryTimes.every((v) => v.rescueTime === 3), 'carries take 3s')
 
 assert(parseSeed('?seed=42') === 42, 'parses ?seed=')
 assert(parseSeed('seed=99') === 99, 'parses seed without question mark')
@@ -148,8 +147,8 @@ const live = createRun(5)
 const self = live.victims.find((v) => v.type === 'SELF_EXTRACT')!
 stepRun(live, inputAt(self.x, self.z, { thermal: true }), 0.05)
 assert(self.seenAt != null, 'thermal encounter records the victim')
-holdFor(live, inputAt(self.x, self.z, { hold: true }), 6.1)
-assert(self.scanned, '6s hold in range completes a scan')
+holdFor(live, inputAt(self.x, self.z, { hold: true }), 2.1)
+assert(self.scanned, '2s in range completes a size-up')
 assert(self.condition && self.type, 'scan reveals hidden fields (still on the object)')
 assert(live.lastReveal?.kind === 'scan', 'scan writes a reveal')
 assert(live.lastReveal?.condition === self.condition && live.lastReveal?.type === self.type, 'reveal has condition and type')
@@ -157,26 +156,35 @@ assert(live.lastReveal?.count === self.count, 'reveal has count')
 assert(!('clock' in (live.lastReveal ?? {})), 'reveal never carries the clock')
 assert(!revealLine(live.lastReveal!).includes('clock'), 'reveal line does not name the clock')
 
+const tap = createRun(5)
+const tapWho = tap.victims.find((v) => v.type !== 'UNREACHABLE')!
+stepRun(tap, inputAt(tapWho.x, tapWho.z, { hold: true }), 0.05)
+assert(tap.hold.kind === 'scan', 'a press starts size-up')
+const working = playIntent(tap, tapWho.x, tapWho.z)
+assert(working.title === 'Assessing', `working title is a verb (${working.title})`)
+assert(!/%/.test(working.title), 'working prompt has no percent')
+holdFor(tap, inputAt(tapWho.x, tapWho.z, { hold: false }), 2.1)
+assert(tapWho.scanned, 'releasing the key still finishes the size-up')
+
 const moved = createRun(5)
 const scanMe = moved.victims.find((v) => v.type !== 'UNREACHABLE')!
-holdFor(moved, inputAt(scanMe.x, scanMe.z, { hold: true }), 3)
-assert(moved.hold.kind === 'scan' && moved.hold.progress > 2, 'scan accumulates while still')
-assert(holdAnchor(moved)?.kind === 'scan', 'scan ring sits on the victim')
-assert(holdFrac(moved.hold) > 0.3, 'scan ring is partly filled after 3s')
+stepRun(moved, inputAt(scanMe.x, scanMe.z, { hold: true }), 0.05)
+assert(moved.hold.kind === 'scan', 'size-up starts while still')
+assert(holdAnchor(moved)?.kind === 'scan', 'size-up is anchored on the victim')
 stepRun(moved, inputAt(scanMe.x, scanMe.z, { hold: true, moving: true, speed: 1 }), 0.05)
-assert(moved.hold.kind === 'idle', 'moving interrupts a scan')
+assert(moved.hold.kind === 'idle', 'moving interrupts a size-up')
+assert(!scanMe.scanned, 'a cancelled size-up does not reveal')
 
 const rescueRun = createRun(8)
 const easy = rescueRun.victims.find((v) => v.type === 'SELF_EXTRACT' || v.type === 'GROUP')!
-easy.rescueTime = 1.2
 easy.clock = 400
 const easyExt = rescueRun.extractions.find((e) => e.cellId === easy.cellId) ?? {
   x: easy.x,
   z: easy.z,
   cellId: easy.cellId,
 }
-holdFor(rescueRun, inputAt(easyExt.x, easyExt.z, { hold: true, forceRescue: true }), 1.3)
-assert(easy.state === 'RESCUED', `self/group extract resolves without a carry (${easy.state})`)
+holdFor(rescueRun, inputAt(easyExt.x, easyExt.z, { hold: true, forceRescue: true }), 2.1)
+assert(easy.state === 'RESCUED', `walk-out clears in about 2s (${easy.state})`)
 assert(rescueRun.evacuees.length === easy.count, `self/group walk-out spawns ${easy.count} people (got ${rescueRun.evacuees.length})`)
 assert(
   rescueRun.evacuees.every((e) => e.victimId === easy.id),
@@ -185,12 +193,11 @@ assert(
 
 const carryRun = createRun(12)
 const assisted = carryRun.victims.find((v) => v.type === 'ASSISTED')!
-assisted.rescueTime = 1
 assisted.clock = 400
 const aext = carryRun.extractions.find((e) => e.cellId === assisted.cellId)
 if (aext) {
-  holdFor(carryRun, inputAt(aext.x, aext.z, { hold: true, forceRescue: true }), 1.1)
-  assert(assisted.state === 'CARRIED' && carryRun.carriedId === assisted.id, 'assisted victim is carried')
+  holdFor(carryRun, inputAt(aext.x, aext.z, { hold: true, forceRescue: true }), 3.1)
+  assert(assisted.state === 'CARRIED' && carryRun.carriedId === assisted.id, 'carry resolves in about 3s')
   const st = stagingPose()
   stepRun(carryRun, inputAt(st.x, st.z), 0.05)
   assert(assisted.state === 'RESCUED', 'staging drop-off completes the rescue')
@@ -219,6 +226,7 @@ const markRun = createRun(6)
 const up = markRun.victims.find((v) => v.type === 'UNREACHABLE')!
 holdFor(markRun, inputAt(up.x, up.z, { hold: true }), 2.1)
 assert(up.state === 'MARKED', 'unreachable mark completes in 2s')
+assert(debriefRows(markRun).some((r) => r.did === 'Marked for crews'), 'debrief names the mark')
 
 const batt = createRun(2)
 const startBatt = batt.battery
@@ -292,7 +300,7 @@ const heldT = useRun.getState().t
 useRun.getState().tick(inputAt(0, 40, { moving: true, speed: 3 }), 1)
 assert(useRun.getState().t === heldT, 'briefing does not tick the fire')
 useRun.getState().begin()
-assert(useRun.getState().phase === 'playing', 'roll out starts the run')
+assert(useRun.getState().phase === 'playing', 'deploy starts the run')
 
 useRun.getState().start(11)
 for (const c of useRun.getState().cells) {
@@ -306,6 +314,80 @@ useRun.getState().showCredits()
 assert(useRun.getState().phase === 'credits', 'debrief opens the credits screen')
 useRun.getState().hideCredits()
 assert(useRun.getState().phase === 'debrief', 'credits returns to the debrief')
+
+const play = createRun(42)
+const spawn = stagingPose()
+const objective = playIntent({ ...play, phase: 'playing', t: 0 }, spawn.x, spawn.z)
+assert(objective.kind === 'coach' || objective.kind === 'drive', `spawn objective is a drive (${objective.kind})`)
+assert(objective.step.startsWith('1'), `spawn step is drive (${objective.step})`)
+assert(objective.dist != null && objective.dist > 12, `spawn objective is across the lawn (${objective.dist?.toFixed(0)} m)`)
+assert(!objective.inRange, 'spawn is not already in range of a hold')
+
+const playOpen = nearestPlayOpening(spawn.x, spawn.z, play)
+assert(playOpen != null && playOpen.waiting > 0, 'play pip prefers an opening with someone waiting')
+
+const target = play.victims.find((v) => v.type === 'SELF_EXTRACT' || v.type === 'GROUP')!
+const atDoor = playIntent({ ...play, phase: 'playing', t: 20 }, target.x, target.z)
+assert(atDoor.inRange && atDoor.hold === 'scan', `at the opening the prompt is assess (${atDoor.kind})`)
+assert(atDoor.step.startsWith('2'), `door step is assess (${atDoor.step})`)
+assert(/assess/i.test(atDoor.title), `door title uses assess (${atDoor.title})`)
+assert(!/clock stays hidden/i.test(atDoor.detail), 'assess prompt does not mention the clock')
+assert(/hidden/i.test(atDoor.detail), 'unassessed opening hides count and condition')
+const sized = playIntent(
+  {
+    ...play,
+    phase: 'playing',
+    t: 20,
+    thermal: true,
+    victims: play.victims.map((v) => ({ ...v, scanned: true })),
+  },
+  target.x,
+  target.z,
+)
+assert(
+  sized.hold === 'rescue' && /walk-out|carry|group/i.test(sized.detail),
+  `after size-up the pill shows type (${sized.detail})`,
+)
+
+function playerCopy(...parts: Array<string | null | undefined>) {
+  return parts.filter(Boolean).join(' ')
+}
+function assertOpsSpeak(label: string, text: string) {
+  assert(!/cyan|roll ?out|\bscan\b|\bextract\b/i.test(text), `${label} stays in ops language (${text})`)
+}
+assertOpsSpeak('door prompt', playerCopy(atDoor.title, atDoor.detail, atDoor.step))
+assertOpsSpeak('spawn prompt', playerCopy(objective.title, objective.detail, objective.step))
+assertOpsSpeak('working prompt', playerCopy(working.title, working.detail, working.step))
+for (const step of ['drive', 'opening', 'assess', 'rescue'] as const) {
+  const line = coachCopy(step, 24)
+  assertOpsSpeak(`coach ${step}`, playerCopy(line.title, line.hint))
+  if (step === 'assess') {
+    assert(/thermal/i.test(line.hint) && /hidden/i.test(line.hint), 'coach assess names thermal and hidden fields')
+  }
+}
+
+assert(stepCoach('drive', { speed: 3, dist: 35, holdKind: 'idle', lastReveal: null, carriedId: null }) === 'opening', 'coach leaves drive after throttle')
+assert(stepCoach('opening', { speed: 1, dist: 7, holdKind: 'idle', lastReveal: null, carriedId: null }) === 'assess', 'coach reaches assess at the opening')
+assert(stepCoach('off', { speed: 4, dist: 2, holdKind: 'scan', lastReveal: null, carriedId: null }) === 'off', 'skipped coach stays off')
+
+useRun.getState().start(42)
+assert(useRun.getState().coach === 'off', 'briefing has no coach yet')
+useRun.getState().begin()
+assert(useRun.getState().coach === 'drive', 'deploy starts the drive lesson')
+useRun.getState().tick(inputAt(0, 40, { moving: true, speed: 3 }), 0.2)
+assert(useRun.getState().coach === 'opening', 'moving advances the coach')
+useRun.getState().skipCoach()
+assert(useRun.getState().coach === 'off', 'skip ends the lesson')
+
+useRun.getState().start(42)
+useRun.getState().begin()
+assert(useRun.getState().hudThermal === true, 'thermal starts on so signatures are visible')
+useRun.getState().toggleThermal()
+assert(useRun.getState().hudThermal === false, 'T toggles thermal off')
+useRun.getState().replay()
+assert(useRun.getState().phase === 'playing' && useRun.getState().t === 0, 'replay rolls out the same seed')
+assert(useRun.getState().seed === 42, 'replay keeps the seed')
+assert(useRun.getState().hudThermal === true, 'replay turns thermal back on')
 
 if (process.exitCode) {
   console.error('run tests failed')
