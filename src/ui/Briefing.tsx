@@ -26,24 +26,11 @@ export function Briefing() {
   return (
     <div className="briefing">
       <div className="briefing-card">
-        <p className="stage0-kicker">Seed {seed}</p>
+        <p className="stage0-kicker">Perimeter · seed {seed}</p>
         <h1>The interior is closed</h1>
-        <ol className="briefing-steps">
-          <li>
-            <span>1</span>
-            Drive to cyan
-          </li>
-          <li>
-            <span>2</span>
-            Space to scan
-          </li>
-          <li>
-            <span>3</span>
-            F to extract
-          </li>
-        </ol>
+        <p>Fire is already in the stacks. You work the glass from the lawn. Staging is the red ring behind you.</p>
         <button type="button" className="debrief-go" onClick={go}>
-          Roll out
+          Deploy
         </button>
         <p className="stage0-license">{attribution()}</p>
       </div>
