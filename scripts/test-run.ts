@@ -134,7 +134,7 @@ for (let i = 0; i < 9 * 60 * 4; i++) {
 }
 assert(firstPre != null && firstVentAt != null, 'pre-vent and vent both occur')
 assert(firstPre < firstVentAt, 'smoke telegraph happens before the first vent')
-assert(firstPre != null && firstVentAt != null && firstVentAt - firstPre >= 2, `pre-vent leads vent by a few seconds (got ${(firstVentAt - firstPre).toFixed(1)}s)`)
+assert(firstVentAt - firstPre >= 2, `pre-vent leads vent by a few seconds (got ${(firstVentAt - firstPre).toFixed(1)}s)`)
 
 const lit = createRun(11).cells.find((c) => c.facades.length && !c.isCore)
 if (lit) {
