@@ -59,6 +59,4 @@ npm run build
 
 The photograph above is [Doheny Library](https://commons.wikimedia.org/wiki/File:Doheny_Library.jpg) by Padsquad19, Wikimedia Commons, CC BY-SA 3.0. Facade maps in the sim are derived from it.
 
-The lawn shot from the sim is in this repo as `public/doheny-from-lawn.jpg`. GitHub's file API cannot take that JPEG, so this page uses the elevation photo until the file is pushed with git.
-
 Built with Vite, React, TypeScript, Three.js, React Three Fiber, Drei, and zustand.
