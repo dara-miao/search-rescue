@@ -2,7 +2,9 @@ import { Line } from '@react-three/drei'
 import { useMemo } from 'react'
 import { useDrive } from '../drive/store'
 import { site } from '../data/site'
+import { isHeroShot } from '../run/hero'
 import { ChaseCam } from './ChaseCam'
+import { HeroCam } from './HeroCam'
 import { Massing } from './Massing'
 import { WindowSmoke } from './WindowSmoke'
 import { NightEnvironment } from './NightEnvironment'
@@ -22,7 +24,7 @@ function Outline() {
 export function FootprintView() {
   return (
     <>
-      <ChaseCam />
+      {isHeroShot() ? <HeroCam /> : <ChaseCam />}
       <NightEnvironment />
       <Massing />
       <WindowSmoke />

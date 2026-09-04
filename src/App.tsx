@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ACESFilmicToneMapping } from 'three'
 import { useDrive } from './drive/store'
+import { isHeroShot } from './run/hero'
 import { parseSeed } from './run/seed'
 import { useRunAudio } from './run/useRunAudio'
 import { useRunLoop } from './run/useRunLoop'
@@ -23,11 +24,17 @@ function Stage0App() {
   useRunAudio()
   useEffect(() => {
     const seed = parseSeed(window.location.search)
-    if (seed == null) return
-    useRun.getState().start(seed)
+    const hero = isHeroShot()
+    if (seed == null && !hero) return
+    useRun.getState().start(seed ?? 42)
     useDrive.getState().reset()
+    if (hero) {
+      useRun.getState().begin()
+      useRun.getState().setHud({ thermal: false })
+    }
   }, [])
   const phase = useRun((s) => s.phase)
+  const hero = isHeroShot()
   return (
     <div className="app stage0-app">
       <Canvas
@@ -43,7 +50,7 @@ function Stage0App() {
       >
         <FootprintView />
       </Canvas>
-      {phase === 'credits' ? (
+      {hero ? null : phase === 'credits' ? (
         <Credits />
       ) : phase === 'debrief' ? (
         <Debrief />
