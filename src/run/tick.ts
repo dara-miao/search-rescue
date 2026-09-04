@@ -5,7 +5,7 @@ import { actDist, RESCUE_RANGE, SCAN_RANGE } from './intent'
 import { dist, nearVentedFacade } from './layout'
 import type { Extraction, HoldState, RunInput, RunState, Victim } from './types'
 
-const SCAN_S = 6
+export const ASSESS_S = 2
 const MARK_S = 2
 const MOVE_BREAK = 0.25
 const STAGING_R = 7
@@ -114,7 +114,7 @@ function pickTarget(
     return { kind: 'rescue', victim: bestRescue, need: bestRescue.rescueTime }
   }
   if (bestMark) return { kind: 'mark', victim: bestMark, need: MARK_S }
-  if (bestScan) return { kind: 'scan', victim: bestScan, need: SCAN_S }
+  if (bestScan) return { kind: 'scan', victim: bestScan, need: ASSESS_S }
   if (bestRescue) return { kind: 'rescue', victim: bestRescue, need: bestRescue.rescueTime }
   return { kind: 'idle', victim: null, need: 0 }
 }
@@ -180,7 +180,28 @@ function tickHold(state: RunState, input: RunInput, dt: number) {
   }
 
   const moving = input.moving || Math.abs(input.speed) > MOVE_BREAK
-  if (!input.hold || moving) {
+  if (moving) {
+    state.hold = { kind: 'idle', targetId: null, progress: 0, need: 0 }
+    return
+  }
+
+  if (state.hold.kind !== 'idle' && state.hold.targetId) {
+    const victim = state.victims.find((v) => v.id === state.hold.targetId)
+    if (!victim) {
+      state.hold = { kind: 'idle', targetId: null, progress: 0, need: 0 }
+      return
+    }
+    const progress = state.hold.progress + dt
+    if (progress >= state.hold.need) {
+      finishHold(state, victim, state.hold.kind)
+      state.hold = { kind: 'idle', targetId: null, progress: 0, need: 0 }
+      return
+    }
+    state.hold = { ...state.hold, progress }
+    return
+  }
+
+  if (!input.hold) {
     state.hold = { kind: 'idle', targetId: null, progress: 0, need: 0 }
     return
   }
@@ -191,8 +212,7 @@ function tickHold(state: RunState, input: RunInput, dt: number) {
     return
   }
 
-  const same = state.hold.kind === target.kind && state.hold.targetId === target.victim.id
-  const progress = (same ? state.hold.progress : 0) + dt
+  const progress = dt
   if (progress >= target.need) {
     finishHold(state, target.victim, target.kind)
     state.hold = { kind: 'idle', targetId: null, progress: 0, need: 0 }

@@ -65,9 +65,12 @@ export function useRunLoop() {
         const forceRescue = keys.has('KeyF') || run.hudRescue
 
         if (run.phase === 'playing') {
-          const stick = drive.stickOn
-            ? { x: drive.stickX, y: -drive.stickY }
-            : screenStickFromKeys(keys)
+          const acting = run.hold.kind !== 'idle'
+          const stick = acting
+            ? { x: 0, y: 0 }
+            : drive.stickOn
+              ? { x: drive.stickX, y: -drive.stickY }
+              : screenStickFromKeys(keys)
           const scale = speedScaleAt(drive.x, drive.z, run.cells) * batterySpeedScale(run.battery)
           drive.step(stick, dt, scale)
           const body = useDrive.getState()

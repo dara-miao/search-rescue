@@ -6,7 +6,6 @@ import { useDrive } from '../drive/store'
 import { useRun } from '../run/store'
 import type { Victim } from '../run/types'
 import { HeatZones } from './HeatZones'
-import { HoldProgress } from './HoldProgress'
 import { WalkOut } from './WalkOut'
 import { OpeningBeacons } from './OpeningBeacons'
 import { WindowPeople } from './WindowPeople'
@@ -94,7 +93,6 @@ export function RunLayer() {
   return (
     <group>
       <HeatZones />
-      <HoldProgress />
       <WalkOut />
       <OpeningBeacons />
       <WindowPeople />
