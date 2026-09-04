@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The interior is closed.</strong><br />
+  <strong>Doheny is on fire.</strong><br />
   <a href="https://usc-search-rescue.vercel.app">Play live</a>
   ·
   <a href="https://usc-search-rescue.vercel.app/?seed=42">seed 42</a>
@@ -15,12 +15,12 @@ Fire is already in the stacks at Doheny Memorial Library. You drive a ground rob
 
 ## A run
 
-A briefing holds the clock. Roll out from the lawn. Cyan shafts and rings mark openings that still have someone waiting. The gold pip is the building. People stand at the windows. Rooms telegraph with smoke, then vent.
+A short briefing holds the clock, then the lawn comes up. Deploy from staging. Marked openings still have someone waiting. The gold pip is the building. People stand at the glass. Rooms telegraph with smoke, then vent.
 
-1. Drive to a cyan opening and stop.
-2. Hold still and scan. Thermal shows signatures through the walls. Count, condition, and type stay hidden until you do.
-3. Extract who you can reach. Mark the rest.
-4. Carry them to the red staging ring. Drop off and recharge.
+1. Drive to a marked opening and stop.
+2. Hold still and assess. Thermal shows signatures through the walls. Count, condition, and type stay hidden until you do.
+3. Rescue who you can reach. Mark the rest.
+4. Carry them to staging. Drop off and recharge.
 5. When a room vents that opening dies. The run ends when every cell has vented.
 
 Debrief lists each person in encounter order: what you saw, what you did, what was true. No grade.
@@ -35,9 +35,9 @@ You cannot die. Below 20% battery the robot limps. Empty still crawls home.
 | **A / D** or knob | Steer |
 | Scroll | Zoom |
 | **T** | Toggle thermal |
-| **Space** | Scan (hold still at an opening) |
-| **F** | Extract |
-| **Enter** | Roll out |
+| **Space** | Assess (stop at an opening) |
+| **F** | Rescue |
+| **Enter** | Next, then Deploy |
 
 ## Develop
 

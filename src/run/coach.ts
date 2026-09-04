@@ -15,10 +15,14 @@ export function coachCopy(step: CoachStep, meters: number | null) {
     }
   }
   if (step === 'assess') {
-    return { n: 3, title: 'Assess', hint: 'Stop. Hold Space to size up who is at the glass' }
+    return {
+      n: 3,
+      title: 'Assess',
+      hint: 'Stop. Press Space. Thermal shows signatures. Count and condition stay hidden until you size up.',
+    }
   }
   if (step === 'rescue') {
-    return { n: 4, title: 'Rescue', hint: 'Hold F. Carry to staging if they cannot walk' }
+    return { n: 4, title: 'Rescue', hint: 'Press F. Carry to staging if they cannot walk' }
   }
   return { n: 0, title: '', hint: '' }
 }

@@ -21,7 +21,7 @@ function seenLine(v: Victim) {
 function didLine(v: Victim) {
   if (v.scanLost) return 'Sized up after they were already gone'
   if (v.action === 'rescued') {
-    return v.type === 'ASSISTED' ? 'Carried to staging' : `Held the opening ${v.rescueTime.toFixed(0)}s`
+    return v.type === 'ASSISTED' ? 'Carried to staging' : 'Cleared the opening'
   }
   if (v.action === 'marked') return 'Marked for crews'
   if (v.action === 'scanned') return 'Sized up, then left'
@@ -60,7 +60,7 @@ export function debriefRows(state: RunState): DebriefRow[] {
     if (skippedFast.includes(v)) {
       highlight = `Would have taken ${Math.round(v.rescueTime)} seconds`
     } else if (wastedScan.includes(v)) {
-      highlight = 'Spent 6s on someone already gone'
+      highlight = 'Sized up someone already gone'
     } else if (closest && v.id === closest.id) {
       highlight = 'Closest miss'
     }

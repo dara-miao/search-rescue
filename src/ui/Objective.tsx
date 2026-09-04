@@ -1,6 +1,5 @@
 import { coachCopy } from '../run/coach'
 import { playIntent } from '../run/intent'
-import { holdFrac } from '../run/hold'
 import { nearestPlayOpening } from '../run/opening'
 import { useDrive } from '../drive/store'
 import { useRun } from '../run/store'
@@ -11,22 +10,20 @@ export function Objective() {
   const moving = useDrive((s) => s.moving || Math.abs(s.speed) > 0.25)
   const run = useRun()
   const intent = playIntent(run, x, z)
-  const frac = holdFrac(run.hold)
   const holding = run.hold.kind !== 'idle'
   const stopFirst = Boolean(intent.hold && moving && !holding)
   const title = stopFirst ? 'Stop first' : intent.title
-  const showDist = intent.dist != null && !/\d+\s*m/.test(title)
+  const showDist = intent.dist != null && !/\d+\s*m/.test(title) && !holding
   const near = nearestPlayOpening(x, z, run)
-  const teach = run.coach !== 'off' ? coachCopy(run.coach, near?.dist ?? null) : null
-
-  if (holding) {
-    return (
-      <div className="hold-banner" aria-live="polite">
-        <b style={{ width: `${frac * 100}%` }} />
-        <span>{intent.title}</span>
-      </div>
-    )
-  }
+  const teach = run.coach !== 'off' && !holding ? coachCopy(run.coach, near?.dist ?? null) : null
+  const lastVent = run.vents.filter((v) => v.kind === 'vent').at(-1)
+  const venting = lastVent != null && run.t - lastVent.t < 6 && !holding
+  const fresh = run.lastReveal && run.t - run.lastReveal.at < 7 ? run.lastReveal : null
+  const detail = holding
+    ? intent.detail
+    : fresh && fresh.kind === 'scan'
+      ? `${fresh.signature.toLowerCase()} signature`
+      : intent.detail
 
   if (teach) {
     return (
@@ -46,9 +43,23 @@ export function Objective() {
     )
   }
 
+  if (venting && !teach) {
+    return (
+      <div className="obj-pill vented" aria-live="polite">
+        <div>
+          <h2>{lastVent.roomName} vented</h2>
+          <p>That opening is dead</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`obj-pill ${intent.inRange ? 'ready' : ''} ${intent.kind}`}>
-      <h2>{title}</h2>
+      <div>
+        <h2>{title}</h2>
+        {detail ? <p>{detail}</p> : null}
+      </div>
       {showDist ? <span>{Math.round(intent.dist!)} m</span> : null}
     </div>
   )
