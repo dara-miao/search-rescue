@@ -154,15 +154,9 @@ function finishHold(state: RunState, victim: Victim, kind: HoldState['kind']) {
     if (victim.state !== 'WAITING') return
     const ext = extractionOf(state, victim)
     if (!extractionOpen(state, ext)) return
-    if (victim.type === 'ASSISTED') {
-      victim.state = 'CARRIED'
-      state.carriedId = victim.id
-      if (victim.action === 'never' || victim.action === 'none') victim.action = 'scanned'
-    } else {
-      victim.state = 'RESCUED'
-      victim.action = 'rescued'
-      spawnWalkout(state, victim, ext)
-    }
+    victim.state = 'RESCUED'
+    victim.action = 'rescued'
+    spawnWalkout(state, victim, ext)
     writeReveal(state, victim, 'rescue')
   }
 }
