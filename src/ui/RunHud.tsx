@@ -24,8 +24,8 @@ export function RunHud() {
   const band = batteryBand(run.battery)
   const waiting = run.victims.filter((v) => v.state === 'WAITING' || v.state === 'CARRIED').length
   const intent = playIntent(run, x, z)
-  const scanReady = intent.hold === 'scan' || intent.hold === 'mark'
-  const extractReady = intent.hold === 'rescue'
+  const assessReady = intent.hold === 'scan' || intent.hold === 'mark'
+  const rescueReady = intent.hold === 'rescue'
 
   const replay = () => {
     useDrive.getState().reset()
@@ -52,7 +52,7 @@ export function RunHud() {
         <div className="run-actions">
           <button
             type="button"
-            className={`${run.hold.kind === 'scan' || run.hold.kind === 'mark' ? 'on' : ''} ${scanReady ? 'ready' : 'dim'}`}
+            className={`${run.hold.kind === 'scan' || run.hold.kind === 'mark' ? 'on' : ''} ${assessReady ? 'ready' : 'dim'}`}
             onPointerDown={(e) => {
               e.preventDefault()
               setHud({ hold: true })
@@ -60,11 +60,11 @@ export function RunHud() {
             onPointerUp={() => setHud({ hold: false })}
             onPointerLeave={() => setHud({ hold: false })}
           >
-            Scan
+            Assess
           </button>
           <button
             type="button"
-            className={`${run.hold.kind === 'rescue' ? 'on' : ''} ${extractReady ? 'ready' : 'dim'}`}
+            className={`${run.hold.kind === 'rescue' ? 'on' : ''} ${rescueReady ? 'ready' : 'dim'}`}
             onPointerDown={(e) => {
               e.preventDefault()
               setHud({ rescue: true })
@@ -72,7 +72,7 @@ export function RunHud() {
             onPointerUp={() => setHud({ rescue: false })}
             onPointerLeave={() => setHud({ rescue: false })}
           >
-            Extract
+            Rescue
           </button>
         </div>
         <div className="run-tools">
