@@ -21,12 +21,9 @@ export function Debrief() {
   return (
     <div className="debrief">
       <div className="debrief-inner">
-        <p className="stage0-kicker">Run over · all cells vented</p>
+        <p className="stage0-kicker">{clock(sum.duration)} · seed {sum.seed}</p>
         <h1>What happened</h1>
-        <p className="debrief-lead">
-          Ignition was the {sum.ignitionRoom}. The building burned for {clock(sum.duration)}. Seed{' '}
-          {sum.seed}. Add <code>?seed={sum.seed}</code> to replay this ignition.
-        </p>
+        <p className="debrief-lead">Ignition was the {sum.ignitionRoom}.</p>
         <ol className="debrief-list">
           {rows.map((row) => (
             <li key={row.id} className={row.highlight ? 'hi' : ''}>

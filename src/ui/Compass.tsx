@@ -19,16 +19,12 @@ export function Compass() {
     <div className="compass" role="meter" aria-label={`Heading ${cardinal(yaw)}`} aria-valuenow={Math.round(deg)}>
       <div className="compass-rose" style={{ transform: `rotate(${-deg}deg)` }}>
         <span className="c-n">N</span>
-        <span className="c-e">E</span>
-        <span className="c-s">S</span>
-        <span className="c-w">W</span>
       </div>
       <i className="compass-notch" />
       <b className="compass-pip" style={{ transform: `rotate(${pip}deg)` }} title="Doheny" />
       {open != null ? (
         <b className="compass-pip open" style={{ transform: `rotate(${open}deg)` }} title="Nearest opening" />
       ) : null}
-      <em>{cardinal(yaw)}</em>
     </div>
   )
 }

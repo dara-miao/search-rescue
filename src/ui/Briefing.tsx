@@ -26,24 +26,22 @@ export function Briefing() {
   return (
     <div className="briefing">
       <div className="briefing-card">
-        <p className="stage0-kicker">Doheny · perimeter · seed {seed}</p>
+        <p className="stage0-kicker">Seed {seed}</p>
         <h1>The interior is closed</h1>
-        <p>Fire is already in the stacks. You work the glass from the lawn. Follow one job at a time.</p>
         <ol className="briefing-steps">
           <li>
             <span>1</span>
-            Drive to the brightest cyan ring.
+            Drive to cyan
           </li>
           <li>
             <span>2</span>
-            Stop. Hold Space to scan.
+            Space to scan
           </li>
           <li>
             <span>3</span>
-            Hold F to extract. Carry to the red ring.
+            F to extract
           </li>
         </ol>
-        <p className="stage0-note">W throttle · A / D steer · T thermal. You cannot go inside. You cannot die.</p>
         <button type="button" className="debrief-go" onClick={go}>
           Roll out
         </button>

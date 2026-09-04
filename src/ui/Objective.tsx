@@ -10,27 +10,24 @@ export function Objective() {
   const run = useRun()
   const intent = playIntent(run, x, z)
   const frac = holdFrac(run.hold)
-  const stopFirst = Boolean(intent.hold && moving && run.hold.kind === 'idle')
-  const title = stopFirst ? 'Stop, then hold' : intent.title
-  const kicker = stopFirst ? 'Stop first' : intent.step
+  const holding = run.hold.kind !== 'idle'
+  const stopFirst = Boolean(intent.hold && moving && !holding)
+  const title = stopFirst ? 'Stop first' : intent.title
+  const showDist = intent.dist != null && !/\d+\s*m/.test(title)
+
+  if (holding) {
+    return (
+      <div className="hold-banner" aria-live="polite">
+        <b style={{ width: `${frac * 100}%` }} />
+        <span>{intent.title}</span>
+      </div>
+    )
+  }
 
   return (
-    <>
-      <div className={`objective ${intent.inRange ? 'ready' : ''} ${intent.kind}`}>
-        <p className="objective-kicker">{kicker}</p>
-        <h2>{title}</h2>
-        <p>{intent.detail}</p>
-      </div>
-      {intent.hold && run.hold.kind !== 'idle' ? (
-        <div className="hold-banner" aria-live="polite">
-          <b style={{ width: `${frac * 100}%` }} />
-          <span>{intent.title}</span>
-        </div>
-      ) : intent.inRange && intent.hold ? (
-        <div className="hold-banner hint">
-          <span>{title}</span>
-        </div>
-      ) : null}
-    </>
+    <div className={`obj-pill ${intent.inRange ? 'ready' : ''} ${intent.kind}`}>
+      <h2>{title}</h2>
+      {showDist ? <span>{Math.round(intent.dist!)} m</span> : null}
+    </div>
   )
 }
