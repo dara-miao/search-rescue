@@ -134,7 +134,7 @@ for (let i = 0; i < 9 * 60 * 4; i++) {
 }
 assert(firstPre != null && firstVentAt != null, 'pre-vent and vent both occur')
 assert(firstPre < firstVentAt, 'smoke telegraph happens before the first vent')
-assert(firstVentAt - firstPre >= 2, `pre-vent leads vent by a few seconds (got ${(firstVentAt - firstPre).toFixed(1)}s)`)
+assert(firstPre != null && firstVentAt != null && firstVentAt - firstPre >= 2, `pre-vent leads vent by a few seconds (got ${(firstVentAt - firstPre).toFixed(1)}s)`)
 
 const lit = createRun(11).cells.find((c) => c.facades.length && !c.isCore)
 if (lit) {
@@ -197,10 +197,8 @@ assisted.clock = 400
 const aext = carryRun.extractions.find((e) => e.cellId === assisted.cellId)
 if (aext) {
   holdFor(carryRun, inputAt(aext.x, aext.z, { hold: true, forceRescue: true }), 3.1)
-  assert(assisted.state === 'CARRIED' && carryRun.carriedId === assisted.id, 'carry resolves in about 3s')
-  const st = stagingPose()
-  stepRun(carryRun, inputAt(st.x, st.z), 0.05)
-  assert(assisted.state === 'RESCUED', 'staging drop-off completes the rescue')
+  assert(assisted.state === 'RESCUED' && carryRun.carriedId == null, 'carry finishes at the opening in about 3s')
+  assert(carryRun.evacuees.some((e) => e.victimId === assisted.id), 'helped-out people walk to staging on their own')
 } else {
   assert(false, 'assisted victim has an extraction')
 }
@@ -345,7 +343,7 @@ const sized = playIntent(
   target.z,
 )
 assert(
-  sized.hold === 'rescue' && /walk-out|carry|group/i.test(sized.detail),
+  sized.hold === 'rescue' && /walk-out|needs help|group/i.test(sized.detail),
   `after size-up the pill shows type (${sized.detail})`,
 )
 
