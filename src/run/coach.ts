@@ -10,8 +10,8 @@ export function coachCopy(step: CoachStep, meters: number | null) {
   if (step === 'opening') {
     return {
       n: 2,
-      title: 'Opening',
-      hint: meters != null ? `${meters.toFixed(0)} m to the marked opening` : 'Drive to the marked opening',
+      title: 'Marked opening',
+      hint: meters != null ? `${meters.toFixed(0)} m to the opening` : 'Drive to the opening on the glass',
     }
   }
   if (step === 'assess') {

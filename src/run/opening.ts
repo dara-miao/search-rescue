@@ -44,9 +44,9 @@ export function nearestPlayOpening(
 }
 
 export function typeLabel(type: RescueType) {
-  if (type === 'SELF_EXTRACT') return 'self-extract'
-  if (type === 'GROUP') return 'group'
+  if (type === 'SELF_EXTRACT') return 'walk-out'
   if (type === 'ASSISTED') return 'carry'
+  if (type === 'GROUP') return 'group'
   return 'unreachable'
 }
 

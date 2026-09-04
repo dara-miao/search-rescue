@@ -1,3 +1,4 @@
+import { conditionLabel, typeLabel } from './opening'
 import { counts } from './tick'
 import type { RunState, Victim } from './types'
 
@@ -13,17 +14,17 @@ export type DebriefRow = {
 
 function seenLine(v: Victim) {
   if (v.seenAt == null && !v.scanned) return 'Never on thermal'
-  if (!v.scanned) return `${v.signature} signature · untyped`
-  return `${v.signature} · ${v.condition} · ${v.type} · ${v.count}`
+  if (!v.scanned) return `${v.signature} signature · not sized up`
+  return `${v.signature} · ${conditionLabel(v.condition)} · ${typeLabel(v.type)} · ${v.count}`
 }
 
 function didLine(v: Victim) {
-  if (v.scanLost) return 'Scanned after they were already gone'
+  if (v.scanLost) return 'Sized up after they were already gone'
   if (v.action === 'rescued') {
     return v.type === 'ASSISTED' ? 'Carried to staging' : `Held the opening ${v.rescueTime.toFixed(0)}s`
   }
   if (v.action === 'marked') return 'Marked for crews'
-  if (v.action === 'scanned') return 'Scanned, then left'
+  if (v.action === 'scanned') return 'Sized up, then left'
   if (v.action === 'skipped') return 'Seen, not engaged'
   if (v.state === 'LOST' && v.lostReason === 'vent') return 'Still inside when the room vented'
   if (v.state === 'LOST' && v.lostReason === 'clock') return 'Clock ran out'
@@ -33,7 +34,7 @@ function didLine(v: Victim) {
 function truthLine(v: Victim) {
   const fate =
     v.state === 'RESCUED' ? 'out' : v.state === 'MARKED' ? 'marked' : v.state === 'LOST' ? 'lost' : 'still inside'
-  return `${v.condition}, ${v.type}, ${v.count} in ${v.roomName} · ${fate}`
+  return `${conditionLabel(v.condition)}, ${typeLabel(v.type)}, ${v.count} in ${v.roomName} · ${fate}`
 }
 
 export function debriefRows(state: RunState): DebriefRow[] {
