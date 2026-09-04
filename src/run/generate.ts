@@ -43,10 +43,10 @@ export function rollCondition(signature: Signature, rng: () => number): Conditio
 function rescueTimeFor(type: RescueType, floor: number, fast: boolean, rng: () => number): number {
   if (type === 'UNREACHABLE') return 0
   let t: number
-  if (type === 'SELF_EXTRACT' || type === 'GROUP') t = 4 + rng() * 5
-  else t = 8 + rng() * 7
+  if (type === 'SELF_EXTRACT' || type === 'GROUP') t = 1.4 + rng() * 0.8
+  else t = 2.2 + rng() * 1
   if (floor === 0) t *= 1.5
-  if (fast) t *= 0.65
+  if (fast) t *= 0.7
   return t
 }
 
