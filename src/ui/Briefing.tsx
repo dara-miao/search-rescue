@@ -1,36 +1,65 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { attribution } from '../data/site'
 import { useDrive } from '../drive/store'
 import { unlockAudio } from '../run/audio'
 import { useRun } from '../run/store'
 
+const BEATS = [
+  {
+    title: 'Doheny is on fire.',
+    body: null,
+  },
+  {
+    title: 'Your job is the perimeter.',
+    body: 'Drive to marked openings. Assess who is at the glass. Rescue who you can reach. Carry them to staging.',
+  },
+  {
+    title: 'The interior is closed.',
+    body: 'You stay on the lawn. Staging is the red ring behind you.',
+  },
+] as const
+
 export function Briefing() {
-  const seed = useRun((s) => s.seed)
+  const [step, setStep] = useState(0)
+  const last = step >= BEATS.length - 1
+  const beat = BEATS[step]
+
   const go = () => {
     unlockAudio()
     useDrive.getState().reset()
     useRun.getState().begin()
   }
 
+  const advance = () => {
+    if (last) go()
+    else setStep((n) => n + 1)
+  }
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Enter' || e.code === 'Space') {
-        e.preventDefault()
-        go()
-      }
+      if (e.code !== 'Enter' && e.code !== 'Space') return
+      if (e.repeat) return
+      e.preventDefault()
+      advance()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [last])
 
   return (
     <div className="briefing">
       <div className="briefing-card">
-        <p className="stage0-kicker">Perimeter · seed {seed}</p>
-        <h1>Fire in the stacks</h1>
-        <p>Interior is closed. Work the glass from the lawn. Staging is the red ring behind you.</p>
-        <button type="button" className="debrief-go" onClick={go}>
-          Deploy
+        <div key={step} className="briefing-beat">
+          <h1>{beat.title}</h1>
+          {beat.body ? <p>{beat.body}</p> : null}
+        </div>
+        <ol className="briefing-dots" aria-label={`Step ${step + 1} of ${BEATS.length}`}>
+          {BEATS.map((_, i) => (
+            <li key={i} className={i === step ? 'on' : i < step ? 'done' : undefined} />
+          ))}
+        </ol>
+        <button type="button" className="debrief-go" autoFocus onClick={advance}>
+          {last ? 'Deploy' : 'Next'}
         </button>
       </div>
       <p className="osm-mark" title={attribution()}>
