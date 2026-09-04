@@ -58,7 +58,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     const carried = state.victims.find((v) => v.id === state.carriedId)
     return withStep({
       kind: 'deliver',
-      title: toStaging < 7 ? 'Drop them here' : 'Carry to the red ring',
+      title: toStaging < 7 ? 'Drop here' : 'To the red ring',
       detail: carried
         ? `${carried.roomName} · ${carried.count} · ${toStaging.toFixed(0)} m`
         : `${toStaging.toFixed(0)} m to staging`,
@@ -111,8 +111,8 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
   if (scan) {
     return withStep({
       kind: 'scan',
-      title: 'Hold Space to scan',
-      detail: `${scan.roomName} · stay still`,
+      title: 'Hold Space',
+      detail: scan.roomName,
       dist: scanD,
       inRange: true,
       hold: 'scan',
@@ -123,7 +123,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     return withStep({
       kind: 'mark',
       title: 'Hold Space to mark',
-      detail: `${mark.roomName} · unreachable · crews will take this`,
+      detail: mark.roomName,
       dist: markD,
       inRange: true,
       hold: 'mark',
@@ -134,7 +134,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     const ready = rescue.scanned
     return withStep({
       kind: 'rescue',
-      title: 'Hold F to extract',
+      title: 'Hold F',
       detail: ready
         ? `${conditionLabel(rescue.condition)} · ${typeLabel(rescue.type)} · ${rescue.count}`
         : `${rescue.roomName} · scan first if you can`,
@@ -146,7 +146,6 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
 
   const near = nearestPlayOpening(x, z, state)
   if (near) {
-    const meters = `${near.dist.toFixed(0)} m`
     const who = near.waiting ? `${near.waiting} waiting` : 'no one waiting'
     const scannedWait = state.victims.find(
       (v) =>
@@ -158,7 +157,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     if (scannedWait && near.dist > RESCUE_RANGE) {
       return withStep({
         kind: 'drive',
-        title: near.dist <= 8 ? 'Hold F at the ring' : `${meters} to extract`,
+        title: near.dist <= 8 ? 'Hold F at the ring' : 'To extract',
         detail: `${near.ext.opening} · ${conditionLabel(scannedWait.condition)}`,
         dist: near.dist,
         inRange: false,
@@ -168,8 +167,8 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     if (state.t < 7 && near.dist > 12) {
       return withStep({
         kind: 'coach',
-        title: 'Follow the cyan pip',
-        detail: `${near.ext.opening} · ${meters}`,
+        title: 'Follow cyan',
+        detail: near.ext.opening,
         dist: near.dist,
         inRange: false,
         hold: null,
@@ -179,7 +178,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
       return withStep({
         kind: 'drive',
         title: near.ext.opening,
-        detail: `Drive · ${meters} · ${who}`,
+        detail: who,
         dist: near.dist,
         inRange: false,
         hold: null,
@@ -188,8 +187,8 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     if (near.dist > 8) {
       return withStep({
         kind: 'drive',
-        title: `${meters} to the ring`,
-        detail: `${near.ext.opening} · keep coming`,
+        title: 'Keep coming',
+        detail: near.ext.opening,
         dist: near.dist,
         inRange: false,
         hold: null,
@@ -197,8 +196,8 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     }
     return withStep({
       kind: 'drive',
-      title: 'Stop on the cyan ring',
-      detail: `${near.ext.opening} · then hold Space`,
+      title: 'Stop on the ring',
+      detail: near.ext.opening,
       dist: near.dist,
       inRange: false,
       hold: null,
