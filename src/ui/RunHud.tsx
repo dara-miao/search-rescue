@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { attribution } from '../data/site'
 import { useDrive } from '../drive/store'
 import { isMuted, setMuted, unlockAudio } from '../run/audio'
 import { batteryBand } from '../run/battery'
 import { playIntent } from '../run/intent'
-import { conditionLabel, revealLine, typeLabel } from '../run/opening'
 import { useRun } from '../run/store'
 import { AnalogKnob } from './AnalogKnob'
 import { Compass } from './Compass'
@@ -25,9 +23,6 @@ export function RunHud() {
   const [mute, setMute] = useState(() => isMuted())
   const band = batteryBand(run.battery)
   const waiting = run.victims.filter((v) => v.state === 'WAITING' || v.state === 'CARRIED').length
-  const marked = run.victims.filter((v) => v.state === 'MARKED').length
-  const lastVent = run.vents[run.vents.length - 1]
-  const telegraph = run.cells.find((c) => c.preVent && !c.vented)
   const intent = playIntent(run, x, z)
   const scanReady = intent.hold === 'scan' || intent.hold === 'mark'
   const extractReady = intent.hold === 'rescue'
@@ -37,65 +32,24 @@ export function RunHud() {
     useRun.getState().replay()
   }
 
-  const event =
-    band === 'empty'
-      ? 'Battery empty · crawl to the red ring'
-      : band === 'limp'
-        ? 'Battery limp · charge at staging'
-        : run.inHeat
-          ? 'Heat · battery drains faster · thermal breaks up'
-          : telegraph
-            ? `Smoke thickening at the ${telegraph.roomName}`
-            : lastVent
-              ? `Fire reached the ${lastVent.roomName}`
-              : run.lastReveal
-                ? `${conditionLabel(run.lastReveal.condition)} · ${typeLabel(run.lastReveal.type)} · ${run.lastReveal.count}`
-                : null
+  const alert =
+    band === 'empty' ? 'Crawl to the red ring' : band === 'limp' ? 'Limp · charge at staging' : run.inHeat ? 'Heat' : null
 
   return (
     <>
       <Compass />
       <Objective />
       {run.thermal ? <div className={`thermal-cast ${run.inHeat ? 'hot' : ''}`} aria-hidden="true" /> : null}
-      <aside className="stage0 drive-hud run-hud">
-        <p className="stage0-kicker">Doheny · seed {run.seed}</p>
-        <h1>{clock(run.t)}</h1>
-        <dl>
-          <div>
-            <dt>Battery</dt>
-            <dd>
-              <span className={`batt ${band}`}>
-                <i style={{ width: `${run.battery}%` }} />
-              </span>
-              {run.battery.toFixed(0)}
-              {band === 'limp' ? ' · limp' : band === 'empty' ? ' · crawl' : ''}
-            </dd>
-          </div>
-          <div>
-            <dt>Still in</dt>
-            <dd>
-              {waiting} waiting{marked ? ` · ${marked} marked` : ''}
-            </dd>
-          </div>
-          {run.lastReveal ? (
-            <div>
-              <dt>{run.lastReveal.kind === 'scan' ? 'Last scan' : run.lastReveal.kind === 'mark' ? 'Marked' : 'Extract'}</dt>
-              <dd>{revealLine(run.lastReveal)}</dd>
-            </div>
-          ) : null}
-        </dl>
-        {event ? <p className="stage0-hint vent-line">{event}</p> : null}
-        <p className="stage0-license">{attribution()}</p>
+      <aside className="run-strip">
+        <time>{clock(run.t)}</time>
+        <span className={`batt ${band}`} title={`Battery ${run.battery.toFixed(0)}`}>
+          <i style={{ width: `${run.battery}%` }} />
+        </span>
+        <em title="Still inside">{waiting}</em>
+        {alert ? <p className="run-toast">{alert}</p> : null}
       </aside>
       <div className="drive-dock run-dock">
         <div className="run-actions">
-          <button
-            type="button"
-            className={run.thermal ? 'on' : ''}
-            onClick={() => useRun.getState().toggleThermal()}
-          >
-            {run.thermal ? 'Thermal on' : 'Thermal'}
-          </button>
           <button
             type="button"
             className={`${run.hold.kind === 'scan' || run.hold.kind === 'mark' ? 'on' : ''} ${scanReady ? 'ready' : 'dim'}`}
@@ -120,6 +74,11 @@ export function RunHud() {
           >
             Extract
           </button>
+        </div>
+        <div className="run-tools">
+          <button type="button" className={run.thermal ? 'on' : ''} onClick={() => useRun.getState().toggleThermal()}>
+            Thermal
+          </button>
           <button
             type="button"
             className={mute ? 'on' : ''}
@@ -130,10 +89,10 @@ export function RunHud() {
               setMute(next)
             }}
           >
-            {mute ? 'Muted' : 'Audio'}
+            {mute ? 'Mute' : 'Sound'}
           </button>
           <button type="button" onClick={replay}>
-            Restart
+            Again
           </button>
         </div>
         <AnalogKnob onVector={(x, y, on) => setStick(x, y, on)} />
