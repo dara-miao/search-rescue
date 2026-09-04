@@ -14,6 +14,14 @@ const BEATS = [
     body: 'Drive to marked openings. Assess who is at the glass. Rescue who you can reach. Carry them to staging.',
   },
   {
+    title: 'Assess to size up who is at the glass.',
+    body: 'Thermal shows signatures. Count and condition stay hidden until you assess.',
+  },
+  {
+    title: 'When a room vents, that opening dies.',
+    body: 'Smoke comes first. Stay off the lip.',
+  },
+  {
     title: 'The interior is closed.',
     body: 'You stay on the lawn. Staging is the red ring behind you.',
   },
