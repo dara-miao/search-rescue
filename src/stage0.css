@@ -7,36 +7,76 @@
   inset: 0;
   z-index: 8;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding: 20px;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent 30%, rgba(7, 8, 11, 0.72) 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: auto;
+  background: rgba(7, 8, 11, 0.78);
+  backdrop-filter: blur(10px);
 }
 
 .briefing-card {
-  pointer-events: auto;
-  width: min(320px, calc(100% - 8px));
-  padding: 20px 22px 16px;
-  background: rgba(10, 12, 16, 0.62);
-  border: 1px solid rgba(239, 230, 214, 0.1);
-  border-radius: 18px;
+  width: min(440px, calc(100% - 8px));
+  padding: 36px 32px 28px;
+  text-align: center;
+  background: rgba(10, 12, 16, 0.72);
+  border: 1px solid rgba(239, 230, 214, 0.12);
+  border-radius: 22px;
   color: #efe6d6;
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(16px);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+}
+
+.briefing-beat {
+  animation: briefing-in 0.28s ease;
+}
+
+@keyframes briefing-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .briefing-card h1 {
-  margin: 0 0 16px;
-  font: 400 36px/1 'Bebas Neue', 'IBM Plex Sans', sans-serif;
+  margin: 0 0 14px;
+  font: 400 clamp(36px, 7vw, 52px)/1 'Bebas Neue', 'IBM Plex Sans', sans-serif;
   letter-spacing: 0.03em;
 }
 
 .briefing-card p {
-  margin: 0 0 12px;
-  font-size: 14px;
+  margin: 0 auto 18px;
+  max-width: 34ch;
+  font-size: 16px;
   line-height: 1.45;
   color: #cfc4b4;
+}
+
+.briefing-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.briefing-dots li {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(239, 230, 214, 0.2);
+}
+
+.briefing-dots li.done {
+  background: rgba(201, 162, 39, 0.45);
+}
+
+.briefing-dots li.on {
+  background: #c9a227;
 }
 
 .briefing-card dl {
@@ -789,7 +829,11 @@
   }
 
   .briefing {
-    padding: 10px;
+    padding: 16px;
+  }
+
+  .briefing-card {
+    padding: 28px 20px 22px;
   }
 
   .obj-pill,
