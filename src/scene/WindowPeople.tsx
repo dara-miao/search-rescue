@@ -16,7 +16,7 @@ function lawnPoint(x: number, z: number, extra = 0.95) {
   return { x: x + (dx / len) * extra, z: z + (dz / len) * extra, yaw: Math.atan2(dx, dz) }
 }
 
-/** People waiting at live openings. Visible without thermal. */
+/** One figure at a live opening. Count stays hidden until you assess. */
 export function WindowPeople() {
   const bodies = useRef<InstancedMesh>(null)
   const heads = useRef<InstancedMesh>(null)
@@ -31,7 +31,7 @@ export function WindowPeople() {
     let i = 0
     for (const victim of run.victims) {
       if (victim.state !== 'WAITING' && victim.state !== 'MARKED') continue
-      const n = Math.max(1, Math.min(victim.count, 4))
+      const n = victim.scanned ? Math.max(1, Math.min(victim.count, 4)) : 1
       const lawn = lawnPoint(victim.x, victim.z)
       const tx = -Math.cos(lawn.yaw)
       const tz = Math.sin(lawn.yaw)

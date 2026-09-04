@@ -32,8 +32,18 @@ export function RunHud() {
     useRun.getState().replay()
   }
 
+  const lastVent = run.vents.filter((v) => v.kind === 'vent').at(-1)
+  const venting = lastVent != null && run.t - lastVent.t < 6
   const alert =
-    band === 'empty' ? 'Crawl to the red ring' : band === 'limp' ? 'Limp · charge at staging' : run.inHeat ? 'Heat' : null
+    band === 'empty'
+      ? 'Crawl to the red ring'
+      : venting
+        ? `${lastVent.roomName} vented`
+        : band === 'limp'
+          ? 'Limp · charge at staging'
+          : run.inHeat
+            ? 'Heat'
+            : null
 
   return (
     <>

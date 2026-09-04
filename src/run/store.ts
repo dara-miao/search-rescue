@@ -30,7 +30,7 @@ let hudWait = 0
 export const useRun = create<RunStore>((set, get) => ({
   ...gated(),
   coach: 'off',
-  hudThermal: false,
+  hudThermal: true,
   hudHold: false,
   hudRescue: false,
   start: (seed) => {
@@ -39,14 +39,14 @@ export const useRun = create<RunStore>((set, get) => ({
     set({
       ...gated(seed),
       coach: 'off',
-      hudThermal: false,
+      hudThermal: true,
       hudHold: false,
       hudRescue: false,
     })
   },
   begin: () => {
     if (get().phase !== 'briefing') return
-    set({ phase: 'playing', t: 0, coach: 'drive' })
+    set({ phase: 'playing', t: 0, coach: 'drive', hudThermal: true })
   },
   skipCoach: () => set({ coach: 'off' }),
   showCredits: () => {
@@ -67,7 +67,7 @@ export const useRun = create<RunStore>((set, get) => ({
       phase: 'playing',
       t: 0,
       coach: 'off',
-      hudThermal: false,
+      hudThermal: true,
       hudHold: false,
       hudRescue: false,
     })

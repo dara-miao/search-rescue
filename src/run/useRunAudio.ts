@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+import { useDrive } from '../drive/store'
 import { tickRunAudio, unlockAudio } from './audio'
+import { holdFrac } from './hold'
 import { useRun } from './store'
 
 export function useRunAudio() {
@@ -22,9 +24,17 @@ export function useRunAudio() {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       acc += dt
-      if (acc < 0.12) return
+      if (acc < 0.08) return
       acc = 0
-      tickRunAudio(useRun.getState().cells)
+      const run = useRun.getState()
+      tickRunAudio({
+        cells: run.cells,
+        holdKind: run.hold.kind,
+        holdFrac: holdFrac(run.hold),
+        speed: useDrive.getState().speed,
+        playing: run.phase === 'playing',
+        lastReveal: run.lastReveal,
+      })
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
