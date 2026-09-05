@@ -1,6 +1,6 @@
 import { coachCopy } from '../run/coach'
 import { playIntent } from '../run/intent'
-import { nearestPlayOpening } from '../run/opening'
+import { nearestPlayOpening, thermalRead } from '../run/opening'
 import { useDrive } from '../drive/store'
 import { useRun } from '../run/store'
 
@@ -22,7 +22,7 @@ export function Objective() {
   const detail = holding
     ? intent.detail
     : fresh && fresh.kind === 'scan'
-      ? `${fresh.signature.toLowerCase()} signature`
+      ? `Thermal showed them ${thermalRead(fresh.signature)}`
       : intent.detail
 
   if (teach) {
