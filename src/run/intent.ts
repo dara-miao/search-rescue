@@ -162,50 +162,12 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
         v.scanned &&
         v.type !== 'UNREACHABLE',
     )
-    if (scannedWait && near.dist > RESCUE_RANGE) {
-      return withStep({
-        kind: 'drive',
-        title: near.dist <= 8 ? 'Press F to rescue' : 'To the opening',
-        detail: `${near.ext.opening} · ${conditionLabel(scannedWait.condition)}`,
-        dist: near.dist,
-        inRange: false,
-        hold: null,
-      })
-    }
-    if (state.t < 7 && near.dist > 12) {
-      return withStep({
-        kind: 'coach',
-        title: 'Marked opening',
-        detail: near.ext.opening,
-        dist: near.dist,
-        inRange: false,
-        hold: null,
-      })
-    }
-    if (near.dist > 16) {
-      return withStep({
-        kind: 'drive',
-        title: near.ext.opening,
-        detail: who,
-        dist: near.dist,
-        inRange: false,
-        hold: null,
-      })
-    }
-    if (near.dist > 8) {
-      return withStep({
-        kind: 'drive',
-        title: 'Keep coming',
-        detail: near.ext.opening,
-        dist: near.dist,
-        inRange: false,
-        hold: null,
-      })
-    }
     return withStep({
       kind: 'drive',
-      title: 'Stop on the ring',
-      detail: near.ext.opening,
+      title: near.ext.opening,
+      detail: scannedWait
+        ? `${who} · ${conditionLabel(scannedWait.condition)}`
+        : who,
       dist: near.dist,
       inRange: false,
       hold: null,
