@@ -9,10 +9,6 @@ export const ASSESS_S = 2
 const MARK_S = 2
 const MOVE_BREAK = 0.25
 const STAGING_R = 7
-const DRAIN_MOVE = 0.55
-const DRAIN_SCAN = 1.4
-const RECHARGE = 12
-const HEAT_DRAIN = 2.5
 
 function cellOf(state: RunState, id: string) {
   return state.cells.find((c) => c.id === id) ?? null
@@ -215,17 +211,8 @@ function tickHold(state: RunState, input: RunInput, dt: number) {
   state.hold = { kind: target.kind, targetId: target.victim.id, progress, need: target.need }
 }
 
-function tickBattery(state: RunState, input: RunInput, dt: number) {
-  const staging = dist(input.x, input.z, stagingPose().x, stagingPose().z) < STAGING_R
-  if (staging) {
-    state.battery = Math.min(100, state.battery + RECHARGE * dt)
-    return
-  }
-  let drain = 0
-  if (input.moving || Math.abs(input.speed) > 0.14) drain += DRAIN_MOVE
-  if (state.hold.kind === 'scan') drain += DRAIN_SCAN
-  if (nearVentedFacade(input.x, input.z, state.cells)) drain *= HEAT_DRAIN
-  state.battery = Math.max(0, state.battery - drain * dt)
+function tickBattery(state: RunState) {
+  state.battery = 100
 }
 
 function tickThermal(state: RunState, input: RunInput) {
@@ -266,7 +253,7 @@ export function stepRun(state: RunState, input: RunInput, dt: number): RunState 
   tickClocks(state, h)
   tickThermal(state, input)
   tickHold(state, input, h)
-  tickBattery(state, input, h)
+  tickBattery(state)
   state.inHeat = nearVentedFacade(input.x, input.z, state.cells)
   maybeEnd(state)
   return state
