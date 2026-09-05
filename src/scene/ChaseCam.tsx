@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import type { PerspectiveCamera as Persp } from 'three'
 import { CHASE_CONFIG, createChaseCamera, stepChaseCamera } from '../drive/robot-chase.js'
+import { siteBlockers } from '../drive/step'
 import { useDrive } from '../drive/store'
 
 /**
@@ -36,6 +37,7 @@ export function ChaseCam() {
       cam,
       dt,
       cfg,
+      siteBlockers(),
     )
   })
 
