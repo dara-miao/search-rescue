@@ -64,6 +64,7 @@
  */
 
 import * as THREE from 'three';
+import { resolveCollision } from './robot-controller.js';
 
 export const CHASE_CONFIG = {
   radius: 0.85,
@@ -222,6 +223,38 @@ export function createChaseCamera(cfg = CHASE_CONFIG) {
   return { yaw: 0, roll: 0, fov: cfg.camera.fov.base, initialised: false };
 }
 
+/** Lens radius. Bigger than `near` so a wall cannot sit inside the clip plane. */
+export const CHASE_CAM_SKIN = 1.2;
+
+/**
+ * Shorten the chase boom until the lens is outside every blocker.
+ * A lateral push would slide the camera off-axis and break the locked chase.
+ * Walking t from the robot to the desired point keeps the robot up-screen.
+ */
+export function keepChaseCameraOut(from, to, blockers, radius = CHASE_CAM_SKIN) {
+  if (!blockers || !blockers.length) return { x: to.x, z: to.z };
+  if (!resolveCollision({ x: to.x, z: to.z }, radius, blockers).hit) {
+    return { x: to.x, z: to.z };
+  }
+
+  let lo = 0;
+  let hi = 1;
+  let best = { x: from.x, z: from.z };
+  for (let i = 0; i < 14; i++) {
+    const t = (lo + hi) * 0.5;
+    const p = {
+      x: from.x + (to.x - from.x) * t,
+      z: from.z + (to.z - from.z) * t,
+    };
+    if (resolveCollision(p, radius, blockers).hit) hi = t;
+    else {
+      lo = t;
+      best = p;
+    }
+  }
+  return best;
+}
+
 /**
  * Locked chase camera.
  *
@@ -231,7 +264,7 @@ export function createChaseCamera(cfg = CHASE_CONFIG) {
  * rigid camera, which reads as the world spinning rather than the robot
  * turning.
  */
-export function stepChaseCamera(cam, robot, camera, dt, cfg = CHASE_CONFIG) {
+export function stepChaseCamera(cam, robot, camera, dt, cfg = CHASE_CONFIG, blockers) {
   const c = cfg.camera;
 
   if (!cam.initialised) {
@@ -260,12 +293,30 @@ export function stepChaseCamera(cam, robot, camera, dt, cfg = CHASE_CONFIG) {
     groundY + c.height,
     robot.position.z - camFwd.z * c.distance
   );
+  const held = keepChaseCameraOut(
+    robot.position,
+    desired,
+    blockers,
+    CHASE_CAM_SKIN,
+  );
+  desired.x = held.x;
+  desired.z = held.z;
 
   if (dt > 0) {
     camera.position.lerp(desired, Math.min(1, c.positionLerp * dt));
   } else {
     camera.position.copy(desired);
   }
+
+  // Lerp can still sit inside for a frame if the boom just became illegal.
+  const now = keepChaseCameraOut(
+    robot.position,
+    camera.position,
+    blockers,
+    CHASE_CAM_SKIN,
+  );
+  camera.position.x = now.x;
+  camera.position.z = now.z;
 
   // --- look target -----------------------------------------------------
   const robotFwd = forwardVector(robot.yaw);
