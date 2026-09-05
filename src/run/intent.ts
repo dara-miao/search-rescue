@@ -152,9 +152,20 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
     })
   }
 
+  if (!state.victims.some((v) => v.state === 'WAITING' || v.state === 'CARRIED')) {
+    return withStep({
+      kind: 'wait',
+      title: "They're out",
+      detail: 'You got who you could reach.',
+      dist: null,
+      inRange: false,
+      hold: null,
+    })
+  }
+
   const near = nearestPlayOpening(x, z, state)
   if (near) {
-    const who = near.waiting ? `${near.waiting} waiting` : 'no one waiting'
+    const who = `${near.waiting} waiting`
     const scannedWait = state.victims.find(
       (v) =>
         v.cellId === near.ext.cellId &&
@@ -176,8 +187,8 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
 
   return withStep({
     kind: 'wait',
-    title: 'No live opening',
-    detail: 'Rooms are venting. Keep clear of the heat.',
+    title: 'Next opening',
+    detail: 'Keep to the lawn. Live rooms still have people.',
     dist: null,
     inRange: false,
     hold: null,

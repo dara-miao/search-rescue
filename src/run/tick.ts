@@ -224,17 +224,22 @@ function tickThermal(state: RunState, input: RunInput) {
   }
 }
 
+export function stillInPlay(state: Pick<RunState, 'victims'>) {
+  return state.victims.some((v) => v.state === 'WAITING' || v.state === 'CARRIED')
+}
+
 function maybeEnd(state: RunState) {
-  if (allVented(state.cells)) {
-    state.phase = 'debrief'
-    for (const victim of state.victims) {
-      if (victim.state === 'WAITING' || victim.state === 'CARRIED') {
-        const cell = cellOf(state, victim.cellId)
-        lose(victim, cell?.vented ? 'vent' : 'clock', state)
-      }
-      if (victim.seenAt != null && victim.action === 'none' && victim.state !== 'RESCUED') {
-        victim.action = 'skipped'
-      }
+  const burnedOut = allVented(state.cells)
+  if (stillInPlay(state) && !burnedOut) return
+  state.phase = 'debrief'
+  if (!burnedOut) return
+  for (const victim of state.victims) {
+    if (victim.state === 'WAITING' || victim.state === 'CARRIED') {
+      const cell = cellOf(state, victim.cellId)
+      lose(victim, cell?.vented ? 'vent' : 'clock', state)
+    }
+    if (victim.seenAt != null && victim.action === 'none' && victim.state !== 'RESCUED') {
+      victim.action = 'skipped'
     }
   }
 }

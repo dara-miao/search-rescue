@@ -25,7 +25,7 @@ export function nearestLiveOpening(
   return best
 }
 
-/** Closest live opening that still has someone waiting. Falls back to any live opening. */
+/** Closest live opening that still has someone waiting. Empty openings stay off the card. */
 export function nearestPlayOpening(
   x: number,
   z: number,
@@ -40,7 +40,7 @@ export function nearestPlayOpening(
     const d = dist(x, z, ext.x, ext.z)
     if (!best || d < best.dist) best = { ext, cell, dist: d, waiting }
   }
-  return best ?? nearestLiveOpening(x, z, state)
+  return best
 }
 
 export function thermalRead(signature: Signature) {
