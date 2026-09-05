@@ -12,7 +12,7 @@ import { playIntent } from '../src/run/intent'
 import { coachCopy, stepCoach } from '../src/run/coach'
 import { nearestLiveOpening, nearestPlayOpening, revealLine } from '../src/run/opening'
 import { useRun } from '../src/run/store'
-import { stepRun } from '../src/run/tick'
+import { stepRun, stillInPlay } from '../src/run/tick'
 import { stagingPose } from '../src/drive/spawn'
 import { pointInPoly } from '../src/drive/hull'
 import { site } from '../src/data/site'
@@ -297,6 +297,19 @@ for (const c of end.cells) {
 }
 stepRun(end, inputAt(0, 40), 0.05)
 assert(end.phase === 'debrief', 'run ends when every cell has vented')
+
+const swept = createRun(8)
+for (const v of swept.victims) {
+  v.state = v.type === 'UNREACHABLE' ? 'MARKED' : 'RESCUED'
+  v.action = v.type === 'UNREACHABLE' ? 'marked' : 'rescued'
+}
+assert(!stillInPlay(swept), 'no one left to save after a sweep')
+stepRun(swept, inputAt(0, 40), 0.05)
+assert(swept.phase === 'debrief', 'run ends when everyone is out or marked')
+const doneLine = playIntent(swept, 0, 40)
+assert(/out/i.test(doneLine.title), `cleared run says they are out (${doneLine.title})`)
+assert(!/no one waiting/i.test(doneLine.detail), 'cleared run does not name an empty opening')
+assertOpsSpeak('cleared prompt', playerCopy(doneLine.title, doneLine.detail))
 const rows = debriefRows(end)
 const sum = debriefSummary(end)
 assert(rows.length === end.victims.length, 'debrief lists every victim')
