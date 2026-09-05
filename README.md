@@ -1,17 +1,7 @@
 # Doheny Rescue
 
-<p align="center">
-  <img src="public/doheny-from-lawn.svg" width="880" alt="Doheny Memorial Library from the Alumni Park lawn in the sim" />
-</p>
-
-<p align="center">
   <strong>Doheny is on fire.</strong><br />
   <a href="https://usc-search-rescue.vercel.app">Play live</a>
-  ·
-  <a href="https://usc-search-rescue.vercel.app/?seed=42">seed 42</a>
-  ·
-  <a href="https://github.com/dara-miao/search-rescue">source</a>
-</p>
 
 Fire is already in the stacks at Doheny Memorial Library. You drive a ground robot on the Alumni Park lawn and triage people at the glass. You cannot go inside.
 
