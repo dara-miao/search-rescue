@@ -11,19 +11,19 @@ const BEATS = [
   },
   {
     title: 'Your job is the perimeter.',
-    body: 'Drive to marked openings. Assess who is at the glass. Rescue who you can reach. They walk to staging.',
+    body: 'Drive to the marked openings, see who is waiting at the glass, and rescue anyone you can reach. They walk themselves to staging.',
   },
   {
     title: 'Assess to size up who is at the glass.',
-    body: 'Thermal shows heat at the glass. Count and condition stay hidden until you assess.',
+    body: 'Thermal only shows heat. You will not know how many people are there, or how they are doing, until you stop and assess.',
   },
   {
     title: 'When a room vents, that opening dies.',
-    body: 'Smoke comes first. Stay off the lip.',
+    body: 'You will see smoke first. Get off the lip before the heat dumps out.',
   },
   {
     title: 'The interior is closed.',
-    body: 'You stay on the lawn. The red ring is staging. Charge there if you limp.',
+    body: 'Stay on the lawn. The red ring is staging, and you can charge there if the battery starts to limp.',
   },
 ] as const
 
