@@ -299,6 +299,9 @@ useRun.getState().tick(inputAt(0, 40, { moving: true, speed: 3 }), 1)
 assert(useRun.getState().t === heldT, 'briefing does not tick the fire')
 useRun.getState().begin()
 assert(useRun.getState().phase === 'playing', 'deploy starts the run')
+assert(useRun.getState().deployIntro === true, 'deploy starts the crane-down')
+useRun.getState().endDeployIntro()
+assert(useRun.getState().deployIntro === false, 'the crane can finish')
 
 useRun.getState().start(11)
 for (const c of useRun.getState().cells) {
@@ -386,6 +389,7 @@ useRun.getState().replay()
 assert(useRun.getState().phase === 'playing' && useRun.getState().t === 0, 'replay rolls out the same seed')
 assert(useRun.getState().seed === 42, 'replay keeps the seed')
 assert(useRun.getState().hudThermal === true, 'replay turns thermal back on')
+assert(useRun.getState().deployIntro === false, 'replay skips the crane-down')
 
 if (process.exitCode) {
   console.error('run tests failed')
