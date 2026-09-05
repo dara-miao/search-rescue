@@ -68,6 +68,7 @@ export type Evacuee = {
   startZ: number
   destX: number
   destZ: number
+  path: Array<{ x: number; z: number }>
   born: number
   duration: number
   lane: number

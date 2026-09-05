@@ -23,7 +23,7 @@ const BEATS = [
   },
   {
     title: 'Stay on the lawn.',
-    body: 'Charge at the red ring if you limp.',
+    body: 'You cannot go inside. They walk to the red ring.',
   },
 ] as const
 

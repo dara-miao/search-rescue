@@ -22,7 +22,7 @@ export function WalkOut() {
       const pose = evacueePose(evac, run.t)
       if (!pose.visible) continue
       dummy.position.set(pose.x, heightAt(pose.x, pose.z, site) + 0.72, pose.z)
-      dummy.rotation.set(0, Math.atan2(evac.destX - evac.startX, evac.destZ - evac.startZ), 0)
+      dummy.rotation.set(0, Math.atan2(pose.hx, pose.hz), 0)
       dummy.scale.setScalar(1)
       dummy.updateMatrix()
       inst.setMatrixAt(i, dummy.matrix)
