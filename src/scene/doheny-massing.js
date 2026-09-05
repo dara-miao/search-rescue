@@ -474,16 +474,18 @@ export function buildMassing(siteData, cfg = MASSING_CONFIG) {
   doorGeo.translate(0, 0, D / 2 + pv.projection - pv.portalRecess + 0.08);
   doorGeo.computeVertexNormals();
 
-  // Entrance steps — the third silhouette break the spec names.
+  // Entrance steps rise toward the door. Lawn side is the bottom tread.
   const stepGeos = [];
   const stepFront = D / 2 + pv.projection;
-  for (let i = 0; i < 5; i++) {
-    const rise = 0.16;
-    const tread = 0.72;
-    const w = pv.portalWidth + 3.2 - i * 0.15;
+  const stepCount = 5;
+  const rise = 0.16;
+  const tread = 0.72;
+  for (let i = 0; i < stepCount; i++) {
+    const fromLawn = stepCount - 1 - i;
+    const w = pv.portalWidth + 3.2 - fromLawn * 0.15;
     stepGeos.push(box(
       w, rise, tread,
-      0, rise * 0.5 + i * rise,
+      0, rise * 0.5 + fromLawn * rise,
       stepFront + 0.55 + i * tread,
     ));
   }
