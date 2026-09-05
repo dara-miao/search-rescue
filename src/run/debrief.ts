@@ -1,6 +1,6 @@
-import { conditionLabel } from './opening'
+import { conditionLabel, thermalRead } from './opening'
 import { counts } from './tick'
-import type { Condition, RescueType, RunState, Signature, Victim } from './types'
+import type { Condition, RescueType, RunState, Victim } from './types'
 
 export type DebriefRow = {
   id: string
@@ -18,10 +18,6 @@ function an(word: string) {
 
 function cap(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1)
-}
-
-function sigLabel(signature: Signature) {
-  return signature.charAt(0) + signature.slice(1).toLowerCase()
 }
 
 function whoPhrase(count: number, type: RescueType, condition: Condition) {
@@ -42,8 +38,8 @@ function isPlural(v: Victim) {
 
 function seenLine(v: Victim) {
   if (v.seenAt == null && !v.scanned) return 'They never showed on thermal.'
-  if (!v.scanned) return `You had ${an(sigLabel(v.signature))} signature and did not size them up.`
-  return `You had ${an(sigLabel(v.signature))} signature and sized them up as ${whoPhrase(v.count, v.type, v.condition)}.`
+  if (!v.scanned) return `Thermal showed them ${thermalRead(v.signature)}. You did not size them up.`
+  return `Thermal showed them ${thermalRead(v.signature)}. You sized them up as ${whoPhrase(v.count, v.type, v.condition)}.`
 }
 
 function didLine(v: Victim) {

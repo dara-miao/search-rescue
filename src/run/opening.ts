@@ -1,5 +1,5 @@
 import { dist } from './layout'
-import type { Condition, Extraction, FireCell, RescueType, RunState, Victim } from './types'
+import type { Condition, Extraction, FireCell, RescueType, RunState, Signature, Victim } from './types'
 
 export type LiveOpening = {
   ext: Extraction
@@ -41,6 +41,12 @@ export function nearestPlayOpening(
     if (!best || d < best.dist) best = { ext, cell, dist: d, waiting }
   }
   return best ?? nearestLiveOpening(x, z, state)
+}
+
+export function thermalRead(signature: Signature) {
+  if (signature === 'STRONG') return 'bright'
+  if (signature === 'FAINT') return 'faint'
+  return 'dim'
 }
 
 export function typeLabel(type: RescueType) {

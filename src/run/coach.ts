@@ -18,53 +18,11 @@ export function coachCopy(step: CoachStep, meters: number | null) {
     return {
       n: 3,
       title: 'Assess',
-      hint: 'Stop. Press Space. Thermal shows signatures. Count and condition stay hidden until you size up.',
+      hint: 'Stop. Press Space. Thermal shows heat at the glass. Count and condition stay hidden until you size up.',
     }
   }
   if (step === 'rescue') {
     return { n: 4, title: 'Rescue', hint: 'Press F. They walk to staging. You stay on the perimeter.' }
   }
   return { n: 0, title: '', hint: '' }
-}
-
-export function stepCoach(
-  step: CoachStep,
-  ctx: {
-    speed: number
-    dist: number | null
-    holdKind: HoldKind
-    lastReveal: Reveal | null
-    carriedId: string | null
-  },
-): CoachStep {
-  if (step === 'off') return 'off'
-  if (step === 'drive' && Math.abs(ctx.speed) > 0.8) {
-    return ctx.dist != null && ctx.dist <= 8 ? 'assess' : 'opening'
-  }
-  if (step === 'opening' && ctx.dist != null && ctx.dist <= 8) return 'assess'
-  if (step === 'assess' && ctx.lastReveal) return 'rescue'
-  if (
-    step === 'rescue' &&
-    (ctx.holdKind === 'rescue' || ctx.carriedId != null || ctx.lastReveal?.kind === 'rescue' || ctx.lastReveal?.kind === 'mark')
-  ) {
-    return 'off'
-  }
-  return step
-}
-
-export function coachFromRun(
-  step: CoachStep,
-  state: Pick<RunState, 'hold' | 'lastReveal' | 'carriedId' | 'extractions' | 'cells' | 'victims'>,
-  x: number,
-  z: number,
-  speed: number,
-) {
-  const near = nearestPlayOpening(x, z, state)
-  return stepCoach(step, {
-    speed,
-    dist: near?.dist ?? null,
-    holdKind: state.hold.kind,
-    lastReveal: state.lastReveal,
-    carriedId: state.carriedId,
-  })
 }
