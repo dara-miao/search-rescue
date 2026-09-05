@@ -7,15 +7,16 @@
   inset: 0;
   z-index: 8;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 28px 32px;
+  padding: 28px 32px 40px;
   pointer-events: auto;
   background:
-    radial-gradient(
-      ellipse 70% 60% at 50% 50%,
-      rgba(8, 9, 12, 0.42) 0%,
-      rgba(8, 9, 12, 0.18) 55%,
+    linear-gradient(
+      to top,
+      rgba(8, 9, 12, 0.7) 0%,
+      rgba(8, 9, 12, 0.36) 34%,
+      rgba(8, 9, 12, 0.08) 58%,
       transparent 78%
     );
 }
@@ -857,7 +858,7 @@
   }
 
   .briefing {
-    padding: 16px 14px;
+    padding: 16px 14px 22px;
   }
 
   .briefing-card {
