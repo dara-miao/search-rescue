@@ -9,16 +9,16 @@
   <a href="https://usc-search-rescue.vercel.app">Play live</a>
 </p>
 
-Fire is already in the stacks at Doheny Memorial Library. You drive a ground robot on the Alumni Park lawn and triage people at the glass. You cannot go inside.
+Fire is already in the stacks at Doheny Memorial Library. You drive a ground robot on the Alumni Park lawn and save people outside the windows. Assess the scene, then pull out who you can reach. You cannot go inside.
 
 ## A run
 
-A short briefing holds the clock, then the lawn comes up. Deploy from the red ring. Marked openings still have someone waiting. Thermal starts on. Rooms telegraph with smoke, then vent.
+A short briefing holds the clock. Deploy from the red ring. Thermal starts on. Rooms smoke, then vent.
 
 1. Drive to a marked opening and stop.
-2. Press Space to assess. Stay still and it finishes. Count, condition, and type stay hidden until you do.
-3. Press F to rescue who you can reach. Mark the rest. They walk to staging. You stay on the perimeter.
-4. When a room vents that opening dies. Charge at the red ring if the battery limps.
+2. Press Space to assess. Thermal only shows heat until you do.
+3. Press F to rescue who you can reach. Mark the rest. They walk to staging.
+4. When a room vents that opening dies. Charge at the red ring if you limp.
 5. The run ends when every cell has vented.
 
 Debrief lists each person in encounter order: what you saw, what you did, what was true. No grade.
