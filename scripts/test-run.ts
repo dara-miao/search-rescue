@@ -2,6 +2,7 @@ import { createRun, generateVictims, rollCondition } from '../src/run/generate'
 import { allVented, stepFireTick, ventedCount } from '../src/run/fire'
 import { debriefRows, debriefSummary } from '../src/run/debrief'
 import { batteryBand, batterySpeedScale } from '../src/run/battery'
+import { pathStaysOutside, walkWaypoints } from '../src/run/evacuees'
 import { holdAnchor, holdFrac } from '../src/run/hold'
 import { makeExtractions, nearVentedFacade, outsidePoint, siteCells, speedScaleAt } from '../src/run/layout'
 import { parseSeed, seedQuery } from '../src/run/seed'
@@ -24,6 +25,14 @@ function assert(ok: boolean, msg: string) {
   } else {
     console.log(`ok  ${msg}`)
   }
+}
+
+function playerCopy(...parts: Array<string | null | undefined>) {
+  return parts.filter(Boolean).join(' ')
+}
+
+function assertOpsSpeak(label: string, text: string) {
+  assert(!/cyan|roll ?out|\bscan\b|\bextract\b/i.test(text), `${label} stays in ops language (${text})`)
 }
 
 function inputAt(x: number, z: number, extra: Partial<RunInput> = {}): RunInput {
@@ -224,20 +233,32 @@ const markRun = createRun(6)
 const up = markRun.victims.find((v) => v.type === 'UNREACHABLE')!
 holdFor(markRun, inputAt(up.x, up.z, { hold: true }), 2.1)
 assert(up.state === 'MARKED', 'unreachable mark completes in 2s')
-assert(debriefRows(markRun).some((r) => r.did === 'Marked for crews'), 'debrief names the mark')
+assert(debriefRows(markRun).some((r) => r.did === 'You marked them for crews.'), 'debrief names the mark')
 
 const batt = createRun(2)
-const startBatt = batt.battery
 holdFor(batt, inputAt(80, 80, { moving: true, speed: 3 }), 2)
-assert(batt.battery < startBatt - 0.8, 'moving drains battery')
+assert(batt.battery === 100, 'moving does not drain battery')
 const st = stagingPose()
 batt.battery = 40
 holdFor(batt, inputAt(st.x, st.z), 1)
-assert(batt.battery > 50, 'staging recharges')
-assert(batterySpeedScale(100) === 1 && batterySpeedScale(20) === 1, 'full battery is full speed')
-assert(batterySpeedScale(10) < 0.42 && batterySpeedScale(10) > 0.16, 'mid limp interpolates')
-assert(batterySpeedScale(0) === 0.16, 'empty still crawls')
-assert(batteryBand(0) === 'empty' && batteryBand(12) === 'limp' && batteryBand(40) === 'ok', 'battery bands')
+assert(batt.battery === 100, 'battery stays full')
+assert(batterySpeedScale(0) === 1 && batterySpeedScale(12) === 1, 'speed never limps')
+assert(batteryBand(0) === 'ok' && batteryBand(40) === 'ok', 'battery has no limp band')
+
+const northCell = siteCells().find((c) => c.floor === 0 && c.facades.includes('north'))
+const northExt = northCell ? makeExtractions(siteCells()).find((e) => e.cellId === northCell.id) : null
+if (northExt) {
+  const around = walkWaypoints(northExt, st)
+  const chord = Math.hypot(northExt.x - st.x, northExt.z - st.z)
+  assert(pathStaysOutside(around), 'walk-out from the back stays off the footprint')
+  assert(around.length >= 3, 'walk-out from the back takes a side path')
+  assert(
+    around.reduce((n, p, i) => (i ? n + Math.hypot(p.x - around[i - 1].x, p.z - around[i - 1].z) : 0), 0) > chord + 6,
+    'around path is longer than a line through the building',
+  )
+} else {
+  assert(false, 'north opening exists for the walk-out path')
+}
 assert(holdFrac({ kind: 'idle', targetId: null, progress: 0, need: 0 }) === 0, 'idle hold has no fill')
 assert(Math.abs(holdFrac({ kind: 'scan', targetId: 'v', progress: 3, need: 6 }) - 0.5) < 1e-9, 'scan fill is progress/need')
 
@@ -248,15 +269,9 @@ if (faceCell) {
   const lip = outsidePoint(faceCell)
   assert(nearVentedFacade(lip.x, lip.z, heatRun.cells), '8m of a vented facade is heat')
   assert(!nearVentedFacade(lip.x + 40, lip.z + 40, heatRun.cells), 'far lawn is not heat')
-  heatRun.battery = 100
   holdFor(heatRun, inputAt(lip.x, lip.z, { moving: true, speed: 3 }), 2)
-  const hotDrain = 100 - heatRun.battery
-  const cool = createRun(2)
-  cool.battery = 100
-  holdFor(cool, inputAt(80, 80, { moving: true, speed: 3 }), 2)
-  const coolDrain = 100 - cool.battery
-  assert(hotDrain > coolDrain * 2, `heat multiplies drain (hot ${hotDrain.toFixed(2)} vs cool ${coolDrain.toFixed(2)})`)
   assert(heatRun.inHeat, 'tick flags inHeat on a vented lip')
+  assert(heatRun.battery === 100, 'heat does not drain battery')
 }
 
 const north = siteCells().find((c) => c.floor === 0 && c.facades.includes('north'))
@@ -275,7 +290,26 @@ assert(end.phase === 'debrief', 'run ends when every cell has vented')
 const rows = debriefRows(end)
 const sum = debriefSummary(end)
 assert(rows.length === end.victims.length, 'debrief lists every victim')
-assert(rows.every((r) => r.seen && r.did && r.truth), 'each row has saw / did / was')
+assert(rows.every((r) => r.seen && r.did && r.truth), 'each row has seen, did, and truth')
+assert(
+  rows.some((r) => r.seen === 'They never showed on thermal.'),
+  'unseen people say they never showed on thermal',
+)
+assert(
+  rows.every((r) => !r.truth.includes(r.room) && /got out|was lost|were lost|marked for crews|still inside/.test(r.truth)),
+  'truth is a full sentence and does not repeat the room',
+)
+assert(
+  rows.every((r) => /^(They|You|Thermal)/.test(r.seen) && /[.]$/.test(r.seen) && !/signature/i.test(r.seen)),
+  'seen lines are full sentences and do not say signature',
+)
+assert(
+  !rows.some((r) => /would have taken/i.test(r.highlight ?? '')),
+  'fast walk-outs say how long at the glass',
+)
+for (const row of rows) {
+  assertOpsSpeak(`debrief ${row.room}`, playerCopy(row.seen, row.did, row.truth, row.highlight))
+}
 assert(!JSON.stringify(sum).toLowerCase().includes('grade'), 'debrief summary has no grade')
 assert(sum.ignitionRoom.length > 2, `ignition is a room name (${sum.ignitionRoom})`)
 assert(typeof sum.peopleSaved === 'number' && typeof sum.peopleLost === 'number', 'saved/lost are plain counts')
@@ -350,12 +384,6 @@ assert(
   `after size-up the pill shows type (${sized.detail})`,
 )
 
-function playerCopy(...parts: Array<string | null | undefined>) {
-  return parts.filter(Boolean).join(' ')
-}
-function assertOpsSpeak(label: string, text: string) {
-  assert(!/cyan|roll ?out|\bscan\b|\bextract\b/i.test(text), `${label} stays in ops language (${text})`)
-}
 assertOpsSpeak('door prompt', playerCopy(atDoor.title, atDoor.detail, atDoor.step))
 assertOpsSpeak('spawn prompt', playerCopy(objective.title, objective.detail, objective.step))
 assertOpsSpeak('working prompt', playerCopy(working.title, working.detail, working.step))
