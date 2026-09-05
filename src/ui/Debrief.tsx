@@ -31,10 +31,10 @@ export function Debrief() {
                 <span className="n">{String(row.order).padStart(2, '0')}</span>
                 <span className="room">{row.room}</span>
               </header>
-              <p>{row.seen}.</p>
-              <p>{row.did}.</p>
-              <p>{row.truth}.</p>
-              {row.highlight ? <p className="cf">{row.highlight}.</p> : null}
+              <p>{row.seen}</p>
+              <p>{row.did}</p>
+              <p>{row.truth}</p>
+              {row.highlight ? <p className="cf">{row.highlight}</p> : null}
             </li>
           ))}
         </ol>

@@ -1,6 +1,6 @@
-import { conditionLabel, typeLabel } from './opening'
+import { conditionLabel } from './opening'
 import { counts } from './tick'
-import type { RunState, Signature, Victim } from './types'
+import type { Condition, RescueType, RunState, Signature, Victim } from './types'
 
 export type DebriefRow = {
   id: string
@@ -12,37 +12,60 @@ export type DebriefRow = {
   highlight: string | null
 }
 
+function an(word: string) {
+  return /^[aeiou]/i.test(word) ? `an ${word}` : `a ${word}`
+}
+
+function cap(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 function sigLabel(signature: Signature) {
   return signature.charAt(0) + signature.slice(1).toLowerCase()
 }
 
-function people(count: number) {
-  return count === 1 ? '1 person' : `${count} people`
+function whoPhrase(count: number, type: RescueType, condition: Condition) {
+  const cond = conditionLabel(condition)
+  if (type === 'GROUP') return `${an(cond)} group of ${count}`
+  if (type === 'ASSISTED') {
+    return count === 1 ? `${an(cond)} person who needed help` : `${count} ${cond} people who needed help`
+  }
+  if (type === 'SELF_EXTRACT') {
+    return count === 1 ? `${an(cond)} walk-out` : `${count} ${cond} walk-outs`
+  }
+  return count === 1 ? `${an(cond)} unreachable person` : `${count} ${cond} unreachable people`
+}
+
+function isPlural(v: Victim) {
+  return v.type !== 'GROUP' && v.count !== 1
 }
 
 function seenLine(v: Victim) {
-  if (v.seenAt == null && !v.scanned) return 'Never showed on thermal'
-  if (!v.scanned) return `${sigLabel(v.signature)} signature. Not sized up`
-  return `${sigLabel(v.signature)} signature. Sized up as ${conditionLabel(v.condition)}, ${typeLabel(v.type)}`
+  if (v.seenAt == null && !v.scanned) return 'They never showed on thermal.'
+  if (!v.scanned) return `You had ${an(sigLabel(v.signature))} signature and did not size them up.`
+  return `You had ${an(sigLabel(v.signature))} signature and sized them up as ${whoPhrase(v.count, v.type, v.condition)}.`
 }
 
 function didLine(v: Victim) {
-  if (v.scanLost) return 'Sized up after they were already gone'
+  if (v.scanLost) return 'You sized them up after they were already gone.'
   if (v.action === 'rescued') {
-    return v.type === 'ASSISTED' ? 'Helped them out' : 'Cleared the opening'
+    return v.type === 'ASSISTED' ? 'You helped them out.' : 'You cleared the opening.'
   }
-  if (v.action === 'marked') return 'Marked for crews'
-  if (v.action === 'scanned') return 'Sized up, then left'
-  if (v.action === 'skipped') return 'Seen, not engaged'
-  if (v.state === 'LOST' && v.lostReason === 'vent') return 'Still inside when the room vented'
-  if (v.state === 'LOST' && v.lostReason === 'clock') return 'Time ran out'
-  return 'Never reached'
+  if (v.action === 'marked') return 'You marked them for crews.'
+  if (v.action === 'scanned') return 'You sized them up, then left.'
+  if (v.action === 'skipped') return 'You saw them and did not engage.'
+  if (v.state === 'LOST' && v.lostReason === 'vent') return 'They were still inside when the room vented.'
+  if (v.state === 'LOST' && v.lostReason === 'clock') return 'They ran out of time.'
+  return 'You never reached them.'
 }
 
 function truthLine(v: Victim) {
-  const fate =
-    v.state === 'RESCUED' ? 'Out' : v.state === 'MARKED' ? 'Marked' : v.state === 'LOST' ? 'Lost' : 'Still inside'
-  return `${people(v.count)}, ${typeLabel(v.type)}, ${conditionLabel(v.condition)}. ${fate}`
+  const who = cap(whoPhrase(v.count, v.type, v.condition))
+  const were = isPlural(v) ? 'were' : 'was'
+  if (v.state === 'RESCUED') return `${who} got out.`
+  if (v.state === 'MARKED') return `${who} ${were} marked for crews.`
+  if (v.state === 'LOST') return `${who} ${were} lost.`
+  return `${who} ${isPlural(v) ? 'are' : 'is'} still inside.`
 }
 
 export function debriefRows(state: RunState): DebriefRow[] {
@@ -66,11 +89,11 @@ export function debriefRows(state: RunState): DebriefRow[] {
   return ordered.map((v, i) => {
     let highlight: string | null = null
     if (skippedFast.includes(v)) {
-      highlight = `Walk-out. ${Math.round(v.rescueTime)} seconds at the glass`
+      highlight = `${cap(whoPhrase(v.count, v.type, v.condition))}. ${Math.round(v.rescueTime)} seconds at the glass would have cleared them.`
     } else if (wastedScan.includes(v)) {
-      highlight = 'Sized up someone already gone'
+      highlight = 'You sized up someone who was already gone.'
     } else if (closest && v.id === closest.id) {
-      highlight = 'Closest miss'
+      highlight = 'This was the closest miss.'
     }
     return {
       id: v.id,
