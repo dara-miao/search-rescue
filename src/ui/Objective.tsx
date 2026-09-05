@@ -46,10 +46,9 @@ export function Objective() {
   if (venting && !teach) {
     return (
       <div className="obj-pill vented" aria-live="polite">
-        <div>
-          <h2>{lastVent.roomName} vented</h2>
-          <p>That opening is dead</p>
-        </div>
+        <p className="obj-kicker">Vented</p>
+        <h2>{lastVent.roomName}</h2>
+        <p>That opening is dead</p>
       </div>
     )
   }
