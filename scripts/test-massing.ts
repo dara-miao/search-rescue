@@ -1,4 +1,4 @@
-import { Vector3 } from 'three'
+import { BufferAttribute, Vector3 } from 'three'
 import { createRun } from '../src/run/generate'
 import { buildMassing } from '../src/scene/doheny-massing.js'
 import { mountExtractionMarkers } from '../src/scene/markers'
@@ -16,7 +16,40 @@ function assert(ok: boolean, msg: string) {
 const group = buildMassing(site)
 const windows = group.userData.windows as Array<{ userData: { facade: string } }>
 assert(!!group, 'buildMassing returns a group')
-assert(!!group.getObjectByName('entranceSteps'), 'south portal has entrance steps')
+const stepMesh = group.getObjectByName('entranceSteps') as { geometry?: { attributes?: { position?: BufferAttribute } } } | undefined
+assert(!!stepMesh, 'south portal has entrance steps')
+const stepPos = stepMesh?.geometry?.attributes?.position
+if (stepPos) {
+  let doorY = 0
+  let lawnY = 0
+  let doorN = 0
+  let lawnN = 0
+  let minZ = Infinity
+  let maxZ = -Infinity
+  for (let i = 0; i < stepPos.count; i++) {
+    const z = stepPos.getZ(i)
+    if (z < minZ) minZ = z
+    if (z > maxZ) maxZ = z
+  }
+  const midZ = (minZ + maxZ) / 2
+  for (let i = 0; i < stepPos.count; i++) {
+    const y = stepPos.getY(i)
+    if (stepPos.getZ(i) < midZ) {
+      doorY += y
+      doorN++
+    } else {
+      lawnY += y
+      lawnN++
+    }
+  }
+  assert(doorN > 0 && lawnN > 0, 'entrance steps have a door side and a lawn side')
+  assert(
+    doorY / doorN > lawnY / lawnN + 0.12,
+    `steps rise toward the door, not the lawn (door ${(doorY / doorN).toFixed(2)} vs lawn ${(lawnY / lawnN).toFixed(2)})`,
+  )
+} else {
+  assert(false, 'entrance steps have vertex positions')
+}
 assert(!!group.getObjectByName('portalDoor'), 'south portal has a solid door slab')
 const brickMat = (group.getObjectByName('brick') as { material?: { map?: unknown; normalMap?: unknown } } | undefined)?.material
 if (typeof document !== 'undefined') {
@@ -50,7 +83,7 @@ const south = (
   }>
 ).find((w) => w.userData.facade === 'south' && w.userData.marker)
 assert(!!south?.userData.marker, 'south face has a live marker')
- if (south?.userData.marker) {
+if (south?.userData.marker) {
   const glass = new Vector3()
   south.getWorldPosition(glass)
   const shaft = south.userData.marker.localToWorld(new Vector3(0, 2, 1))

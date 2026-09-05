@@ -19,7 +19,7 @@ A short briefing holds the clock. Deploy from the red ring. Thermal starts on. R
 2. Press Space to assess. Thermal only shows heat until you do.
 3. Press F to rescue who you can reach. Mark the rest. They walk to staging.
 4. When a room vents that opening dies.
-5. The run ends when every cell has vented.
+5. The run ends when no one is left to save, or when every room has vented.
 
 Debrief lists each person in encounter order: what you saw, what you did, what was true. No grade.
 
