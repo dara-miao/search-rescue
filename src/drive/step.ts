@@ -18,7 +18,7 @@ const BLOCKERS = [
   ...apparatusBlockers(stagingPose(), site.building.orientedBounds.angleRad),
 ]
 
-/** Facade zones stay at 0.6 / 0.7. Battery limp can go as low as crawl. */
+/** Facade zones stay at 0.6 / 0.7. */
 export const MIN_SPEED_SCALE = 0.12
 
 export type DriveBody = {
