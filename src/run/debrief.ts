@@ -1,6 +1,6 @@
 import { conditionLabel, typeLabel } from './opening'
 import { counts } from './tick'
-import type { RunState, Victim } from './types'
+import type { RunState, Signature, Victim } from './types'
 
 export type DebriefRow = {
   id: string
@@ -12,10 +12,18 @@ export type DebriefRow = {
   highlight: string | null
 }
 
+function sigLabel(signature: Signature) {
+  return signature.charAt(0) + signature.slice(1).toLowerCase()
+}
+
+function people(count: number) {
+  return count === 1 ? '1 person' : `${count} people`
+}
+
 function seenLine(v: Victim) {
-  if (v.seenAt == null && !v.scanned) return 'Never on thermal'
-  if (!v.scanned) return `${v.signature} signature · not sized up`
-  return `${v.signature} · ${conditionLabel(v.condition)} · ${typeLabel(v.type)} · ${v.count}`
+  if (v.seenAt == null && !v.scanned) return 'Never showed on thermal'
+  if (!v.scanned) return `${sigLabel(v.signature)} signature. Not sized up`
+  return `${sigLabel(v.signature)} signature. Sized up as ${conditionLabel(v.condition)}, ${typeLabel(v.type)}`
 }
 
 function didLine(v: Victim) {
@@ -27,14 +35,14 @@ function didLine(v: Victim) {
   if (v.action === 'scanned') return 'Sized up, then left'
   if (v.action === 'skipped') return 'Seen, not engaged'
   if (v.state === 'LOST' && v.lostReason === 'vent') return 'Still inside when the room vented'
-  if (v.state === 'LOST' && v.lostReason === 'clock') return 'Clock ran out'
-  return 'Never found'
+  if (v.state === 'LOST' && v.lostReason === 'clock') return 'Time ran out'
+  return 'Never reached'
 }
 
 function truthLine(v: Victim) {
   const fate =
-    v.state === 'RESCUED' ? 'out' : v.state === 'MARKED' ? 'marked' : v.state === 'LOST' ? 'lost' : 'still inside'
-  return `${conditionLabel(v.condition)}, ${typeLabel(v.type)}, ${v.count} in ${v.roomName} · ${fate}`
+    v.state === 'RESCUED' ? 'Out' : v.state === 'MARKED' ? 'Marked' : v.state === 'LOST' ? 'Lost' : 'Still inside'
+  return `${people(v.count)}, ${typeLabel(v.type)}, ${conditionLabel(v.condition)}. ${fate}`
 }
 
 export function debriefRows(state: RunState): DebriefRow[] {
@@ -58,7 +66,7 @@ export function debriefRows(state: RunState): DebriefRow[] {
   return ordered.map((v, i) => {
     let highlight: string | null = null
     if (skippedFast.includes(v)) {
-      highlight = `Would have taken ${Math.round(v.rescueTime)} seconds`
+      highlight = `Walk-out. ${Math.round(v.rescueTime)} seconds at the glass`
     } else if (wastedScan.includes(v)) {
       highlight = 'Sized up someone already gone'
     } else if (closest && v.id === closest.id) {

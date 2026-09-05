@@ -23,7 +23,7 @@ export function Debrief() {
       <div className="debrief-inner">
         <p className="stage0-kicker">{clock(sum.duration)} · seed {sum.seed}</p>
         <h1>What happened</h1>
-        <p className="debrief-lead">Ignition was the {sum.ignitionRoom}.</p>
+        <p className="debrief-lead">Fire started in {sum.ignitionRoom}.</p>
         <ol className="debrief-list">
           {rows.map((row) => (
             <li key={row.id} className={row.highlight ? 'hi' : ''}>
@@ -31,16 +31,10 @@ export function Debrief() {
                 <span className="n">{String(row.order).padStart(2, '0')}</span>
                 <span className="room">{row.room}</span>
               </header>
-              <p>
-                <em>Saw</em> {row.seen}
-              </p>
-              <p>
-                <em>Did</em> {row.did}
-              </p>
-              <p>
-                <em>Was</em> {row.truth}
-              </p>
-              {row.highlight ? <p className="cf">{row.highlight}</p> : null}
+              <p>{row.seen}.</p>
+              <p>{row.did}.</p>
+              <p>{row.truth}.</p>
+              {row.highlight ? <p className="cf">{row.highlight}.</p> : null}
             </li>
           ))}
         </ol>
