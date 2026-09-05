@@ -2,6 +2,8 @@ import { Scene } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { stagingPose } from '../src/drive/spawn'
 import { site } from '../src/data/site'
+import { CHASE_CONFIG, desiredChaseShot } from '../src/drive/robot-chase.js'
+import { aerialShot, craneProgress, easeCrane, mixShot } from '../src/scene/deploy-crane'
 import { apparatusBlockers, apparatusLayout } from '../src/scene/staging-apparatus.js'
 import { buildEnvironment, setMergeFunction } from '../src/scene/site-environment.js'
 
@@ -60,6 +62,32 @@ const again = buildEnvironment(scene, site, {
 if (!again.root.parent) scene.add(again.root)
 assert(scene.getObjectByName('environment') === again.root, 'rebuilding after a Strict-style teardown parents a live root')
 assert(again.treeCount === env.treeCount, 'rebuild keeps the same tree count')
+
+const air = aerialShot(site, 0)
+const south = { x: -Math.sin(site.building.orientedBounds.angleRad), z: Math.cos(site.building.orientedBounds.angleRad) }
+const fromCentre = {
+  x: air.position.x - site.building.orientedBounds.centre.x,
+  z: air.position.z - site.building.orientedBounds.centre.z,
+}
+assert(air.position.y > 50, `aerial shot is bird-high (got ${air.position.y.toFixed(1)})`)
+assert(
+  fromCentre.x * south.x + fromCentre.z * south.z > 60,
+  'aerial shot sits on the Alumni Park side',
+)
+assert(air.fov < 50, 'aerial fov stays cinematic so the sky stays in frame')
+assert(craneProgress(0) === 0 && craneProgress(8) === 1, 'crane progress clamps')
+assert(easeCrane(0) === 0 && easeCrane(1) === 1, 'crane ease is a full 0-1')
+assert(easeCrane(0.5) > 0.4 && easeCrane(0.5) < 0.6, 'crane ease is symmetric')
+const chase = desiredChaseShot(
+  { position: { x: spawn.x, y: spawn.y, z: spawn.z }, yaw: spawn.yaw },
+  CHASE_CONFIG,
+)
+const startMix = mixShot(air, chase, 0)
+const endMix = mixShot(air, chase, 1)
+assert(Math.abs(startMix.position.y - air.position.y) < 1e-9, 'crane t=0 is the aerial')
+assert(Math.abs(endMix.position.y - chase.position.y) < 1e-9, 'crane t=1 is the chase pose')
+assert(chase.position.y < 12, 'chase pose is down at the robot')
+assert(air.position.y - chase.position.y > 40, 'deploy drops from bird height to the chassis')
 
 if (process.exitCode) {
   console.error('environment tests failed')

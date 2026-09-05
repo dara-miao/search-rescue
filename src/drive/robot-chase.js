@@ -255,6 +255,29 @@ export function keepChaseCameraOut(from, to, blockers, radius = CHASE_CAM_SKIN) 
   return best;
 }
 
+/** Settled chase pose: behind the robot, looking past it up-screen. */
+export function desiredChaseShot(robot, cfg = CHASE_CONFIG, blockers) {
+  const c = cfg.camera;
+  const camFwd = forwardVector(robot.yaw);
+  const groundY = robot.position.y || 0;
+  const raw = {
+    x: robot.position.x - camFwd.x * c.distance,
+    y: groundY + c.height,
+    z: robot.position.z - camFwd.z * c.distance,
+  };
+  const held = keepChaseCameraOut(robot.position, raw, blockers, CHASE_CAM_SKIN);
+  const robotFwd = forwardVector(robot.yaw);
+  return {
+    position: { x: held.x, y: raw.y, z: held.z },
+    look: {
+      x: robot.position.x + robotFwd.x * c.lookAhead,
+      y: groundY + c.lookHeight,
+      z: robot.position.z + robotFwd.z * c.lookAhead,
+    },
+    fov: c.fov.base,
+  };
+}
+
 /**
  * Locked chase camera.
  *
