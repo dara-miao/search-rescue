@@ -27,10 +27,6 @@ const BEATS = [
   },
 ] as const
 
-function pad(n: number) {
-  return String(n).padStart(2, '0')
-}
-
 export function Briefing() {
   const [step, setStep] = useState(0)
   const last = step >= BEATS.length - 1
@@ -62,9 +58,7 @@ export function Briefing() {
     <div className="briefing">
       <div className="briefing-card">
         <p className="briefing-kicker">
-          Doheny Rescue
-          <span aria-hidden="true"> · </span>
-          {pad(step + 1)} / {pad(BEATS.length)}
+          {step + 1}/{BEATS.length}
         </p>
         <div key={step} className="briefing-beat">
           <h1>{beat.title}</h1>
