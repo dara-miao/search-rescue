@@ -42,6 +42,7 @@
  */
 
 import * as THREE from 'three';
+import { localToWorld } from '../scene/site-ground.js';
 
 // ---------------------------------------------------------------- config
 
@@ -247,17 +248,16 @@ export function resolveCollision(pos, radius, blockers, iterations = 3) {
  * The OSM footprint alone is not enough: the entrance pavilion and end
  * pavilions project past it, and the player will drive straight through them
  * otherwise. Each projecting volume needs its own polygon.
+ *
+ * World corners MUST use the same localToWorld as the massing. A mirrored
+ * yaw puts an invisible box on the Alumni Park lawn and the real pavilion
+ * hull on the east wing — that is the "frozen at the door" bug.
  */
 export function buildBlockers(siteData, massingConfig) {
   const blockers = [siteData.building.footprint];
-
   const ob = siteData.building.orientedBounds;
-  const cos = Math.cos(-ob.angleRad), sin = Math.sin(-ob.angleRad);
 
-  const toWorld = (lx, lz) => ({
-    x: ob.centre.x + lx * cos - lz * sin,
-    z: ob.centre.z + lx * sin + lz * cos,
-  });
+  const toWorld = (lx, lz) => localToWorld(lx, lz, siteData);
 
   const rectBlocker = (cx, cz, w, d) => [
     toWorld(cx - w / 2, cz - d / 2),
@@ -270,8 +270,22 @@ export function buildBlockers(siteData, massingConfig) {
     const pv = massingConfig.pavilion;
     const ep = massingConfig.endPavilion;
     const D = ob.depth, W = ob.width;
+    const hole = pv.portalWidth || 0;
+    const recess = pv.portalRecess || 0;
 
-    blockers.push(rectBlocker(0, D / 2 + pv.projection / 2, pv.width, pv.projection));
+    // Split around the portal so the robot can pull up to the glass.
+    // The door slab at the back of the recess is what keeps you outside.
+    if (hole > 0.5 && hole < pv.width) {
+      const wing = (pv.width - hole) / 2;
+      const cz = D / 2 + pv.projection / 2;
+      blockers.push(rectBlocker(-(pv.width / 2 - wing / 2), cz, wing, pv.projection));
+      blockers.push(rectBlocker(+(pv.width / 2 - wing / 2), cz, wing, pv.projection));
+      const doorDepth = Math.max(0.4, pv.projection - recess);
+      blockers.push(rectBlocker(0, D / 2 + doorDepth / 2, hole, doorDepth));
+    } else {
+      blockers.push(rectBlocker(0, D / 2 + pv.projection / 2, pv.width, pv.projection));
+    }
+
     blockers.push(rectBlocker(-(W / 2 - ep.width / 2), D / 2 + ep.projection / 2, ep.width, ep.projection));
     blockers.push(rectBlocker(+(W / 2 - ep.width / 2), D / 2 + ep.projection / 2, ep.width, ep.projection));
   }
