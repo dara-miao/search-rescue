@@ -5,6 +5,7 @@ import { stagingPose } from '../drive/spawn'
 import { useRun } from '../run/store'
 import type { Victim } from '../run/types'
 import { HeatZones } from './HeatZones'
+import { openingSocket } from './opening-socket'
 import { WalkOut } from './WalkOut'
 import { OpeningBeacons } from './OpeningBeacons'
 import { WindowPeople } from './WindowPeople'
@@ -15,22 +16,24 @@ const SIG = {
   FAINT: { color: '#c43b3b', r: 0.2, h: 0.95 },
 }
 
-function victimY(v: Victim) {
-  return 1.55 + v.floor * 4.5
-}
-
-/** Heat silhouette at the glass. Not a spinning orb. */
+/** Heat silhouette in the window. */
 function ThermalSig({ victim, noisy }: { victim: Victim; noisy: boolean }) {
   const mesh = useRef<Mesh>(null)
   const look = SIG[victim.signature]
+  const cells = useRun((s) => s.cells)
+  const extractions = useRun((s) => s.extractions)
 
   useFrame((state) => {
     const m = mesh.current
     if (!m) return
     const t = state.clock.elapsedTime
+    const cell = cells.find((c) => c.id === victim.cellId)
+    const ext = extractions.find((e) => e.cellId === victim.cellId)
+    const sock = cell ? openingSocket(cell, ext?.facade) : null
     const breath = 1 + Math.sin(t * 1.5 + victim.x) * 0.05
     const shimmer = noisy ? Math.sin(t * 6 + victim.z) * 0.06 : 0
-    m.position.set(victim.x + shimmer, victimY(victim), victim.z)
+    if (sock) m.position.set(sock.x + sock.nx * 0.15 + shimmer, sock.y, sock.z + sock.nz * 0.15)
+    else m.position.set(victim.x + shimmer, 1.55 + victim.floor * 4.5, victim.z)
     m.scale.set(breath, breath, breath)
   })
 
