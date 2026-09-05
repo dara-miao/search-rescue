@@ -1,7 +1,7 @@
 import { stagingPose } from '../drive/spawn'
 import { MARKER_CONFIG } from '../scene/extraction-markers.js'
 import { dist } from './layout'
-import { conditionLabel, nearestPlayOpening, typeLabel } from './opening'
+import { conditionLabel, nearestPlayOpening, thermalRead, typeLabel } from './opening'
 import type { Extraction, RunState, Victim } from './types'
 
 export const SCAN_RANGE = 7
@@ -119,7 +119,7 @@ export function playIntent(state: RunState, x: number, z: number): Intent {
       kind: 'scan',
       title: 'Press Space to assess',
       detail: state.thermal
-        ? `${scan.signature.toLowerCase()} signature · count and condition hidden`
+        ? `Thermal ${thermalRead(scan.signature)} · count and condition hidden`
         : 'Count and condition hidden',
       dist: scanD,
       inRange: true,
