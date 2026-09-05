@@ -1,7 +1,7 @@
 # Doheny Rescue
 
 <p align="center">
-  <img src="public/textures/doheny-elevation.jpg" width="880" alt="South elevation of Doheny Memorial Library" />
+  <img src="public/doheny-from-lawn.svg" width="880" alt="Doheny Memorial Library from the Alumni Park lawn in the sim" />
 </p>
 
 <p align="center">
@@ -59,6 +59,8 @@ npm run build
 
 © OpenStreetMap contributors (ODbL). Attribution also lives on the Credits screen.
 
-The photograph above is [Doheny Library](https://commons.wikimedia.org/wiki/File:Doheny_Library.jpg) by Padsquad19, Wikimedia Commons, CC BY-SA 3.0. Facade maps in the sim are derived from it.
+The photograph above is a frame from the sim, looking north across Alumni Park at the south face.
+
+Facade maps in the sim are derived from [Doheny Library](https://commons.wikimedia.org/wiki/File:Doheny_Library.jpg) by Padsquad19, Wikimedia Commons, CC BY-SA 3.0.
 
 Built with Vite, React, TypeScript, Three.js, React Three Fiber, Drei, and zustand.
