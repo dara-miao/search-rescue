@@ -41,13 +41,13 @@ import {
 
 export const NIGHT = {
   // Sampled to read as LA light pollution rather than generic night.
-  skyZenith:   0x0a0e1a,
-  skyHorizon:  0x3a2418,   // dirty orange-brown sodium glow
-  skyGlow:     0x6b3d1f,   // hotter band right at the horizon line
-  fog:         0x1a1410,
-  lawn:        0x1a2415,
-  lawnDry:     0x24261a,   // patchy variation; uniform green reads as felt
-  path:        0x3a3630,
+  skyZenith:   0x10162a,
+  skyHorizon:  0x462c1c,   // dirty orange-brown sodium glow
+  skyGlow:     0x7a4624,   // hotter band right at the horizon line
+  fog:         0x241c16,
+  lawn:        0x22301c,
+  lawnDry:     0x2c2e20,   // patchy variation; uniform green reads as felt
+  path:        0x444038,
   asphalt:     0x141412,
   treeTrunk:   0x1a1512,
   treeCanopy:  0x14200f,
@@ -56,18 +56,18 @@ export const NIGHT = {
 };
 
 export const LIGHT_RIG = {
-  moonIntensity: 0.85,
-  moonColor: 0xc5d4ee,
+  moonIntensity: 1.0,
+  moonColor: 0xd0dcf0,
   moonAzimuth: 2.1,        // radians
   moonElevation: 0.62,
-  hemiSky: 0x4a5570,
-  hemiGround: 0x2a2010,
-  hemiIntensity: 0.9,
-  ambient: 0.22,
+  hemiSky: 0x55647c,
+  hemiGround: 0x322414,
+  hemiIntensity: 1.02,
+  ambient: 0.3,
   // Tuned so the distant campus ring at 150-320m reads as a horizon rather
   // than disappearing. At 0.0062 the ring was 79% fogged and invisible,
   // which defeated the whole point of having it.
-  fogDensity: 0.0038,
+  fogDensity: 0.0033,
 };
 
 // ---------------------------------------------------------------- sky
@@ -484,7 +484,7 @@ function buildLights(siteData, rig = LIGHT_RIG) {
   const hemi = new THREE.HemisphereLight(rig.hemiSky, rig.hemiGround, rig.hemiIntensity);
   group.add(hemi);
 
-  group.add(new THREE.AmbientLight(0x223044, rig.ambient));
+  group.add(new THREE.AmbientLight(0x2a3a55, rig.ambient));
 
   // Moon. Low intensity, cool, and the only shadow caster — multiple shadow
   // casters at night is expensive and reads as confused.
