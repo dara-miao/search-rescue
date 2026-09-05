@@ -51,7 +51,12 @@ export function resolveCollision(
 export function buildBlockers(
   siteData: SiteData,
   massingConfig?: {
-    pavilion: { width: number; projection: number }
+    pavilion: {
+      width: number
+      projection: number
+      portalWidth?: number
+      portalRecess?: number
+    }
     endPavilion: { width: number; projection: number }
   },
 ): Array<Array<{ x: number; z: number }>>
