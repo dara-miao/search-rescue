@@ -2,7 +2,8 @@ import { createRun, generateVictims, rollCondition } from '../src/run/generate'
 import { allVented, stepFireTick, ventedCount } from '../src/run/fire'
 import { debriefRows, debriefSummary } from '../src/run/debrief'
 import { batteryBand, batterySpeedScale } from '../src/run/battery'
-import { pathStaysOutside, walkWaypoints } from '../src/run/evacuees'
+import { climbPath, pathStaysOutside, walkWaypoints } from '../src/run/evacuees'
+import { openingSocket } from '../src/scene/opening-socket'
 import { holdAnchor, holdFrac } from '../src/run/hold'
 import { makeExtractions, nearVentedFacade, outsidePoint, siteCells, speedScaleAt } from '../src/run/layout'
 import { parseSeed, seedQuery } from '../src/run/seed'
@@ -199,6 +200,10 @@ assert(
   rescueRun.evacuees.every((e) => e.victimId === easy.id),
   'walk-out people belong to the rescued group',
 )
+assert(
+  rescueRun.evacuees.every((e) => (e.path[0]?.y ?? 0) > 1.5),
+  'rescued people start in the window',
+)
 
 const carryRun = createRun(12)
 const assisted = carryRun.victims.find((v) => v.type === 'ASSISTED')!
@@ -247,7 +252,7 @@ assert(batteryBand(0) === 'ok' && batteryBand(40) === 'ok', 'battery has no limp
 
 const northCell = siteCells().find((c) => c.floor === 0 && c.facades.includes('north'))
 const northExt = northCell ? makeExtractions(siteCells()).find((e) => e.cellId === northCell.id) : null
-if (northExt) {
+if (northExt && northCell) {
   const around = walkWaypoints(northExt, st)
   const chord = Math.hypot(northExt.x - st.x, northExt.z - st.z)
   assert(pathStaysOutside(around), 'walk-out from the back stays off the footprint')
@@ -256,6 +261,11 @@ if (northExt) {
     around.reduce((n, p, i) => (i ? n + Math.hypot(p.x - around[i - 1].x, p.z - around[i - 1].z) : 0), 0) > chord + 6,
     'around path is longer than a line through the building',
   )
+  const sock = openingSocket(northCell, northExt.facade)
+  assert(sock != null && !pointInPoly(sock.x, sock.z, site.building.footprint), 'window socket sits outside the hull')
+  const climb = climbPath(sock, northExt, st)
+  assert((climb[0].y ?? 0) > 2, 'walk-out starts in the window')
+  assert(pathStaysOutside(climb), 'climb then around stays off the footprint')
 } else {
   assert(false, 'north opening exists for the walk-out path')
 }

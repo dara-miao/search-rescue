@@ -1,8 +1,11 @@
 import { site } from '../data/site'
 import { stagingPose } from '../drive/spawn'
 import { pointInPoly } from '../drive/hull'
+import { openingSocket } from '../scene/opening-socket'
 import { localToWorld, worldToLocal } from '../scene/site-ground.js'
 import type { Evacuee, Extraction, RunState, Victim } from './types'
+
+export type PathPoint = { x: number; z: number; y?: number }
 
 const WALK_MPS = 2.8
 const PAD = 7
@@ -53,7 +56,7 @@ export function walkWaypoints(start: { x: number; z: number }, dest: { x: number
   const raw = fromBack
     ? [start, localToWorld(e, north, site), localToWorld(e, south, site), dest]
     : [start, localToWorld(e, along, site), localToWorld(e, south, site), dest]
-  const pts: Array<{ x: number; z: number }> = []
+  const pts: PathPoint[] = []
   for (const p of raw) {
     const last = pts.at(-1)
     if (last && Math.hypot(p.x - last.x, p.z - last.z) < MIN_LEG) continue
@@ -62,10 +65,25 @@ export function walkWaypoints(start: { x: number; z: number }, dest: { x: number
   return pts.length >= 2 ? pts : [start, dest]
 }
 
-export function pathLength(pts: Array<{ x: number; z: number }>) {
+function dy(p: PathPoint) {
+  return p.y ?? 0
+}
+
+export function pathLength(pts: PathPoint[]) {
   let len = 0
-  for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z)
+  for (let i = 1; i < pts.length; i++) {
+    len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z, dy(pts[i]) - dy(pts[i - 1]))
+  }
   return len
+}
+
+/** Drop from the glass to the lawn, then walk around Doheny to staging. */
+export function climbPath(glass: PathPoint, lawn: PathPoint, dest: PathPoint) {
+  const around = walkWaypoints(lawn, dest)
+  const drop = { x: lawn.x, z: lawn.z, y: 0 }
+  const rest =
+    around[0] && Math.hypot(around[0].x - lawn.x, around[0].z - lawn.z) < 0.5 ? around.slice(1) : around
+  return [{ x: glass.x, y: glass.y ?? 2.4, z: glass.z }, drop, ...rest]
 }
 
 export function pathStaysOutside(pts: Array<{ x: number; z: number }>) {
@@ -88,46 +106,56 @@ export function spawnWalkout(state: RunState, victim: Victim, ext: Extraction | 
   const startX = ext?.x ?? victim.x
   const startZ = ext?.z ?? victim.z
   const dest = stagingPose()
+  const cell = state.cells.find((c) => c.id === victim.cellId) ?? null
+  const sock = cell ? openingSocket(cell, ext?.facade) : null
   const n = Math.max(1, victim.count)
   for (let i = 0; i < n; i++) {
-    const start = { x: startX + (i - (n - 1) / 2) * 0.55, z: startZ + (i % 2) * 0.35 }
+    const lawn = { x: startX + (i - (n - 1) / 2) * 0.55, z: startZ + (i % 2) * 0.35 }
     const end = { x: dest.x + (i - (n - 1) / 2) * 0.7, z: dest.z + 1.2 }
-    const path = walkWaypoints(start, end)
+    const spread = (i - (n - 1) / 2) * 0.36
+    const glass = sock
+      ? {
+          x: sock.x + -sock.nz * spread,
+          y: sock.y,
+          z: sock.z + sock.nx * spread,
+        }
+      : null
+    const path = glass ? climbPath(glass, lawn, end) : walkWaypoints(lawn, end)
     const evac: Evacuee = {
       id: `${victim.id}-w${i}`,
       victimId: victim.id,
-      startX: start.x,
-      startZ: start.z,
+      startX: glass?.x ?? lawn.x,
+      startZ: glass?.z ?? lawn.z,
       destX: end.x,
       destZ: end.z,
       path,
-      born: state.t + i * 0.35,
-      duration: Math.max(4.5, pathLength(path) / WALK_MPS) + i * 0.4,
+      born: state.t + i * 0.28,
+      duration: Math.max(5.2, pathLength(path) / WALK_MPS) + i * 0.35,
       lane: i,
     }
     state.evacuees.push(evac)
   }
 }
 
-function alongPath(pts: Array<{ x: number; z: number }>, u: number) {
+function alongPath(pts: PathPoint[], u: number) {
   const total = pathLength(pts)
-  if (total < 0.01) return { x: pts[0].x, z: pts[0].z, hx: 0, hz: 1 }
+  if (total < 0.01) return { x: pts[0].x, z: pts[0].z, y: dy(pts[0]), hx: 0, hz: 1 }
   let left = u * total
   for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1]
     const b = pts[i]
-    const leg = Math.hypot(b.x - a.x, b.z - a.z)
+    const leg = Math.hypot(b.x - a.x, b.z - a.z, dy(b) - dy(a))
     if (left <= leg || i === pts.length - 1) {
       const t = leg < 1e-6 ? 1 : Math.min(1, left / leg)
       const hx = b.x - a.x
       const hz = b.z - a.z
-      return { x: a.x + hx * t, z: a.z + hz * t, hx, hz }
+      return { x: a.x + hx * t, z: a.z + hz * t, y: dy(a) + (dy(b) - dy(a)) * t, hx, hz }
     }
     left -= leg
   }
   const last = pts[pts.length - 1]
   const prev = pts[pts.length - 2] ?? last
-  return { x: last.x, z: last.z, hx: last.x - prev.x, hz: last.z - prev.z }
+  return { x: last.x, z: last.z, y: dy(last), hx: last.x - prev.x, hz: last.z - prev.z }
 }
 
 export function evacueePose(evac: Evacuee, t: number) {
@@ -136,15 +164,16 @@ export function evacueePose(evac: Evacuee, t: number) {
     { x: evac.destX, z: evac.destZ },
   ]
   const u = Math.max(0, Math.min(1, (t - evac.born) / evac.duration))
+  const glassY = pts[0]?.y ?? 0
   if (t < evac.born) {
-    return { x: evac.startX, z: evac.startZ, y: 0, done: false, visible: false, u: 0, hx: 0, hz: 1 }
+    return { x: evac.startX, z: evac.startZ, y: glassY, done: false, visible: false, u: 0, hx: 0, hz: 1 }
   }
   const ease = u * u * (3 - 2 * u)
   const at = alongPath(pts, ease)
   return {
     x: at.x,
     z: at.z,
-    y: 0,
+    y: at.y,
     done: u >= 1,
     visible: u < 1,
     u,
