@@ -35,9 +35,9 @@ export function NightEnvironment() {
     <>
       <color attach="background" args={[NIGHT.fog]} />
       <fogExp2 attach="fog" args={[NIGHT.fog, LIGHT_RIG.fogDensity]} />
-      <hemisphereLight args={['#4a5570', '#2a2010', 0.9]} />
-      <ambientLight intensity={0.22} color="#334466" />
-      <directionalLight position={[70, 110, -35]} intensity={0.8} color="#c5d4ee" />
+      <hemisphereLight args={['#55647c', '#322414', 1.02]} />
+      <ambientLight intensity={0.3} color="#445577" />
+      <directionalLight position={[70, 110, -35]} intensity={0.92} color="#d0dcf0" />
       <primitive object={env.root} />
     </>
   )

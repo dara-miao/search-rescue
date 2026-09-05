@@ -46,6 +46,7 @@ function Stage0App() {
           stencil: false,
           powerPreference: 'high-performance',
           toneMapping: ACESFilmicToneMapping,
+          toneMappingExposure: 1.12,
         }}
       >
         <FootprintView />

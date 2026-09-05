@@ -27,6 +27,10 @@ const BEATS = [
   },
 ] as const
 
+function pad(n: number) {
+  return String(n).padStart(2, '0')
+}
+
 export function Briefing() {
   const [step, setStep] = useState(0)
   const last = step >= BEATS.length - 1
@@ -57,18 +61,25 @@ export function Briefing() {
   return (
     <div className="briefing">
       <div className="briefing-card">
+        <p className="briefing-kicker">
+          Doheny Rescue
+          <span aria-hidden="true"> · </span>
+          {pad(step + 1)} / {pad(BEATS.length)}
+        </p>
         <div key={step} className="briefing-beat">
           <h1>{beat.title}</h1>
           {beat.body ? <p>{beat.body}</p> : null}
         </div>
-        <ol className="briefing-dots" aria-label={`Step ${step + 1} of ${BEATS.length}`}>
-          {BEATS.map((_, i) => (
-            <li key={i} className={i === step ? 'on' : i < step ? 'done' : undefined} />
-          ))}
-        </ol>
-        <button type="button" className="debrief-go" autoFocus onClick={advance}>
-          {last ? 'Deploy' : 'Next'}
-        </button>
+        <div className="briefing-foot">
+          <ol className="briefing-dots" aria-label={`Step ${step + 1} of ${BEATS.length}`}>
+            {BEATS.map((_, i) => (
+              <li key={i} className={i === step ? 'on' : i < step ? 'done' : undefined} />
+            ))}
+          </ol>
+          <button type="button" className="debrief-go" autoFocus onClick={advance}>
+            {last ? 'Deploy' : 'Next'}
+          </button>
+        </div>
       </div>
       <p className="osm-mark" title={attribution()}>
         © OSM
