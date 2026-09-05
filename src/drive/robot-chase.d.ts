@@ -59,6 +59,27 @@ export interface ChaseCamState {
   initialised: boolean
 }
 
+export const CHASE_CAM_SKIN: number
+
+export function keepChaseCameraOut(
+  from: { x: number; z: number },
+  to: { x: number; z: number },
+  blockers?: Array<Array<{ x: number; z: number }>>,
+  radius?: number,
+): { x: number; z: number }
+
+export type ChaseShot = {
+  position: { x: number; y: number; z: number }
+  look: { x: number; y: number; z: number }
+  fov: number
+}
+
+export function desiredChaseShot(
+  robot: { position: { x: number; z?: number; y?: number }; yaw: number },
+  cfg?: typeof CHASE_CONFIG,
+  blockers?: Array<Array<{ x: number; z: number }>>,
+): ChaseShot
+
 export function createChaseCamera(cfg?: typeof CHASE_CONFIG): ChaseCamState
 
 export function stepChaseCamera(
@@ -67,6 +88,7 @@ export function stepChaseCamera(
   camera: Camera & { fov: number; updateProjectionMatrix: () => void },
   dt: number,
   cfg?: typeof CHASE_CONFIG,
+  blockers?: Array<Array<{ x: number; z: number }>>,
 ): ChaseCamState
 
 export function attachHeadlight(

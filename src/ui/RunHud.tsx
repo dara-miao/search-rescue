@@ -16,6 +16,7 @@ function clock(t: number) {
 
 export function RunHud() {
   const run = useRun()
+  const deployIntro = useRun((s) => s.deployIntro)
   const setHud = useRun((s) => s.setHud)
   const setStick = useDrive((s) => s.setStick)
   const x = useDrive((s) => s.x)
@@ -46,7 +47,7 @@ export function RunHud() {
             : null
 
   return (
-    <>
+    <div className={`run-chrome${deployIntro ? ' is-intro' : ''}`}>
       <Compass />
       <Objective />
       {run.thermal ? <div className={`thermal-cast ${run.inHeat ? 'hot' : ''}`} aria-hidden="true" /> : null}
@@ -107,6 +108,6 @@ export function RunHud() {
         </div>
         <AnalogKnob onVector={(x, y, on) => setStick(x, y, on)} />
       </div>
-    </>
+    </div>
   )
 }

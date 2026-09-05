@@ -65,7 +65,7 @@ export function useRunLoop() {
         const forceRescue = keys.has('KeyF') || run.hudRescue
 
         if (run.phase === 'playing') {
-          const acting = run.hold.kind !== 'idle'
+          const acting = run.hold.kind !== 'idle' || run.deployIntro
           const stick = acting
             ? { x: 0, y: 0 }
             : drive.stickOn

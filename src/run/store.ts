@@ -10,8 +10,10 @@ type RunStore = RunState & {
   hudThermal: boolean
   hudHold: boolean
   hudRescue: boolean
+  deployIntro: boolean
   start: (seed?: number) => void
   begin: () => void
+  endDeployIntro: () => void
   skipCoach: () => void
   showCredits: () => void
   hideCredits: () => void
@@ -33,6 +35,7 @@ export const useRun = create<RunStore>((set, get) => ({
   hudThermal: true,
   hudHold: false,
   hudRescue: false,
+  deployIntro: false,
   start: (seed) => {
     hudWait = 0
     resetRunAudio()
@@ -42,12 +45,14 @@ export const useRun = create<RunStore>((set, get) => ({
       hudThermal: true,
       hudHold: false,
       hudRescue: false,
+      deployIntro: false,
     })
   },
   begin: () => {
     if (get().phase !== 'briefing') return
-    set({ phase: 'playing', t: 0, coach: 'drive', hudThermal: true })
+    set({ phase: 'playing', t: 0, coach: 'drive', hudThermal: true, deployIntro: true })
   },
+  endDeployIntro: () => set({ deployIntro: false }),
   skipCoach: () => set({ coach: 'off' }),
   showCredits: () => {
     if (get().phase !== 'debrief') return
@@ -70,6 +75,7 @@ export const useRun = create<RunStore>((set, get) => ({
       hudThermal: true,
       hudHold: false,
       hudRescue: false,
+      deployIntro: false,
     })
   },
   setHud: (patch) =>
