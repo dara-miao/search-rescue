@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useDrive } from '../drive/store'
-import { batterySpeedScale } from './battery'
 import { speedScaleAt } from './layout'
 import { useRun } from './store'
 
@@ -71,7 +70,7 @@ export function useRunLoop() {
             : drive.stickOn
               ? { x: drive.stickX, y: -drive.stickY }
               : screenStickFromKeys(keys)
-          const scale = speedScaleAt(drive.x, drive.z, run.cells) * batterySpeedScale(run.battery)
+          const scale = speedScaleAt(drive.x, drive.z, run.cells)
           drive.step(stick, dt, scale)
           const body = useDrive.getState()
           run.tick(

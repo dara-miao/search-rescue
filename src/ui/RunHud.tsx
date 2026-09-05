@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useDrive } from '../drive/store'
 import { isMuted, setMuted, unlockAudio } from '../run/audio'
-import { batteryBand } from '../run/battery'
 import { playIntent } from '../run/intent'
 import { useRun } from '../run/store'
 import { AnalogKnob } from './AnalogKnob'
@@ -22,7 +21,6 @@ export function RunHud() {
   const x = useDrive((s) => s.x)
   const z = useDrive((s) => s.z)
   const [mute, setMute] = useState(() => isMuted())
-  const band = batteryBand(run.battery)
   const waiting = run.victims.filter((v) => v.state === 'WAITING' || v.state === 'CARRIED').length
   const intent = playIntent(run, x, z)
   const assessReady = intent.hold === 'scan' || intent.hold === 'mark'
@@ -33,19 +31,6 @@ export function RunHud() {
     useRun.getState().replay()
   }
 
-  const lastVent = run.vents.filter((v) => v.kind === 'vent').at(-1)
-  const venting = lastVent != null && run.t - lastVent.t < 6
-  const alert =
-    band === 'empty'
-      ? 'Crawl to the red ring'
-      : venting
-        ? `${lastVent.roomName} vented`
-        : band === 'limp'
-          ? 'Limp · charge at staging'
-          : run.inHeat
-            ? 'Heat'
-            : null
-
   return (
     <div className={`run-chrome${deployIntro ? ' is-intro' : ''}`}>
       <Compass />
@@ -53,11 +38,7 @@ export function RunHud() {
       {run.thermal ? <div className={`thermal-cast ${run.inHeat ? 'hot' : ''}`} aria-hidden="true" /> : null}
       <aside className="run-strip">
         <time>{clock(run.t)}</time>
-        <span className={`batt ${band}`} title={`Battery ${run.battery.toFixed(0)}`}>
-          <i style={{ width: `${run.battery}%` }} />
-        </span>
         <em title="Still inside">{waiting}</em>
-        {alert ? <p className="run-toast">{alert}</p> : null}
       </aside>
       <div className="drive-dock run-dock">
         <div className="run-actions">
